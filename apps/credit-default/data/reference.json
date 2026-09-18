@@ -1,0 +1,582 @@
+{
+ "_source": "credit-default-risk-interpretability-fairness (private repo)",
+ "_derived_from": "UCI Default of Credit Card Clients, dataset 350, CC BY 4.0",
+ "_note": "Derived artefacts only: a calibrated score per test client, the outcome, the four audited attributes, and the permutation nulls. No raw predictors are shipped.",
+ "dataset": {
+  "name": "UCI Default of Credit Card Clients (id 350)",
+  "licence": "CC BY 4.0",
+  "n_rows": 30000,
+  "n_features": 19,
+  "prevalence": 0.2212,
+  "majority_accuracy": 0.7787999999999999
+ },
+ "splits": {
+  "test": {
+   "n": 6000,
+   "positives": 1327,
+   "rate": 0.22116666666666668
+  },
+  "train": {
+   "n": 18000,
+   "positives": 3982,
+   "rate": 0.2212222222222222
+  },
+  "valid": {
+   "n": 6000,
+   "positives": 1327,
+   "rate": 0.22116666666666668
+  }
+ },
+ "model": {
+  "family": "logistic",
+  "params": {
+   "C": 10.0,
+   "max_iter": 2000
+  },
+  "calibration": "isotonic",
+  "n_features": 19,
+  "cv_scoring": "average_precision",
+  "cv_best_score": 0.5486505709698433,
+  "lgbm_cv": 0.557355241668973,
+  "logistic_cv": 0.5486505709698433,
+  "lgbm_minus_logistic_ap": {
+   "point": 0.0009493965626079515,
+   "ci_lo": -0.01060922609673411,
+   "ci_hi": 0.013780026634361477,
+   "n_boot": 2000
+  }
+ },
+ "frozen": {
+  "threshold": 0.10654772423267948,
+  "cost_ratio_ASSUMED": 10.0,
+  "bayes_threshold": 0.09090909090909091,
+  "flat_region": {
+   "lo": 0.10354886570658679,
+   "hi": 0.12119844782914113,
+   "n_cuts": 92
+  },
+  "min_audit_cell": 100,
+  "primary_attribute": "sex"
+ },
+ "published_test": {
+  "average_precision": {
+   "point": 0.5367754331157498,
+   "ci_lo": 0.5117390649152805,
+   "ci_hi": 0.5637401273854742,
+   "n_boot": 2000
+  },
+  "roc_auc": {
+   "point": 0.7683326799515762,
+   "ci_lo": 0.7531497321188548,
+   "ci_hi": 0.7835508757277573,
+   "n_boot": 2000
+  },
+  "brier": {
+   "point": 0.13746773667000692,
+   "ci_lo": 0.13337193308591974,
+   "ci_hi": 0.1415935957611306,
+   "n_boot": 2000
+  },
+  "ece": 0.014990620660292305,
+  "confusion": {
+   "tn": 1971,
+   "fp": 2702,
+   "fn": 163,
+   "tp": 1164,
+   "n": 6000,
+   "base_rate": 0.22116666666666668,
+   "selection_rate": 0.6443333333333333,
+   "accuracy": 0.5225,
+   "tpr": 0.8771665410700829,
+   "fnr": 0.12283345892991711,
+   "fpr": 0.5782152792638562,
+   "tnr": 0.4217847207361438,
+   "precision": 0.30108639420589756,
+   "recall": 0.8771665410700829
+  },
+  "expected_cost_units_of_C_FP": 4332.0,
+  "cost_per_client_units_of_C_FP": 0.722,
+  "share_of_cost_from_false_negatives": 0.376269621421976
+ },
+ "validation_cost_ratio_sweep": [
+  {
+   "index": 0,
+   "threshold": 0.5315190840018845,
+   "cost_ratio": 1.0,
+   "chosen_on": "valid",
+   "expected_cost": 1092.0,
+   "cost_per_client": 0.182,
+   "selection_rate": 0.11916666666666667,
+   "recall": 0.3579502637528259,
+   "precision": 0.6643356643356644,
+   "theoretical_threshold": 0.5
+  },
+  {
+   "index": 1,
+   "threshold": 0.32348834973366436,
+   "cost_ratio": 2.0,
+   "chosen_on": "valid",
+   "expected_cost": 1862.0,
+   "cost_per_client": 0.31033333333333335,
+   "selection_rate": 0.182,
+   "recall": 0.47324792765636775,
+   "precision": 0.575091575091575,
+   "theoretical_threshold": 0.3333333333333333
+  },
+  {
+   "index": 2,
+   "threshold": 0.1638150204136754,
+   "cost_ratio": 5.0,
+   "chosen_on": "valid",
+   "expected_cost": 3308.0,
+   "cost_per_client": 0.5513333333333333,
+   "selection_rate": 0.4445,
+   "recall": 0.7528259231348907,
+   "precision": 0.374578177727784,
+   "theoretical_threshold": 0.16666666666666666
+  },
+  {
+   "index": 3,
+   "threshold": 0.10654772423267948,
+   "cost_ratio": 10.0,
+   "chosen_on": "valid",
+   "expected_cost": 4273.0,
+   "cost_per_client": 0.7121666666666666,
+   "selection_rate": 0.6473333333333333,
+   "recall": 0.8824415975885456,
+   "precision": 0.30149330587023687,
+   "theoretical_threshold": 0.09090909090909091
+  },
+  {
+   "index": 4,
+   "threshold": 0.051792339321044364,
+   "cost_ratio": 20.0,
+   "chosen_on": "valid",
+   "expected_cost": 4660.0,
+   "cost_per_client": 0.7766666666666666,
+   "selection_rate": 0.9908333333333333,
+   "recall": 0.9984928409947249,
+   "precision": 0.22287636669470143,
+   "theoretical_threshold": 0.047619047619047616
+  },
+  {
+   "index": 5,
+   "threshold": 0.034127208752688,
+   "cost_ratio": 50.0,
+   "chosen_on": "valid",
+   "expected_cost": 4665.0,
+   "cost_per_client": 0.7775,
+   "selection_rate": 0.9986666666666667,
+   "recall": 1.0,
+   "precision": 0.22146194926568757,
+   "theoretical_threshold": 0.0196078431372549
+  }
+ ],
+ "validation_naive_half_vs_chosen": [
+  {
+   "index": 0,
+   "rule": "0.5 (the default)",
+   "threshold": 0.5,
+   "accuracy": 0.8175,
+   "recall": 0.373775433308214,
+   "precision": 0.6526315789473685,
+   "flagged": 0.12666666666666668,
+   "fp": 264,
+   "fn": 831,
+   "expected_cost": 8574.0,
+   "cost_per_client": 1.429
+  },
+  {
+   "index": 1,
+   "rule": "0.1065 (cost-minimising)",
+   "threshold": 0.10654772423267948,
+   "accuracy": 0.5218333333333334,
+   "recall": 0.8824415975885456,
+   "precision": 0.30149330587023687,
+   "flagged": 0.6473333333333333,
+   "fp": 2713,
+   "fn": 156,
+   "expected_cost": 4273.0,
+   "cost_per_client": 0.7121666666666666
+  }
+ ],
+ "group_metrics_at_frozen_threshold": [
+  {
+   "attribute": "sex",
+   "group": "female",
+   "n": 3604.0,
+   "base_rate": 0.21143174250832408,
+   "selection_rate": 0.6256936736958935,
+   "tpr": 0.868766404199475,
+   "fpr": 0.5605207600281492,
+   "fnr": 0.13123359580052493,
+   "below_min_n": false
+  },
+  {
+   "attribute": "sex",
+   "group": "male",
+   "n": 2396.0,
+   "base_rate": 0.23580968280467446,
+   "selection_rate": 0.6723706176961602,
+   "tpr": 0.8884955752212389,
+   "fpr": 0.6056799563080284,
+   "fnr": 0.11150442477876106,
+   "below_min_n": false
+  },
+  {
+   "attribute": "age_band",
+   "group": "21-29",
+   "n": 1924.0,
+   "base_rate": 0.22972972972972974,
+   "selection_rate": 0.7146569646569647,
+   "tpr": 0.8936651583710408,
+   "fpr": 0.6612685560053981,
+   "fnr": 0.10633484162895927,
+   "below_min_n": false
+  },
+  {
+   "attribute": "age_band",
+   "group": "30-39",
+   "n": 2247.0,
+   "base_rate": 0.19225634178905207,
+   "selection_rate": 0.5749888740542947,
+   "tpr": 0.8541666666666666,
+   "fpr": 0.5085399449035812,
+   "fnr": 0.14583333333333334,
+   "below_min_n": false
+  },
+  {
+   "attribute": "age_band",
+   "group": "40-49",
+   "n": 1290.0,
+   "base_rate": 0.23488372093023255,
+   "selection_rate": 0.6372093023255814,
+   "tpr": 0.8943894389438944,
+   "fpr": 0.5582573454913881,
+   "fnr": 0.10561056105610561,
+   "below_min_n": false
+  },
+  {
+   "attribute": "age_band",
+   "group": "50+",
+   "n": 539.0,
+   "base_rate": 0.2782931354359926,
+   "selection_rate": 0.699443413729128,
+   "tpr": 0.86,
+   "fpr": 0.6375321336760925,
+   "fnr": 0.14,
+   "below_min_n": false
+  },
+  {
+   "attribute": "education",
+   "group": "graduate_school",
+   "n": 2151.0,
+   "base_rate": 0.19665271966527198,
+   "selection_rate": 0.5811250581125058,
+   "tpr": 0.8392434988179669,
+   "fpr": 0.5179398148148148,
+   "fnr": 0.1607565011820331,
+   "below_min_n": false
+  },
+  {
+   "attribute": "education",
+   "group": "high_school",
+   "n": 970.0,
+   "base_rate": 0.25257731958762886,
+   "selection_rate": 0.7391752577319588,
+   "tpr": 0.9020408163265307,
+   "fpr": 0.6841379310344827,
+   "fnr": 0.09795918367346938,
+   "below_min_n": false
+  },
+  {
+   "attribute": "education",
+   "group": "other_unknown",
+   "n": 94.0,
+   "base_rate": 0.1276595744680851,
+   "selection_rate": 0.5319148936170213,
+   "tpr": 0.6666666666666666,
+   "fpr": 0.5121951219512195,
+   "fnr": 0.3333333333333333,
+   "below_min_n": true
+  },
+  {
+   "attribute": "education",
+   "group": "university",
+   "n": 2785.0,
+   "base_rate": 0.23231597845601437,
+   "selection_rate": 0.6639138240574506,
+   "tpr": 0.8964451313755796,
+   "fpr": 0.5935453695042096,
+   "fnr": 0.1035548686244204,
+   "below_min_n": false
+  },
+  {
+   "attribute": "marriage",
+   "group": "married",
+   "n": 2733.0,
+   "base_rate": 0.23637028905964141,
+   "selection_rate": 0.6275155506769118,
+   "tpr": 0.8792569659442725,
+   "fpr": 0.5495927168183996,
+   "fnr": 0.12074303405572756,
+   "below_min_n": false
+  },
+  {
+   "attribute": "marriage",
+   "group": "other_unknown",
+   "n": 71.0,
+   "base_rate": 0.2535211267605634,
+   "selection_rate": 0.8450704225352113,
+   "tpr": 1.0,
+   "fpr": 0.7924528301886793,
+   "fnr": 0.0,
+   "below_min_n": true
+  },
+  {
+   "attribute": "marriage",
+   "group": "single",
+   "n": 3196.0,
+   "base_rate": 0.2074468085106383,
+   "selection_rate": 0.6542553191489362,
+   "tpr": 0.8717948717948718,
+   "fpr": 0.5973154362416108,
+   "fnr": 0.1282051282051282,
+   "below_min_n": false
+  }
+ ],
+ "parity_at_frozen_threshold": [
+  {
+   "index": 0,
+   "attribute": "sex",
+   "role": "primary",
+   "demographic_parity_difference": 0.046676944000266785,
+   "demographic_parity_ratio": 0.9305785488363506,
+   "equalized_odds_difference": 0.04515919627987919,
+   "equalized_odds_ratio": 0.9254404973954384,
+   "tpr_difference": 0.01972917102176386,
+   "fpr_difference": 0.04515919627987919,
+   "base_rate_difference": 0.024377940296350376,
+   "n_groups_used": 2,
+   "groups_excluded_small_n": []
+  },
+  {
+   "index": 1,
+   "attribute": "education",
+   "role": "exploratory",
+   "demographic_parity_difference": 0.158050199619453,
+   "demographic_parity_ratio": 0.7861803436110608,
+   "equalized_odds_difference": 0.16619811621966796,
+   "equalized_odds_ratio": 0.7570692857676224,
+   "tpr_difference": 0.06279731750856377,
+   "fpr_difference": 0.16619811621966796,
+   "base_rate_difference": 0.05592459992235688,
+   "n_groups_used": 3,
+   "groups_excluded_small_n": [
+    "other_unknown"
+   ]
+  },
+  {
+   "index": 2,
+   "attribute": "marriage",
+   "role": "exploratory",
+   "demographic_parity_difference": 0.026739768472024417,
+   "demographic_parity_ratio": 0.9591294595712148,
+   "equalized_odds_difference": 0.04772271942321116,
+   "equalized_odds_ratio": 0.9201046607409161,
+   "tpr_difference": 0.007462094149400689,
+   "fpr_difference": 0.04772271942321116,
+   "base_rate_difference": 0.028923480549003122,
+   "n_groups_used": 2,
+   "groups_excluded_small_n": [
+    "other_unknown"
+   ]
+  },
+  {
+   "index": 3,
+   "attribute": "age_band",
+   "role": "exploratory",
+   "demographic_parity_difference": 0.13966809060267005,
+   "demographic_parity_ratio": 0.8045662499494275,
+   "equalized_odds_difference": 0.1527286111018169,
+   "equalized_odds_ratio": 0.7690369370888851,
+   "tpr_difference": 0.040222772277227814,
+   "fpr_difference": 0.1527286111018169,
+   "base_rate_difference": 0.08603679364694053,
+   "n_groups_used": 4,
+   "groups_excluded_small_n": []
+  }
+ ],
+ "permutation_test_at_frozen_threshold": {
+  "sex": {
+   "demographic_parity_difference": {
+    "observed": 0.046676944000266785,
+    "p_value": 0.0005998800239952009,
+    "null_median": 0.008461197815819554,
+    "null_q95": 0.02489072612697074,
+    "n_perm": 5000
+   },
+   "fpr_difference": {
+    "observed": 0.04515919627987919,
+    "p_value": 0.004799040191961607,
+    "null_median": 0.010011021904363537,
+    "null_q95": 0.02902141322694421,
+    "n_perm": 5000
+   },
+   "tpr_difference": {
+    "observed": 0.01972917102176386,
+    "p_value": 0.29214157168566285,
+    "null_median": 0.01224859403298062,
+    "null_q95": 0.03548002663826985,
+    "n_perm": 5000
+   }
+  },
+  "age_band": {
+   "demographic_parity_difference": {
+    "observed": 0.13966809060267005,
+    "p_value": 0.0001999600079984003,
+    "null_median": 0.02762653973881346,
+    "null_q95": 0.054512427726713435,
+    "n_perm": 5000
+   },
+   "fpr_difference": {
+    "observed": 0.1527286111018169,
+    "p_value": 0.0001999600079984003,
+    "null_median": 0.032280049496196506,
+    "null_q95": 0.06327201189314928,
+    "n_perm": 5000
+   },
+   "tpr_difference": {
+    "observed": 0.040222772277227814,
+    "p_value": 0.4913017396520696,
+    "null_median": 0.03973629956981434,
+    "null_q95": 0.07902925997202531,
+    "n_perm": 5000
+   }
+  },
+  "education": {
+   "demographic_parity_difference": {
+    "observed": 0.158050199619453,
+    "p_value": 0.0001999600079984003,
+    "null_median": 0.01850117529474915,
+    "null_q95": 0.040471346340949,
+    "n_perm": 5000
+   },
+   "fpr_difference": {
+    "observed": 0.16619811621966796,
+    "p_value": 0.0001999600079984003,
+    "null_median": 0.021663820429749125,
+    "null_q95": 0.047834893336107825,
+    "n_perm": 5000
+   },
+   "tpr_difference": {
+    "observed": 0.06279731750856377,
+    "p_value": 0.03519296140771846,
+    "null_median": 0.026729652072560728,
+    "null_q95": 0.05865573887222168,
+    "n_perm": 5000
+   }
+  },
+  "marriage": {
+   "demographic_parity_difference": {
+    "observed": 0.026739768472024417,
+    "p_value": 0.035992801439712056,
+    "null_median": 0.00855728002483902,
+    "null_q95": 0.02470340028951301,
+    "n_perm": 5000
+   },
+   "fpr_difference": {
+    "observed": 0.04772271942321116,
+    "p_value": 0.0009998000399920016,
+    "null_median": 0.010184378825637275,
+    "null_q95": 0.02907801080086963,
+    "n_perm": 5000
+   },
+   "tpr_difference": {
+    "observed": 0.007462094149400689,
+    "p_value": 0.6786642671465707,
+    "null_median": 0.012395979025067949,
+    "null_q95": 0.03567285533324107,
+    "n_perm": 5000
+   }
+  }
+ },
+ "mitigation": {
+  "tradeoff": [
+   {
+    "index": 0,
+    "model": "unmitigated",
+    "accuracy": 0.5225,
+    "recall": 0.8771665410700829,
+    "precision": 0.30108639420589756,
+    "selection_rate": 0.6443333333333333,
+    "average_precision": 0.5367754331157498,
+    "cost_ratio": 10.0,
+    "expected_cost": 4332.0,
+    "cost_per_client": 0.722,
+    "demographic_parity_difference": 0.046676944000266785,
+    "demographic_parity_ratio": 0.9305785488363506,
+    "equalized_odds_difference": 0.04515919627987919,
+    "equalized_odds_ratio": 0.9254404973954384,
+    "tpr_difference": 0.01972917102176386,
+    "fpr_difference": 0.04515919627987919,
+    "base_rate_difference": 0.024377940296350376
+   },
+   {
+    "index": 1,
+    "model": "ThresholdOptimizer",
+    "accuracy": 0.8128333333333333,
+    "recall": 0.3752825923134891,
+    "precision": 0.6287878787878788,
+    "selection_rate": 0.132,
+    "average_precision": null,
+    "cost_ratio": 10.0,
+    "expected_cost": 8584.0,
+    "cost_per_client": 1.4306666666666668,
+    "demographic_parity_difference": 0.015792135986911204,
+    "demographic_parity_ratio": 0.8883836052370524,
+    "equalized_odds_difference": 0.03688012449771211,
+    "equalized_odds_ratio": 0.9069764716910387,
+    "tpr_difference": 0.03688012449771211,
+    "fpr_difference": 0.0001766050400272834,
+    "base_rate_difference": 0.024377940296350376
+   },
+   {
+    "index": 2,
+    "model": "ExponentiatedGradient",
+    "accuracy": 0.8196666666666667,
+    "recall": 0.34815373021853807,
+    "precision": 0.6804123711340206,
+    "selection_rate": 0.11316666666666667,
+    "average_precision": null,
+    "cost_ratio": 10.0,
+    "expected_cost": 8867.0,
+    "cost_per_client": 1.4778333333333333,
+    "demographic_parity_difference": 0.024911571079435008,
+    "demographic_parity_ratio": 0.8055761423246701,
+    "equalized_odds_difference": 0.044055001974310726,
+    "equalized_odds_ratio": 0.8120418425991087,
+    "tpr_difference": 0.044055001974310726,
+    "fpr_difference": 0.009854714970226962,
+    "base_rate_difference": 0.024377940296350376
+   }
+  ],
+  "defaulters_caught": [
+   {
+    "index": 0,
+    "model": "ThresholdOptimizer",
+    "still_caught": 498,
+    "no_longer_caught": 666,
+    "newly_caught": 0
+   },
+   {
+    "index": 1,
+    "model": "ExponentiatedGradient",
+    "still_caught": 462,
+    "no_longer_caught": 702,
+    "newly_caught": 0
+   }
+  ]
+ },
+ "attribution": "Yeh, I-C. (2009). Default of Credit Card Clients [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C55S3H. Licensed CC BY 4.0."
+}

@@ -1,0 +1,4 @@
+part,rows,users,items,share
+train,63305,943,1562,0.633
+validation,16314,943,1380,0.1631
+test,20381,943,1508,0.2038

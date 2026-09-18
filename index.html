@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Qixi Huang — Six Projects</title>
+<meta name="description" content="Six machine learning, data science and quantitative research projects, each with an interactive demo that runs entirely in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+:root{
+  --ground:#F5F7F9; --surface:#FFFFFF; --sunken:#EDF1F5;
+  --ink:#161A21; --ink-2:#39424E; --muted:#59636F;
+  --accent:#1F5F8B; --accent-soft:#E4EEF5;
+  --line:#DCE2E8; --line-strong:#C3CCD6;
+  --serif:"IBM Plex Serif",Georgia,serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#11141A; --surface:#191D24; --sunken:#151920;
+    --ink:#E7EBF1; --ink-2:#C3CBD6; --muted:#949FAD;
+    --accent:#6BAEDC; --accent-soft:#1B2A36;
+    --line:#272D36; --line-strong:#39414D;
+  }
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;
+     margin:0;padding-inline:20px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:900px;margin-inline:auto;padding-block:60px 80px}
+h1,h2{font-family:var(--serif);text-wrap:balance;margin:0}
+a{color:var(--accent)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+         color:var(--muted);margin:0 0 14px}
+h1{font-size:clamp(30px,5.4vw,42px);line-height:1.12;font-weight:600;letter-spacing:-.015em}
+.lede{font-size:17px;color:var(--ink-2);max-width:62ch;margin:18px 0 0}
+.note{margin-top:22px;padding:13px 15px;background:var(--accent-soft);border-left:3px solid var(--accent);
+      font-size:13.5px;color:var(--ink-2);max-width:66ch}
+hr.rule{border:0;border-top:1px solid var(--line);margin:40px 0}
+
+h2{font-size:19px;font-weight:600;padding-bottom:9px;border-bottom:2px solid var(--ink);margin-bottom:22px}
+
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);
+      padding:20px 18px;display:flex;flex-direction:column}
+.card .cat{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+           color:var(--muted);margin:0 0 9px}
+.card h3{font-family:var(--serif);font-size:17px;font-weight:600;margin:0 0 9px;line-height:1.25}
+.card p{margin:0 0 12px;font-size:13.8px;color:var(--ink-2);flex:1}
+.card .find{margin:0 0 14px;padding:9px 11px;background:var(--sunken);border-left:2px solid var(--line-strong);
+            font-family:var(--mono);font-size:12px;color:var(--ink);font-variant-numeric:tabular-nums;
+            overflow-x:auto}
+.card .go{display:inline-block;font-size:13.5px;font-weight:500;text-decoration:none;color:var(--accent);
+          border:1px solid var(--line-strong);padding:7px 13px;border-radius:2px;align-self:flex-start}
+.card .go:hover{border-color:var(--accent);background:var(--accent-soft)}
+
+.foot{margin-top:46px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);
+      max-width:70ch}
+.foot p{margin:0 0 9px}
+code{font-family:var(--mono);font-size:12.5px;background:var(--sunken);padding:1px 5px;border-radius:2px}
+@media (max-width:720px){.grid{grid-template-columns:1fr}.wrap{padding-block:44px 60px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="eyebrow">Qixi (Jason) Huang · Machine learning &amp; quantitative research</p>
+  <h1>Six projects, each one you can actually run</h1>
+  <p class="lede">
+    Every project below has a live demo that runs in this browser tab — real Python, real models,
+    real data. Move a slider and the analysis recomputes in front of you.
+  </p>
+
+  <div class="note">
+    Each demo boots a Python runtime in your browser via WebAssembly. The first load takes roughly
+    10–20 seconds; after that it is cached. Nothing is uploaded and no server is involved — the
+    computation happens on your machine.
+  </div>
+
+  <hr class="rule">
+
+  <h2>Projects</h2>
+  <div class="grid">
+
+    <article class="card">
+      <p class="cat">Credit risk · interpretability · fairness</p>
+      <h3>Who pays for the model's mistakes?</h3>
+      <p>Most credit-default projects stop at an ROC curve. This one goes to the decision: pick a
+         cost ratio for a missed default against a false alarm, and watch the threshold, the money,
+         and the burden across demographic groups all move together.</p>
+      <p class="find">A fairness gap that looked real: p = 0.29</p>
+      <a class="go" href="apps/credit-default/">Open the demo &rarr;</a>
+    </article>
+
+    <article class="card">
+      <p class="cat">Quantitative research</p>
+      <h3>A strategy that dies once you pay for it</h3>
+      <p>Cointegration-based pairs trading, with pair selection strictly walled off from the trading
+         window. The spread mean-reverts exactly as the textbook promises. Drag the cost slider and
+         watch the edge disappear anyway.</p>
+      <p class="find">Sharpe −0.356 gross → −0.519 net</p>
+      <a class="go" href="apps/pairs-trading/">Open the demo &rarr;</a>
+    </article>
+
+    <article class="card">
+      <p class="cat">Quantitative research · time series</p>
+      <h3>The backtest that only works if trading is free</h3>
+      <p>Expanding-window walk-forward industry rotation on Fama–French data, with a strict
+         information lag. The signal is real and persistent. It is also far too small to survive
+         5.9× annual turnover.</p>
+      <p class="find">Break-even at 35.8 bp</p>
+      <a class="go" href="apps/walk-forward/">Open the demo &rarr;</a>
+    </article>
+
+    <article class="card">
+      <p class="cat">Telemetry · diagnosis</p>
+      <h3>Is it the car or the driver?</h3>
+      <p>A driver says the car feels wrong and telemetry is the only evidence. A diagnosis only
+         exists relative to a reference, so this compares against a teammate and against the
+         driver's own earlier laps — and shows where those two answers disagree.</p>
+      <p class="find">Two reference frames, corner by corner</p>
+      <a class="go" href="apps/f1-telemetry/">Open the demo &rarr;</a>
+    </article>
+
+    <article class="card">
+      <p class="cat">Recommender systems</p>
+      <h3>Who does the recommender fail?</h3>
+      <p>MovieLens is the most-worked dataset on the internet, and RMSE is close to useless on it.
+         Two models two percent apart on error turn out to be wildly different in what they actually
+         recommend, and the average hides exactly which users get failed.</p>
+      <p class="find">2% apart on RMSE, ~69× apart on precision@10</p>
+      <a class="go" href="apps/movielens/">Open the demo &rarr;</a>
+    </article>
+
+    <article class="card">
+      <p class="cat">ML engineering</p>
+      <h3>A pipeline you can actually trust</h3>
+      <p>The classification here is nearly trivial — single features already separate the classes —
+         and pretending otherwise would be dishonest. So the project is about everything around the
+         model: config-driven runs, tests that catch real regressions, reproducible artifacts.</p>
+      <p class="find">Single-feature stumps score ≈ 1.00</p>
+      <a class="go" href="apps/cloud-classification/">Open the demo &rarr;</a>
+    </article>
+
+  </div>
+
+  <div class="foot">
+    <p>
+      The demos ship only derived results — summary tables, model outputs, return series. Where a
+      dataset's licence does not permit redistribution, the underlying data stays out and the demo
+      works from aggregates instead. Sources and licences are credited inside each demo.
+    </p>
+    <p>
+      Built with <a href="https://github.com/whitphx/stlite">stlite</a>, which runs Streamlit on
+      Pyodide. Telemetry data via <a href="https://github.com/theOehrly/Fast-F1">FastF1</a>;
+      factor data from the Kenneth R. French data library; the credit and cloud datasets from the
+      UCI Machine Learning Repository (CC BY 4.0); MovieLens from GroupLens.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

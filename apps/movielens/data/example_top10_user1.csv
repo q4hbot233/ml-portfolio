@@ -1,0 +1,41 @@
+model,rank,movie_id,title,train_ratings
+SVD,1,100,Fargo (1996),471
+SVD,2,511,Lawrence of Arabia (1962),155
+SVD,3,408,"Close Shave, A (1995)",96
+SVD,4,169,"Wrong Trousers, The (1993)",101
+SVD,5,318,Schindler's List (1993),257
+SVD,6,647,Ran (1985),67
+SVD,7,523,Cool Hand Luke (1967),145
+SVD,8,430,Duck Soup (1933),76
+SVD,9,919,"City of Lost Children, The (1995)",79
+SVD,10,526,Ben-Hur (1959),103
+Hybrid,1,1536,Aiqing wansui (1994),1
+Hybrid,2,1639,Bitter Sugar (Azucar Amargo) (1996),2
+Hybrid,3,1500,Santa with Muscles (1996),2
+Hybrid,4,1599,Someone Else's America (1995),1
+Hybrid,5,1642,Some Mother's Son (1996),2
+Hybrid,6,1449,Pather Panchali (1955),7
+Hybrid,7,868,Hearts and Minds (1996),3
+Hybrid,8,1594,Everest (1998),1
+Hybrid,9,1628,Lamerica (1994),1
+Hybrid,10,1467,"Saint of Fort Washington, The (1993)",1
+SVD+pop(alpha=3),1,100,Fargo (1996),471
+SVD+pop(alpha=3),2,258,Contact (1997),464
+SVD+pop(alpha=3),3,318,Schindler's List (1993),257
+SVD+pop(alpha=3),4,511,Lawrence of Arabia (1962),155
+SVD+pop(alpha=3),5,357,One Flew Over the Cuckoo's Nest (1975),232
+SVD+pop(alpha=3),6,286,"English Patient, The (1996)",449
+SVD+pop(alpha=3),7,302,L.A. Confidential (1997),257
+SVD+pop(alpha=3),8,228,Star Trek: The Wrath of Khan (1982),206
+SVD+pop(alpha=3),9,12,"Usual Suspects, The (1995)",235
+SVD+pop(alpha=3),10,435,Butch Cassidy and the Sundance Kid (1969),187
+Popularity,1,100,Fargo (1996),471
+Popularity,2,258,Contact (1997),464
+Popularity,3,286,"English Patient, The (1996)",449
+Popularity,4,294,Liar Liar (1997),442
+Popularity,5,288,Scream (1996),436
+Popularity,6,300,Air Force One (1997),404
+Popularity,7,222,Star Trek: First Contact (1996),319
+Popularity,8,405,Mission: Impossible (1996),286
+Popularity,9,313,Titanic (1997),277
+Popularity,10,748,"Saint, The (1997)",272

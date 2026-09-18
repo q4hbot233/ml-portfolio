@@ -1,0 +1,2 @@
+year,event,session,model_target_sd_kph,model_dataset_rows,model_dataset_corners,model_test_events,track_length_m,n_segments,n_push_laps,n_drivers,sector1_end_m,sector2_end_m,fastf1_version,push_lap_rule
+2023,Singapore Grand Prix,Qualifying,60.21,43585,289,Mexico City Grand Prix; São Paulo Grand Prix; Las Vegas Grand Prix; Abu Dhabi Grand Prix,4887.3,19,88,20,1634.8,3421.0,3.7.0,"accurate, not deleted, within 1.07x session best"

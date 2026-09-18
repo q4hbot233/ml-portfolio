@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Is it the car or the driver?</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/browser@1.9.1/build/stlite.css">
+<style>
+  :root { color-scheme: light dark; }
+  body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  #boot { padding:48px 24px; max-width:640px; margin:0 auto; color:#4a5560; }
+  #boot h1 { font-size:20px; margin:0 0 10px; color:#12181f; }
+  #boot p { margin:0 0 8px; font-size:14.5px; line-height:1.6; }
+  #boot .bar { height:3px; background:#e3e8ee; border-radius:2px; overflow:hidden; margin-top:18px; }
+  #boot .bar i { display:block; height:100%; width:38%; background:#1f5f8b; animation:sl 1.25s ease-in-out infinite; }
+  @keyframes sl { 0%{margin-left:-38%} 100%{margin-left:100%} }
+  #boot a { color:#1f5f8b; }
+  @media (prefers-color-scheme: dark){ #boot{color:#98a2b0} #boot h1{color:#e7ebf1} #boot .bar{background:#272d36} }
+</style>
+</head>
+<body>
+<div id="root">
+  <div id="boot">
+    <h1>Is it the car or the driver?</h1>
+    <p>Diagnosing a suspected car problem from qualifying telemetry using two different reference frames.</p>
+    <p>Starting a Python runtime in your browser — this takes about 10–20 seconds on a first visit,
+       then it is cached. Nothing is sent to a server; the whole app runs locally on this page.</p>
+    <div class="bar"><i></i></div>
+    <p style="margin-top:18px"><a href="../../">&larr; back to all projects</a></p>
+  </div>
+</div>
+<script type="module">
+import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser@1.9.1/build/stlite.js";
+mount({
+  requirements: ["matplotlib", "scikit-learn"],
+  entrypoint: "app.py",
+  files: {
+      "app.py": { url: "app.py" },
+      "data/corner_markers.csv": { url: "data/corner_markers.csv" },
+      "data/corner_summary.csv": { url: "data/corner_summary.csv" },
+      "data/error_by_corner.csv": { url: "data/error_by_corner.csv" },
+      "data/evolution_q1_q2.csv": { url: "data/evolution_q1_q2.csv" },
+      "data/feature_ablation.csv": { url: "data/feature_ablation.csv" },
+      "data/lap_profile.csv": { url: "data/lap_profile.csv" },
+      "data/laps.csv": { url: "data/laps.csv" },
+      "data/meta.csv": { url: "data/meta.csv" },
+      "data/permutation_importance.csv": { url: "data/permutation_importance.csv" },
+      "data/season_gap_to_fastest.csv": { url: "data/season_gap_to_fastest.csv" },
+      "data/session_best_laps.csv": { url: "data/session_best_laps.csv" },
+      "data/track_centreline.csv": { url: "data/track_centreline.csv" },
+  },
+}, document.getElementById("root"));
+</script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Who does the recommender fail?</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/browser@1.9.1/build/stlite.css">
+<style>
+  :root { color-scheme: light dark; }
+  body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  #boot { padding:48px 24px; max-width:640px; margin:0 auto; color:#4a5560; }
+  #boot h1 { font-size:20px; margin:0 0 10px; color:#12181f; }
+  #boot p { margin:0 0 8px; font-size:14.5px; line-height:1.6; }
+  #boot .bar { height:3px; background:#e3e8ee; border-radius:2px; overflow:hidden; margin-top:18px; }
+  #boot .bar i { display:block; height:100%; width:38%; background:#1f5f8b; animation:sl 1.25s ease-in-out infinite; }
+  @keyframes sl { 0%{margin-left:-38%} 100%{margin-left:100%} }
+  #boot a { color:#1f5f8b; }
+  @media (prefers-color-scheme: dark){ #boot{color:#98a2b0} #boot h1{color:#e7ebf1} #boot .bar{background:#272d36} }
+</style>
+</head>
+<body>
+<div id="root">
+  <div id="boot">
+    <h1>Who does the recommender fail?</h1>
+    <p>Four engines compared past RMSE, which hides almost everything that matters.</p>
+    <p>Starting a Python runtime in your browser — this takes about 10–20 seconds on a first visit,
+       then it is cached. Nothing is sent to a server; the whole app runs locally on this page.</p>
+    <div class="bar"><i></i></div>
+    <p style="margin-top:18px"><a href="../../">&larr; back to all projects</a></p>
+  </div>
+</div>
+<script type="module">
+import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser@1.9.1/build/stlite.js";
+mount({
+  requirements: ["matplotlib"],
+  entrypoint: "app.py",
+  files: {
+      "app.py": { url: "app.py" },
+      "data/activity_error_val.csv": { url: "data/activity_error_val.csv" },
+      "data/activity_topn_val.csv": { url: "data/activity_topn_val.csv" },
+      "data/agreement_val.csv": { url: "data/agreement_val.csv" },
+      "data/coldstart_curve_val.csv": { url: "data/coldstart_curve_val.csv" },
+      "data/coldstart_new_users.csv": { url: "data/coldstart_new_users.csv" },
+      "data/example_top10_user1.csv": { url: "data/example_top10_user1.csv" },
+      "data/longtail_test.csv": { url: "data/longtail_test.csv" },
+      "data/pop_prior_activity_val.csv": { url: "data/pop_prior_activity_val.csv" },
+      "data/rating_test.csv": { url: "data/rating_test.csv" },
+      "data/rec_items_test.csv": { url: "data/rec_items_test.csv" },
+      "data/split_summary.csv": { url: "data/split_summary.csv" },
+      "data/taste_error_val.csv": { url: "data/taste_error_val.csv" },
+      "data/topn_test.csv": { url: "data/topn_test.csv" },
+      "data/tuning_popularity_alpha.csv": { url: "data/tuning_popularity_alpha.csv" },
+      "data/user_summary_val.csv": { url: "data/user_summary_val.csv" },
+  },
+}, document.getElementById("root"));
+</script>
+</body>
+</html>
