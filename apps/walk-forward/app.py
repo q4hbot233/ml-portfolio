@@ -505,7 +505,10 @@ def _pct(x: float, nd: int = 2) -> str:
     return f"{x * 100:.{nd}f}%"
 
 
-@st.cache_data(show_spinner=False)
+# cache_resource, not cache_data: cache_data pickles what it returns, and
+# restoring a PeriodIndex raises NotImplementedError on this pandas build,
+# so every widget change (a cache hit) would fail. The bundle is read-only.
+@st.cache_resource
 def _bundle() -> dict:
     return load_bundle(DATA_DIR)
 
