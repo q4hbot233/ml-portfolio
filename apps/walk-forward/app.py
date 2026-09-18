@@ -253,8 +253,17 @@ def schedule_for(schedule: pd.DataFrame, config: str) -> pd.DataFrame:
     return s.sort_values("fold").reset_index(drop=True)
 
 
-def to_timestamps(idx: pd.PeriodIndex) -> pd.DatetimeIndex:
-    return pd.PeriodIndex(idx, freq="M").to_timestamp(how="start")
+def to_timestamps(idx) -> pd.DatetimeIndex:
+    """Month labels -> timestamps, whatever form the index arrives in.
+
+    Rebuilding a PeriodIndex from one that already carries period dtype raises
+    NotImplementedError on some pandas builds, so convert only when needed.
+    """
+    if isinstance(idx, pd.PeriodIndex):
+        return idx.to_timestamp(how="start")
+    if isinstance(idx, pd.DatetimeIndex):
+        return idx
+    return pd.PeriodIndex(pd.Index(idx).astype(str), freq="M").to_timestamp(how="start")
 
 
 # ==========================================================================
