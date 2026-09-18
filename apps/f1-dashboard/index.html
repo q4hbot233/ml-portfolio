@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Race Control — 2023 Spanish Grand Prix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{
+  --void:#08090C; --panel:#0E1116; --panel-2:#12161D; --edge:#1C2128; --edge-2:#2A313B;
+  --text:#E8ECF2; --dim:#7C8796; --faint:#4A5462;
+  --purple:#B372FF;      /* session best — real F1 timing convention */
+  --green:#39E27D;       /* personal best */
+  --yellow:#FFC24B;      /* caution / neutralised */
+  --red:#FF4B4B;
+  --cyan:#43D9E8;
+  --mono:"Roboto Mono",ui-monospace,Menlo,monospace;
+  --cond:"Barlow Condensed",Impact,sans-serif;
+  --ui:"Inter",system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--void);color:var(--text);font-family:var(--ui);font-size:13px;
+  -webkit-font-smoothing:antialiased;overflow:hidden;
+}
+#app{display:flex;flex-direction:column;height:100vh;min-height:0}
+
+/* ---------- header ---------- */
+header{
+  display:flex;align-items:stretch;gap:0;border-bottom:1px solid var(--edge);
+  background:linear-gradient(180deg,#10141A,#0B0E13);flex:none;
+}
+.brand{padding:9px 16px;border-right:1px solid var(--edge);display:flex;flex-direction:column;justify-content:center;min-width:240px}
+.brand .ev{font-family:var(--cond);font-size:20px;font-weight:700;letter-spacing:.02em;line-height:1}
+.brand .sub{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.09em;margin-top:4px}
+.hstat{padding:9px 16px;border-right:1px solid var(--edge);display:flex;flex-direction:column;justify-content:center;min-width:104px}
+.hstat .k{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--faint);text-transform:uppercase}
+.hstat .v{font-family:var(--mono);font-size:19px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums}
+.flagpill{align-self:center;margin:0 0 0 14px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;
+  padding:4px 9px;border-radius:2px;border:1px solid var(--edge-2);color:var(--dim)}
+.flagpill.on{background:rgba(255,194,75,.14);border-color:var(--yellow);color:var(--yellow)}
+.spacer{flex:1}
+.transport{display:flex;align-items:center;gap:8px;padding:0 14px;border-left:1px solid var(--edge)}
+button.ctl{
+  font-family:var(--mono);font-size:11px;letter-spacing:.06em;background:#151A21;color:var(--text);
+  border:1px solid var(--edge-2);border-radius:2px;padding:7px 12px;cursor:pointer;
+}
+button.ctl:hover{border-color:var(--cyan);color:var(--cyan)}
+button.ctl.primary{background:var(--cyan);color:#05181B;border-color:var(--cyan);font-weight:700;min-width:74px}
+button.ctl.primary:hover{filter:brightness(1.12)}
+select.ctl{font-family:var(--mono);font-size:11px;background:#151A21;color:var(--text);
+  border:1px solid var(--edge-2);border-radius:2px;padding:7px 8px;cursor:pointer}
+button.ctl:focus-visible,select.ctl:focus-visible,#scrub:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+/* ---------- scrubber ---------- */
+.scrubrow{display:flex;align-items:center;gap:12px;padding:7px 16px;border-bottom:1px solid var(--edge);
+  background:var(--panel);flex:none}
+#scrub{flex:1;accent-color:var(--cyan);height:3px}
+.scrublbl{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.08em;min-width:118px}
+
+/* ---------- body ---------- */
+main{display:grid;grid-template-columns:392px 1fr;flex:1;min-height:0}
+.tower{border-right:1px solid var(--edge);background:var(--panel);display:flex;flex-direction:column;min-height:0}
+.towerhead,.panelhead{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;color:var(--faint);text-transform:uppercase;
+  padding:8px 12px;border-bottom:1px solid var(--edge);background:var(--panel-2);flex:none;
+}
+.rows{overflow-y:auto;flex:1;min-height:0}
+.row{
+  display:grid;grid-template-columns:26px 3px 52px 1fr 62px 46px;align-items:center;gap:7px;
+  padding:5px 12px 5px 6px;border-bottom:1px solid #12151B;cursor:pointer;
+}
+.row:hover{background:#141922}
+.row.sel{background:#16202B;box-shadow:inset 2px 0 0 var(--cyan)}
+.row .pos{font-family:var(--mono);font-size:13px;font-weight:700;text-align:right;color:var(--dim);font-variant-numeric:tabular-nums}
+.row .bar{height:22px;border-radius:1px}
+.row .code{font-family:var(--cond);font-size:17px;font-weight:700;letter-spacing:.03em}
+.row .gap{font-family:var(--mono);font-size:11.5px;color:var(--dim);font-variant-numeric:tabular-nums}
+.row .lt{font-family:var(--mono);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+.row .lt.pb{color:var(--green)} .row .lt.sb{color:var(--purple);font-weight:700}
+.row .ty{font-family:var(--mono);font-size:10.5px;text-align:right;font-variant-numeric:tabular-nums}
+.tyC{display:inline-block;width:15px;height:15px;line-height:15px;text-align:center;border-radius:50%;
+  font-size:9px;font-weight:700;margin-right:3px;vertical-align:-3px}
+.t-SOFT{background:#E8394A;color:#fff} .t-MEDIUM{background:#F5D442;color:#241f00}
+.t-HARD{background:#E8EDF2;color:#11151a} .t-INTERMEDIATE{background:#3FBF52;color:#06210b}
+.t-WET{background:#3A7DE0;color:#fff} .t-UNKNOWN{background:#3A424E;color:#aeb6c1}
+.row.out{opacity:.36}
+.pitflag{font-family:var(--mono);font-size:8.5px;letter-spacing:.09em;color:var(--yellow);
+  border:1px solid rgba(255,194,75,.45);padding:0 3px;border-radius:2px;margin-left:5px}
+.anomdot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--red);
+  margin-left:5px;vertical-align:1px;box-shadow:0 0 6px rgba(255,75,75,.85)}
+
+/* ---------- right ---------- */
+.right{display:flex;flex-direction:column;min-height:0;min-width:0}
+.mapwrap{flex:1;position:relative;min-height:0;background:
+   radial-gradient(1100px 620px at 62% 32%, #10151D 0%, #0A0C11 62%, #08090C 100%)}
+#map{position:absolute;inset:0;width:100%;height:100%}
+.mapnote{position:absolute;left:14px;bottom:12px;font-family:var(--mono);font-size:9.5px;
+  color:var(--faint);letter-spacing:.07em;pointer-events:none}
+.focuscard{
+  position:absolute;right:14px;top:14px;background:rgba(12,15,20,.93);border:1px solid var(--edge-2);
+  border-radius:3px;padding:11px 13px;min-width:206px;backdrop-filter:blur(7px);pointer-events:none
+}
+.focuscard .fc-code{font-family:var(--cond);font-size:26px;font-weight:700;line-height:1}
+.focuscard .fc-team{font-family:var(--mono);font-size:9.5px;color:var(--dim);letter-spacing:.09em;margin-top:2px}
+.focuscard dl{display:grid;grid-template-columns:auto auto;gap:3px 14px;margin:10px 0 0;
+  font-family:var(--mono);font-size:11px;font-variant-numeric:tabular-nums}
+.focuscard dt{color:var(--faint)} .focuscard dd{margin:0;text-align:right}
+
+.models{border-top:1px solid var(--edge);background:var(--panel);flex:none;max-height:38vh;overflow-y:auto}
+.mgrid{display:grid;grid-template-columns:repeat(4,1fr)}
+.mcard{padding:11px 13px 13px;border-right:1px solid var(--edge)}
+.mcard:last-child{border-right:0}
+.mcard h3{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--faint);
+  text-transform:uppercase;margin:0 0 8px;font-weight:500}
+.mbig{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.munit{font-size:11px;color:var(--dim);font-weight:400;margin-left:3px}
+.msub{font-size:11px;color:var(--dim);margin-top:7px;line-height:1.5}
+.msub b{color:var(--text);font-weight:600}
+.verdict{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.1em;padding:2px 6px;
+  border-radius:2px;margin-top:8px;text-transform:uppercase}
+.v-weak{background:rgba(255,194,75,.14);color:var(--yellow);border:1px solid rgba(255,194,75,.4)}
+.v-ok{background:rgba(57,226,125,.12);color:var(--green);border:1px solid rgba(57,226,125,.35)}
+.spark{display:block;margin-top:9px;width:100%;height:42px}
+
+footer{font-family:var(--mono);font-size:9.5px;color:var(--faint);padding:7px 16px;
+  border-top:1px solid var(--edge);background:var(--void);flex:none;letter-spacing:.05em}
+footer a{color:var(--dim)}
+#boot{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--void);z-index:20}
+#boot .b{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.1em;text-align:center}
+#boot .bar{width:210px;height:2px;background:var(--edge);margin:13px auto 0;overflow:hidden}
+#boot .bar i{display:block;height:100%;width:36%;background:var(--cyan);animation:sl 1.15s ease-in-out infinite}
+@keyframes sl{0%{margin-left:-36%}100%{margin-left:100%}}
+@media (prefers-reduced-motion:reduce){#boot .bar i{animation:none;width:100%}}
+@media (max-width:1080px){
+  main{grid-template-columns:1fr;grid-template-rows:minmax(0,44%) minmax(0,56%)}
+  .tower{border-right:0;border-bottom:1px solid var(--edge)}
+  .mgrid{grid-template-columns:repeat(2,1fr)}
+  .brand{min-width:0}
+}
+</style>
+</head>
+<body>
+
+<div id="boot"><div class="b">LOADING SESSION DATA<div class="bar"><i></i></div></div></div>
+
+<div id="app" hidden>
+  <header>
+    <div class="brand">
+      <div class="ev" id="evName">—</div>
+      <div class="sub" id="evSub">—</div>
+    </div>
+    <div class="hstat"><div class="k">Lap</div><div class="v" id="lapNo">—</div></div>
+    <div class="hstat"><div class="k">Race clock</div><div class="v" id="clock">—</div></div>
+    <div class="hstat"><div class="k">Leader</div><div class="v" id="leader">—</div></div>
+    <div class="flagpill" id="flag">GREEN</div>
+    <div class="spacer"></div>
+    <div class="transport">
+      <button class="ctl primary" id="play">PLAY</button>
+      <select class="ctl" id="speed" aria-label="Playback speed">
+        <option value="60">60×</option><option value="120" selected>120×</option>
+        <option value="300">300×</option><option value="900">900×</option>
+      </select>
+      <button class="ctl" id="restart">RESTART</button>
+    </div>
+  </header>
+
+  <div class="scrubrow">
+    <span class="scrublbl" id="scrubLbl">LAP 1 / 66</span>
+    <input id="scrub" type="range" min="0" max="1000" value="0" step="1" aria-label="Scrub through the race">
+  </div>
+
+  <main>
+    <section class="tower">
+      <div class="towerhead">Timing — classified order at the current lap</div>
+      <div class="rows" id="rows"></div>
+    </section>
+
+    <section class="right">
+      <div class="mapwrap">
+        <svg id="map" role="img" aria-label="Circuit map with car positions"></svg>
+        <div class="mapnote" id="mapnote">CIRCUIT TRACE — LOADING</div>
+        <div class="focuscard" id="focus" hidden></div>
+      </div>
+
+      <div class="models">
+        <div class="panelhead">Models — fitted only on laps earlier than the laps they score</div>
+        <div class="mgrid">
+          <div class="mcard">
+            <h3>Lap-time prediction</h3>
+            <div class="mbig" id="ltMae">—<span class="munit">ms MAE</span></div>
+            <div class="msub" id="ltSub">—</div>
+            <div class="verdict" id="ltVerdict">—</div>
+            <svg class="spark" id="ltSpark" aria-hidden="true"></svg>
+          </div>
+          <div class="mcard">
+            <h3>Tyre degradation</h3>
+            <div class="mbig" id="degVal">—<span class="munit">s / lap</span></div>
+            <div class="msub" id="degSub">—</div>
+            <div class="verdict" id="degVerdict">—</div>
+            <svg class="spark" id="degSpark" aria-hidden="true"></svg>
+          </div>
+          <div class="mcard">
+            <h3>Anomaly flags</h3>
+            <div class="mbig" id="anVal">—</div>
+            <div class="msub" id="anSub">—</div>
+            <div class="verdict" id="anVerdict">—</div>
+            <svg class="spark" id="anSpark" aria-hidden="true"></svg>
+          </div>
+          <div class="mcard">
+            <h3>Pit window</h3>
+            <div class="mbig" id="ucVal">—<span class="munit">s</span></div>
+            <div class="msub" id="ucSub">—</div>
+            <div class="verdict" id="ucVerdict">—</div>
+            <svg class="spark" id="ucSpark" aria-hidden="true"></svg>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="foot">—</footer>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const DATA = "data/";
+const S = {
+  meta:null, replay:null, models:null, track:null,
+  t:0, tMax:0, playing:false, speed:120, sel:null, raf:null, last:null,
+  byDriver:null, sessionBest:null, anomSet:null, lapEnds:null
+};
+
+const fmtLap = ms => {
+  if (ms == null) return "—";
+  const m = Math.floor(ms/60000), s = (ms - m*60000)/1000;
+  return m + ":" + (s<10?"0":"") + s.toFixed(3);
+};
+const fmtClock = ms => {
+  const t = Math.max(0, Math.floor(ms/1000));
+  const h = Math.floor(t/3600), m = Math.floor((t-h*3600)/60), s = t%60;
+  return String(h).padStart(1,"0")+":"+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+};
+const fmtGap = (ms, lapsDown) => {
+  if (lapsDown && lapsDown > 0) return "+" + lapsDown + (lapsDown>1?" LAPS":" LAP");
+  if (ms == null) return "—";
+  if (ms === 0) return "LEADER";
+  return "+" + (ms/1000).toFixed(3);
+};
+
+/* ---------------- load ---------------- */
+async function boot(){
+  const j = async f => (await fetch(DATA+f)).json();
+  const [meta, replay, models] = await Promise.all([j("meta.json"), j("replay.json"), j("models.json")]);
+  S.meta = meta; S.replay = replay; S.models = models;
+
+  // index frames per driver, ordered by lap
+  const n = replay.n_frames;
+  S.byDriver = meta.drivers.map(() => []);
+  for (let i=0;i<n;i++) S.byDriver[replay.driver[i]].push(i);
+  for (const arr of S.byDriver) arr.sort((a,b)=>replay.lap[a]-replay.lap[b]);
+
+  // session-best lap time
+  let sb = Infinity;
+  for (let i=0;i<n;i++){ const lt = replay.lap_time_ms[i]; if (lt!=null && lt<sb) sb = lt; }
+  S.sessionBest = isFinite(sb) ? sb : null;
+
+  S.anomSet = new Set(models.anomaly?.frame_index || []);
+  S.lapEnds = replay.lap_end_ms;
+  S.tMax = Math.max(...replay.lap_end_ms.filter(v=>v!=null));
+  // Open on a board that already has something on it. At t=0 no car has completed a
+  // lap, so every row would read as a dash — a real timing screen never looks like that.
+  const lap1 = [];
+  for (let i=0;i<n;i++) if (replay.lap[i]===1 && replay.lap_end_ms[i]!=null) lap1.push(replay.lap_end_ms[i]);
+  S.t = lap1.length ? Math.max(...lap1) : 0;
+
+  header(); buildRows(); renderModels();
+  $("boot").remove(); $("app").hidden = false;
+  render();
+
+  j("track.json").then(tr => { S.track = tr; drawTrack(); render(); })
+                 .catch(()=>{ $("mapnote").textContent = "CIRCUIT TRACE UNAVAILABLE"; });
+}
+
+function header(){
+  const m = S.meta;
+  $("evName").textContent = m.session.year + " " + m.session.event;
+  $("evSub").textContent = (m.circuit.location+", "+m.circuit.country+" · "+m.event_date+" · RACE").toUpperCase();
+  $("foot").innerHTML = "Replay of a completed session — every model is fitted on laps earlier than "+
+    "the laps it scores, but none of this has been run against a live feed. "+
+    "Timing data via <a href='https://github.com/theOehrly/Fast-F1'>FastF1</a> (MIT). "+
+    "Derived data only; "+m.total_laps+" laps, "+m.drivers.length+" drivers.";
+}
+
+/* ---------------- timing tower ---------------- */
+function buildRows(){
+  const wrap = $("rows"); wrap.innerHTML = "";
+  S.meta.drivers.forEach((d,i)=>{
+    const r = document.createElement("div");
+    r.className = "row"; r.dataset.d = i; r.tabIndex = 0;
+    r.innerHTML =
+      '<span class="pos"></span>'+
+      '<span class="bar" style="background:'+d.colour+'"></span>'+
+      '<span class="code">'+d.code+'</span>'+
+      '<span class="gap"></span>'+
+      '<span class="lt"></span>'+
+      '<span class="ty"></span>';
+    r.addEventListener("click", ()=>{ S.sel = (S.sel===i?null:i); render(); });
+    r.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault(); S.sel=(S.sel===i?null:i); render();} });
+    wrap.appendChild(r);
+  });
+}
+
+// latest frame for each driver at or before race-clock t
+function frameAt(di, t){
+  const arr = S.byDriver[di], le = S.replay.lap_end_ms;
+  let lo = 0, hi = arr.length-1, best = -1;
+  while (lo <= hi){
+    const mid = (lo+hi)>>1, v = le[arr[mid]];
+    if (v != null && v <= t){ best = arr[mid]; lo = mid+1; } else hi = mid-1;
+  }
+  return best;
+}
+
+function render(){
+  const R = S.replay, M = S.meta;
+  const cur = M.drivers.map((_,i)=>frameAt(i, S.t));
+
+  // current lap + flag
+  let lap = 0, neutral = false, leaderIdx = -1, leaderPos = 99;
+  cur.forEach((f,i)=>{
+    if (f<0) return;
+    if (R.lap[f] > lap) lap = R.lap[f];
+    if (R.is_neutralised[f]) neutral = true;
+    if (R.position[f] < leaderPos){ leaderPos = R.position[f]; leaderIdx = i; }
+  });
+  lap = Math.max(1, lap);
+  $("lapNo").textContent = lap + " / " + M.total_laps;
+  $("clock").textContent = fmtClock(S.t);
+  $("leader").textContent = leaderIdx>=0 ? M.drivers[leaderIdx].code : "—";
+  const fp = $("flag");
+  fp.textContent = neutral ? "CAUTION" : "GREEN";
+  fp.classList.toggle("on", neutral);
+  $("scrubLbl").textContent = "LAP " + lap + " / " + M.total_laps;
+  if (!S.dragging) $("scrub").value = String(Math.round(1000 * S.t / S.tMax));
+
+  // order rows by classified position
+  const order = M.drivers.map((_,i)=>i).sort((a,b)=>{
+    const fa = cur[a], fb = cur[b];
+    if (fa<0 && fb<0) return 0;
+    if (fa<0) return 1;
+    if (fb<0) return -1;
+    return R.position[fa] - R.position[fb];
+  });
+
+  const wrap = $("rows");
+  order.forEach((di,slot)=>{
+    const row = wrap.querySelector('.row[data-d="'+di+'"]');
+    if (row.style.order !== String(slot)) row.style.order = String(slot);
+    const f = cur[di];
+    const pos = row.children[0], gap = row.children[3], lt = row.children[4], ty = row.children[5];
+    row.classList.toggle("sel", S.sel===di);
+    if (f < 0){
+      row.classList.add("out");
+      pos.textContent = "—"; gap.textContent = "—"; lt.textContent = "—"; ty.textContent = "";
+      return;
+    }
+    row.classList.remove("out");
+    pos.textContent = R.position[f];
+    let g = fmtGap(R.gap_to_leader_ms[f], R.laps_down[f]);
+    if (R.is_pit_in[f] || R.is_pit_out[f]) g += '<span class="pitflag">PIT</span>';
+    gap.innerHTML = g;
+    const t = R.lap_time_ms[f];
+    lt.textContent = fmtLap(t);
+    lt.className = "lt" + (t!=null && t===S.sessionBest ? " sb" : (R.is_personal_best[f] ? " pb" : ""));
+    const comp = R.compounds[R.compound[f]] || "UNKNOWN";
+    ty.innerHTML = '<span class="tyC t-'+comp+'">'+comp.charAt(0)+'</span>'+R.tyre_age[f] +
+                   (S.anomSet.has(f) ? '<span class="anomdot" title="flagged by the anomaly model"></span>' : '');
+  });
+
+  wrap.style.display = "flex"; wrap.style.flexDirection = "column";
+  drawCars(cur);
+  focusCard(cur);
+}
+
+/* ---------------- map ---------------- */
+function mapT(){
+  const b = S.meta.track_bounds, pad = 46;
+  const w = b.x_max-b.x_min, h = b.y_max-b.y_min;
+  return {vb:(b.x_min-pad)+" "+(b.y_min-pad)+" "+(w+2*pad)+" "+(h+2*pad), w, h};
+}
+function drawTrack(){
+  const svg = $("map"), t = mapT(), c = S.track.centreline;
+  svg.setAttribute("viewBox", t.vb);
+  svg.setAttribute("preserveAspectRatio","xMidYMid meet");
+  // y is negated so the circuit reads the way a track map normally does
+  const pts = c.x.map((x,i)=>x+","+(-c.y[i])).join(" ");
+  const b = S.meta.track_bounds;
+  svg.innerHTML =
+    '<g transform="translate(0,'+(b.y_min+b.y_max)+')">'+
+      '<polyline points="'+pts+'" fill="none" stroke="#252C36" stroke-width="15" stroke-linejoin="round" stroke-linecap="round"/>'+
+      '<polyline points="'+pts+'" fill="none" stroke="#0D1117" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>'+
+      '<polyline points="'+pts+'" fill="none" stroke="#39414D" stroke-width="1" stroke-dasharray="7 9" opacity=".55"/>'+
+      '<g id="cars"></g>'+
+    '</g>';
+  $("mapnote").textContent = "BARCELONA — CENTRELINE FROM THE FASTEST LAP'S POSITION TRACE";
+}
+function drawCars(cur){
+  if (!S.track) return;
+  const g = document.getElementById("cars"); if (!g) return;
+  const tg = S.track.t_grid_ms, step = S.track.step_ms;
+  let k = Math.round((S.t - tg[0]) / step);
+  k = Math.max(0, Math.min(tg.length-1, k));
+  const k2 = Math.min(tg.length-1, k+1);
+  const f = Math.max(0, Math.min(1, (S.t - tg[k]) / step));
+  let out = "";
+  S.meta.drivers.forEach((d,i)=>{
+    const p = S.track.positions[i]; if (!p) return;
+    const x0=p.x[k], y0=p.y[k], x1=p.x[k2], y1=p.y[k2];
+    if (x0==null||y0==null) return;
+    const x = (x1==null? x0 : x0+(x1-x0)*f);
+    const y = (y1==null? y0 : y0+(y1-y0)*f);
+    const sel = S.sel===i, fr = cur[i];
+    const r = sel ? 9 : 6.5;
+    if (sel) out += '<circle cx="'+x+'" cy="'+(-y)+'" r="'+(r+9)+'" fill="none" stroke="'+d.colour+'" stroke-width="2" opacity=".42"/>';
+    if (fr>=0 && S.anomSet.has(fr)) out += '<circle cx="'+x+'" cy="'+(-y)+'" r="'+(r+5)+'" fill="none" stroke="#FF4B4B" stroke-width="2.5" opacity=".9"/>';
+    out += '<circle cx="'+x+'" cy="'+(-y)+'" r="'+r+'" fill="'+d.colour+'" stroke="#05070A" stroke-width="1.6"/>';
+    if (sel) out += '<text x="'+x+'" y="'+(-y-17)+'" fill="#E8ECF2" font-family="Barlow Condensed,sans-serif" font-size="19" font-weight="700" text-anchor="middle">'+d.code+'</text>';
+  });
+  g.innerHTML = out;
+}
+
+function focusCard(cur){
+  const el = $("focus");
+  if (S.sel==null){ el.hidden = true; return; }
+  const R = S.replay, d = S.meta.drivers[S.sel], f = cur[S.sel];
+  el.hidden = false;
+  if (f<0){ el.innerHTML = '<div class="fc-code" style="color:'+d.colour+'">'+d.code+'</div>'+
+      '<div class="fc-team">'+d.team.toUpperCase()+'</div><dl><dt>status</dt><dd>not yet running</dd></dl>'; return; }
+  const comp = R.compounds[R.compound[f]] || "UNKNOWN";
+  const pc = R.position_change[f];
+  el.innerHTML =
+    '<div class="fc-code" style="color:'+d.colour+'">'+d.code+'</div>'+
+    '<div class="fc-team">'+d.team.toUpperCase()+' · #'+d.number+'</div>'+
+    '<dl>'+
+      '<dt>position</dt><dd>P'+R.position[f]+(pc?' <span style="color:'+(pc>0?'var(--green)':'var(--red)')+'">'+(pc>0?'▲':'▼')+Math.abs(pc)+'</span>':'')+'</dd>'+
+      '<dt>last lap</dt><dd>'+fmtLap(R.lap_time_ms[f])+'</dd>'+
+      '<dt>sectors</dt><dd>'+[R.s1_ms[f],R.s2_ms[f],R.s3_ms[f]].map(v=>v==null?'—':(v/1000).toFixed(1)).join(' / ')+'</dd>'+
+      '<dt>gap to leader</dt><dd>'+fmtGap(R.gap_to_leader_ms[f], R.laps_down[f])+'</dd>'+
+      '<dt>tyre</dt><dd>'+comp+' · '+R.tyre_age[f]+' laps</dd>'+
+      '<dt>stint</dt><dd>'+R.stint[f]+'</dd>'+
+      '<dt>grid → now</dt><dd>P'+d.grid+' → P'+R.position[f]+'</dd>'+
+    '</dl>';
+}
+
+/* ---------------- model panels ---------------- */
+function spark(svgEl, vals, colour, baseline){
+  if (!vals.length){ svgEl.innerHTML=""; return; }
+  const w=200,h=42,pad=3;
+  const lo=Math.min(...vals,(baseline??Infinity)), hi=Math.max(...vals,(baseline??-Infinity));
+  const sc=v=>h-pad-((v-lo)/((hi-lo)||1))*(h-2*pad);
+  const step=(w-2*pad)/Math.max(1,vals.length-1);
+  const pts=vals.map((v,i)=>(pad+i*step).toFixed(1)+","+sc(v).toFixed(1)).join(" ");
+  let extra="";
+  if (baseline!=null) extra='<line x1="'+pad+'" y1="'+sc(baseline).toFixed(1)+'" x2="'+(w-pad)+'" y2="'+sc(baseline).toFixed(1)+'" stroke="#4A5462" stroke-width="1" stroke-dasharray="3 3"/>';
+  svgEl.setAttribute("viewBox","0 0 "+w+" "+h);
+  svgEl.innerHTML = extra +
+    '<polyline points="'+pts+'" fill="none" stroke="'+colour+'" stroke-width="1.8" stroke-linejoin="round"/>'+
+    '<circle cx="'+(pad+(vals.length-1)*step).toFixed(1)+'" cy="'+sc(vals[vals.length-1]).toFixed(1)+'" r="2.6" fill="'+colour+'"/>';
+}
+
+function renderModels(){
+  const M = S.models;
+
+  // lap-time: report the state that matters, and be honest about the baseline
+  const st = (M.laptime?.states)||[];
+  const best = st.slice().sort((a,b)=>a.mae_model_ms-b.mae_model_ms)[0];
+  if (best){
+    $("ltMae").innerHTML = best.mae_model_ms.toFixed(1)+'<span class="munit">ms MAE</span>';
+    const edge = best.mae_b1_ms - best.mae_model_ms;
+    $("ltSub").innerHTML = "State <b>"+best.state+"</b>, "+best.n_laps.toLocaleString()+" laps. "+
+      "Baseline b1 <b>"+best.mae_b1_ms.toFixed(1)+"</b> ms — the model is "+
+      (edge>=0? "ahead by "+edge.toFixed(1) : "behind by "+Math.abs(edge).toFixed(1))+" ms, and wins <b>"+
+      (best.win_rate_vs_b1*100).toFixed(1)+"%</b> of laps.";
+    const beats = edge > 0 && best.win_rate_vs_b1 > 0.5;
+    const v = $("ltVerdict");
+    v.textContent = beats ? "beats baseline" : "no real edge";
+    v.className = "verdict " + (beats ? "v-ok" : "v-weak");
+    spark($("ltSpark"), st.map(s=>s.mae_model_ms), "#43D9E8", best.mae_b1_ms);
+  }
+
+  // degradation
+  const cps = (M.degradation?.compounds)||[];
+  const uc = M.undercut||{};
+  if (uc.deg_s_per_lap != null){
+    $("degVal").innerHTML = uc.deg_s_per_lap.toFixed(4)+'<span class="munit">s / lap</span>';
+    $("degSub").innerHTML = "Pooled across compounds, CI <b>["+uc.deg_ci[0].toFixed(4)+", "+uc.deg_ci[1].toFixed(4)+"]</b> s/lap. "+
+      cps.map(c=>c.compound+" "+(c.deg_ms_per_lap/1000).toFixed(3)).join(" · ")+".";
+    const sep = cps.some(c=>c.separable_from_other_compounds);
+    const v=$("degVerdict");
+    v.textContent = sep ? "compounds separable" : "compounds not separable";
+    v.className = "verdict " + (sep ? "v-ok" : "v-weak");
+    spark($("degSpark"), cps.map(c=>c.deg_ms_per_lap), "#FFC24B");
+  }
+
+  // anomaly
+  const a = M.anomaly||{};
+  if (a.n_flagged != null){
+    $("anVal").textContent = a.n_flagged;
+    $("anSub").innerHTML = "laps flagged of "+(a.n_laps_scored||0).toLocaleString()+". <b>"+a.n_explained+
+      "</b> explained by pit laps or neutralisations, <b>"+a.n_unexplained+"</b> not. "+
+      "Cut set for a "+(a.fpr_target*100).toFixed(0)+"% false-positive rate ≈ <b>"+
+      (a.threshold_equivalent_s!=null? a.threshold_equivalent_s.toFixed(2)+" s" : "—")+"</b>.";
+    const good = (a.share_explained||0) >= 0.7;
+    const v=$("anVerdict");
+    v.textContent = Math.round((a.share_explained||0)*100)+"% explained";
+    v.className = "verdict " + (good ? "v-ok" : "v-weak");
+    spark($("anSpark"), [a.n_flagged_slow||0, a.n_flagged_fast||0, a.n_unexplained||0], "#FF4B4B");
+  }
+
+  // undercut
+  if (uc.supported){
+    $("ucVal").innerHTML = uc.pit_cost_s.toFixed(2)+'<span class="munit">s pit cost</span>';
+    const payback = uc.pit_cost_s / uc.deg_s_per_lap;
+    $("ucSub").innerHTML = "In-lap <b>"+uc.pit_cost_in_lap_s.toFixed(2)+"</b> s, out-lap <b>"+
+      uc.pit_cost_out_lap_s.toFixed(2)+"</b> s. Degradation was only "+uc.deg_s_per_lap.toFixed(4)+
+      " s/lap here, so fresh rubber would need <b>"+Math.round(payback)+"</b> laps to repay the stop — "+
+      "far longer than the "+S.meta.total_laps+"-lap race. Tyre pace alone does not justify stopping; "+
+      "strategy here is about track position.";
+    const v=$("ucVerdict"); v.textContent="when, not which compound"; v.className="verdict v-weak";
+    spark($("ucSpark"), [uc.pit_cost_in_lap_s, uc.pit_cost_out_lap_s, uc.pit_cost_s], "#B372FF");
+  } else {
+    $("ucVal").textContent = "—";
+    $("ucSub").textContent = uc.reason || "Not supported by the degradation fit.";
+    const v=$("ucVerdict"); v.textContent="unsupported"; v.className="verdict v-weak";
+  }
+}
+
+/* ---------------- transport ---------------- */
+function tick(ts){
+  if (!S.playing){ S.last=null; return; }
+  if (S.last==null) S.last = ts;
+  const dt = ts - S.last; S.last = ts;
+  S.t += dt * S.speed;
+  if (S.t >= S.tMax){ S.t = S.tMax; S.playing=false; $("play").textContent="PLAY"; }
+  render();
+  S.raf = requestAnimationFrame(tick);
+}
+function setPlaying(p){
+  S.playing = p; $("play").textContent = p ? "PAUSE" : "PLAY";
+  if (p){ S.last=null; S.raf = requestAnimationFrame(tick); }
+  else if (S.raf) cancelAnimationFrame(S.raf);
+}
+$("play").addEventListener("click", ()=>setPlaying(!S.playing));
+$("restart").addEventListener("click", ()=>{ S.t=0; setPlaying(false); render(); });
+$("speed").addEventListener("change", e=>{ S.speed = +e.target.value; });
+$("scrub").addEventListener("pointerdown", ()=>{ S.dragging=true; });
+$("scrub").addEventListener("pointerup",   ()=>{ S.dragging=false; });
+$("scrub").addEventListener("input", e=>{ S.t = (+e.target.value/1000)*S.tMax; render(); });
+window.addEventListener("keydown", e=>{
+  if (e.target.tagName==="SELECT"||e.target.tagName==="INPUT") return;
+  if (e.code==="Space"){ e.preventDefault(); setPlaying(!S.playing); }
+});
+window.addEventListener("resize", ()=>{ if(S.track) drawCars(S.meta.drivers.map((_,i)=>frameAt(i,S.t))); });
+
+boot().catch(err=>{
+  document.getElementById("boot").innerHTML =
+    '<div class="b">COULD NOT LOAD SESSION DATA<br><span style="color:#4A5462">'+String(err).slice(0,120)+'</span></div>';
+});
+</script>
+</body>
+</html>
