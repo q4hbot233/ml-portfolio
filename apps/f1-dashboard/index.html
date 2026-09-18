@@ -125,6 +125,13 @@ main{display:grid;grid-template-columns:392px 1fr;flex:1;min-height:0}
 .v-weak{background:rgba(255,194,75,.14);color:var(--yellow);border:1px solid rgba(255,194,75,.4)}
 .v-ok{background:rgba(57,226,125,.12);color:var(--green);border:1px solid rgba(57,226,125,.35)}
 .spark{display:block;margin-top:9px;width:100%;height:42px}
+.ltab{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:10.5px;
+  font-variant-numeric:tabular-nums;margin-top:2px}
+.ltab th{font-weight:400;color:var(--faint);text-align:right;padding:0 0 4px;font-size:9px;letter-spacing:.09em}
+.ltab th:first-child{text-align:left}
+.ltab td{padding:3px 0;border-top:1px solid #171B22;text-align:right;color:var(--text)}
+.ltab td:first-child{text-align:left;color:var(--dim)}
+.ltab .wr-lose{color:var(--yellow)} .ltab .wr-win{color:var(--green)}
 
 footer{font-family:var(--mono);font-size:9.5px;color:var(--faint);padding:7px 16px;
   border-top:1px solid var(--edge);background:var(--void);flex:none;letter-spacing:.05em}
@@ -191,10 +198,9 @@ footer a{color:var(--dim)}
         <div class="mgrid">
           <div class="mcard">
             <h3>Lap-time prediction</h3>
-            <div class="mbig" id="ltMae">—<span class="munit">ms MAE</span></div>
+            <table class="ltab" id="ltTab"></table>
             <div class="msub" id="ltSub">—</div>
             <div class="verdict" id="ltVerdict">—</div>
-            <svg class="spark" id="ltSpark" aria-hidden="true"></svg>
           </div>
           <div class="mcard">
             <h3>Tyre degradation</h3>
@@ -478,19 +484,27 @@ function renderModels(){
 
   // lap-time: report the state that matters, and be honest about the baseline
   const st = (M.laptime?.states)||[];
-  const best = st.slice().sort((a,b)=>a.mae_model_ms-b.mae_model_ms)[0];
-  if (best){
-    $("ltMae").innerHTML = best.mae_model_ms.toFixed(1)+'<span class="munit">ms MAE</span>';
-    const edge = best.mae_b1_ms - best.mae_model_ms;
-    $("ltSub").innerHTML = "State <b>"+best.state+"</b>, "+best.n_laps.toLocaleString()+" laps. "+
-      "Baseline b1 <b>"+best.mae_b1_ms.toFixed(1)+"</b> ms — the model is "+
-      (edge>=0? "ahead by "+edge.toFixed(1) : "behind by "+Math.abs(edge).toFixed(1))+" ms, and wins <b>"+
-      (best.win_rate_vs_b1*100).toFixed(1)+"%</b> of laps.";
-    const beats = edge > 0 && best.win_rate_vs_b1 > 0.5;
+  if (st.length){
+    // Show every information state. Reporting only the last one would flatter the model:
+    // its edge comes from how much of the lap it has already seen, not from the model.
+    const label = {lap_start:"lap start", after_s1:"after S1", after_s2:"after S2"};
+    let rows = '<tr><th>knows</th><th>model</th><th>b1</th><th>wins</th></tr>';
+    st.forEach(r=>{
+      const win = r.win_rate_vs_b1 > 0.5;
+      rows += '<tr><td>'+(label[r.state]||r.state)+'</td>'+
+              '<td>'+r.mae_model_ms.toFixed(0)+'</td>'+
+              '<td>'+r.mae_b1_ms.toFixed(0)+'</td>'+
+              '<td class="'+(win?'wr-win':'wr-lose')+'">'+(r.win_rate_vs_b1*100).toFixed(0)+'%</td></tr>';
+    });
+    $("ltTab").innerHTML = rows;
+    const first = st[0], last = st[st.length-1];
+    $("ltSub").innerHTML = "MAE in ms over "+first.n_laps.toLocaleString()+" laps against b1, the baseline that "+
+      "matters. At lap start the model wins only <b>"+(first.win_rate_vs_b1*100).toFixed(0)+"%</b> of laps — a tie. "+
+      "It pulls ahead only once two sectors are in, and by then two thirds of the lap is an input rather than a prediction.";
     const v = $("ltVerdict");
-    v.textContent = beats ? "beats baseline" : "no real edge";
-    v.className = "verdict " + (beats ? "v-ok" : "v-weak");
-    spark($("ltSpark"), st.map(s=>s.mae_model_ms), "#43D9E8", best.mae_b1_ms);
+    const earlyEdge = first.win_rate_vs_b1 > 0.5;
+    v.textContent = earlyEdge ? "beats baseline throughout" : "no edge until after S2";
+    v.className = "verdict " + (earlyEdge ? "v-ok" : "v-weak");
   }
 
   // degradation
