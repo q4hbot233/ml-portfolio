@@ -1,0 +1,1080 @@
+{
+ "source": "reports/results.json from the shuttle-passenger-assistant repository",
+ "schema_version": 2,
+ "generated_at_utc": "2026-09-18T17:44:10+00:00",
+ "seed": 20260918,
+ "circularity_warning": "Track C utterances were written by the author. Any score computed on them measures phrasing consistency, not generalisation to real passengers.",
+ "ladder": {
+  "split": "CLINC150 validation, 150 intents",
+  "rows": [
+   {
+    "model": "most_frequent",
+    "accuracy": 0.006666666666666667,
+    "macro_f1": 8.830022075055189e-05,
+    "fit_seconds": 0.047197500010952353
+   },
+   {
+    "model": "keyword_rules",
+    "accuracy": 0.538,
+    "macro_f1": 0.5417735620983416,
+    "fit_seconds": 0.09051949996501207
+   },
+   {
+    "model": "tfidf_word",
+    "accuracy": 0.9073333333333333,
+    "macro_f1": 0.9067791328145995,
+    "fit_seconds": 10.691756667103618
+   },
+   {
+    "model": "tfidf_char",
+    "accuracy": 0.9113333333333333,
+    "macro_f1": 0.9103632351400279,
+    "fit_seconds": 33.78347837505862
+   },
+   {
+    "model": "tfidf_union",
+    "accuracy": 0.9193333333333333,
+    "macro_f1": 0.9186328191023849,
+    "fit_seconds": 10.03750970819965
+   },
+   {
+    "model": "tfidf_union_svm",
+    "accuracy": 0.929,
+    "macro_f1": 0.9286080414517324,
+    "fit_seconds": 11.038840082939714
+   }
+  ],
+  "selected": "tfidf_union_svm"
+ },
+ "track_a": {
+  "circular": false,
+  "description": "CLINC150 as published: 150 intents plus out-of-scope.",
+  "test": {
+   "name": "tfidf_union_svm",
+   "accuracy": 0.9237777777777778,
+   "macro_precision": 0.9272971258713623,
+   "macro_recall": 0.9237777777777777,
+   "macro_f1": 0.922655416583865,
+   "weighted_f1": 0.9226554165838646,
+   "n": 4500
+  },
+  "top_confusions": [
+   {
+    "true_label": "calendar",
+    "predicted_label": "calendar_update",
+    "count": 8,
+    "rate": 0.26666666666666666,
+    "examples": [
+     "did i set march 10th as my doctor's appointment",
+     "did i mark the mechanic's appointment on my calendar"
+    ]
+   },
+   {
+    "true_label": "improve_credit_score",
+    "predicted_label": "credit_score",
+    "count": 8,
+    "rate": 0.26666666666666666,
+    "examples": [
+     "how can i contribute to my credit score",
+     "how can i up my credit score"
+    ]
+   },
+   {
+    "true_label": "redeem_rewards",
+    "predicted_label": "rewards_balance",
+    "count": 8,
+    "rate": 0.26666666666666666,
+    "examples": [
+     "what are my mastercard points good for",
+     "how do i use my card reward points for my next flight"
+    ]
+   },
+   {
+    "true_label": "change_user_name",
+    "predicted_label": "user_name",
+    "count": 7,
+    "rate": 0.23333333333333334,
+    "examples": [
+     "can you call me a different name",
+     "could you call me a different name"
+    ]
+   },
+   {
+    "true_label": "food_last",
+    "predicted_label": "expiration_date",
+    "count": 5,
+    "rate": 0.16666666666666666,
+    "examples": [
+     "when does the jerky expire",
+     "what is the expiration date for honey"
+    ]
+   },
+   {
+    "true_label": "pin_change",
+    "predicted_label": "change_ai_name",
+    "count": 5,
+    "rate": 0.16666666666666666,
+    "examples": [
+     "i would like to change the name on my checking account",
+     "i would like to change the name on my credit card account"
+    ]
+   },
+   {
+    "true_label": "share_location",
+    "predicted_label": "current_location",
+    "count": 5,
+    "rate": 0.16666666666666666,
+    "examples": [
+     "i'd like for this person to know my location",
+     "what is my current location"
+    ]
+   },
+   {
+    "true_label": "distance",
+    "predicted_label": "directions",
+    "count": 4,
+    "rate": 0.13333333333333333,
+    "examples": [
+     "what's the time to destination going via bus to omaha",
+     "am i close to arriving at the post office"
+    ]
+   }
+  ]
+ },
+ "track_a_rejection_curve": {
+  "model": "tfidf_char",
+  "mechanism": "oos_class",
+  "points": [
+   {
+    "tau": 0.0,
+    "in_scope_accuracy": 0.9144444444444444,
+    "in_scope_acceptance": 0.9955555555555555,
+    "oos_recall": 0.229,
+    "joint_accuracy": 0.7898181818181819,
+    "oos_precision": 0.9196787148594378
+   },
+   {
+    "tau": 0.016666666666666666,
+    "in_scope_accuracy": 0.9144444444444444,
+    "in_scope_acceptance": 0.9955555555555555,
+    "oos_recall": 0.229,
+    "joint_accuracy": 0.7898181818181819,
+    "oos_precision": 0.9196787148594378
+   },
+   {
+    "tau": 0.03333333333333333,
+    "in_scope_accuracy": 0.9144444444444444,
+    "in_scope_acceptance": 0.9955555555555555,
+    "oos_recall": 0.23,
+    "joint_accuracy": 0.79,
+    "oos_precision": 0.92
+   },
+   {
+    "tau": 0.05,
+    "in_scope_accuracy": 0.9144444444444444,
+    "in_scope_acceptance": 0.9953333333333333,
+    "oos_recall": 0.233,
+    "joint_accuracy": 0.7905454545454546,
+    "oos_precision": 0.9173228346456693
+   },
+   {
+    "tau": 0.06666666666666667,
+    "in_scope_accuracy": 0.9144444444444444,
+    "in_scope_acceptance": 0.9953333333333333,
+    "oos_recall": 0.247,
+    "joint_accuracy": 0.7930909090909091,
+    "oos_precision": 0.9216417910447762
+   },
+   {
+    "tau": 0.08333333333333333,
+    "in_scope_accuracy": 0.9142222222222223,
+    "in_scope_acceptance": 0.9942222222222222,
+    "oos_recall": 0.268,
+    "joint_accuracy": 0.7967272727272727,
+    "oos_precision": 0.9115646258503401
+   },
+   {
+    "tau": 0.1,
+    "in_scope_accuracy": 0.9142222222222223,
+    "in_scope_acceptance": 0.9937777777777778,
+    "oos_recall": 0.295,
+    "joint_accuracy": 0.8016363636363636,
+    "oos_precision": 0.913312693498452
+   },
+   {
+    "tau": 0.11666666666666667,
+    "in_scope_accuracy": 0.9142222222222223,
+    "in_scope_acceptance": 0.9926666666666667,
+    "oos_recall": 0.331,
+    "joint_accuracy": 0.8081818181818182,
+    "oos_precision": 0.9093406593406593
+   },
+   {
+    "tau": 0.13333333333333333,
+    "in_scope_accuracy": 0.914,
+    "in_scope_acceptance": 0.9911111111111112,
+    "oos_recall": 0.359,
+    "joint_accuracy": 0.8130909090909091,
+    "oos_precision": 0.899749373433584
+   },
+   {
+    "tau": 0.15,
+    "in_scope_accuracy": 0.9133333333333333,
+    "in_scope_acceptance": 0.9902222222222222,
+    "oos_recall": 0.386,
+    "joint_accuracy": 0.8174545454545454,
+    "oos_precision": 0.8976744186046511
+   },
+   {
+    "tau": 0.16666666666666666,
+    "in_scope_accuracy": 0.9124444444444444,
+    "in_scope_acceptance": 0.9886666666666667,
+    "oos_recall": 0.412,
+    "joint_accuracy": 0.8214545454545454,
+    "oos_precision": 0.8898488120950324
+   },
+   {
+    "tau": 0.18333333333333332,
+    "in_scope_accuracy": 0.9122222222222223,
+    "in_scope_acceptance": 0.9875555555555555,
+    "oos_recall": 0.445,
+    "joint_accuracy": 0.8272727272727273,
+    "oos_precision": 0.8882235528942116
+   },
+   {
+    "tau": 0.2,
+    "in_scope_accuracy": 0.912,
+    "in_scope_acceptance": 0.9864444444444445,
+    "oos_recall": 0.466,
+    "joint_accuracy": 0.8309090909090909,
+    "oos_precision": 0.8842504743833017
+   },
+   {
+    "tau": 0.21666666666666667,
+    "in_scope_accuracy": 0.9115555555555556,
+    "in_scope_acceptance": 0.9853333333333333,
+    "oos_recall": 0.488,
+    "joint_accuracy": 0.8345454545454546,
+    "oos_precision": 0.8808664259927798
+   },
+   {
+    "tau": 0.23333333333333334,
+    "in_scope_accuracy": 0.9111111111111111,
+    "in_scope_acceptance": 0.9833333333333333,
+    "oos_recall": 0.507,
+    "joint_accuracy": 0.8376363636363636,
+    "oos_precision": 0.8711340206185567
+   },
+   {
+    "tau": 0.25,
+    "in_scope_accuracy": 0.9104444444444444,
+    "in_scope_acceptance": 0.9815555555555555,
+    "oos_recall": 0.531,
+    "joint_accuracy": 0.8414545454545455,
+    "oos_precision": 0.8648208469055375
+   },
+   {
+    "tau": 0.26666666666666666,
+    "in_scope_accuracy": 0.9095555555555556,
+    "in_scope_acceptance": 0.9797777777777777,
+    "oos_recall": 0.544,
+    "joint_accuracy": 0.8430909090909091,
+    "oos_precision": 0.8566929133858268
+   },
+   {
+    "tau": 0.2833333333333333,
+    "in_scope_accuracy": 0.9091111111111111,
+    "in_scope_acceptance": 0.978,
+    "oos_recall": 0.563,
+    "joint_accuracy": 0.8461818181818181,
+    "oos_precision": 0.850453172205438
+   },
+   {
+    "tau": 0.3,
+    "in_scope_accuracy": 0.9086666666666666,
+    "in_scope_acceptance": 0.9755555555555555,
+    "oos_recall": 0.58,
+    "joint_accuracy": 0.848909090909091,
+    "oos_precision": 0.8405797101449275
+   },
+   {
+    "tau": 0.31666666666666665,
+    "in_scope_accuracy": 0.9077777777777778,
+    "in_scope_acceptance": 0.9731111111111111,
+    "oos_recall": 0.593,
+    "joint_accuracy": 0.8505454545454545,
+    "oos_precision": 0.8305322128851541
+   },
+   {
+    "tau": 0.3333333333333333,
+    "in_scope_accuracy": 0.9071111111111111,
+    "in_scope_acceptance": 0.9706666666666667,
+    "oos_recall": 0.617,
+    "joint_accuracy": 0.8543636363636363,
+    "oos_precision": 0.8237650200267023
+   },
+   {
+    "tau": 0.35,
+    "in_scope_accuracy": 0.9064444444444445,
+    "in_scope_acceptance": 0.9684444444444444,
+    "oos_recall": 0.641,
+    "joint_accuracy": 0.8581818181818182,
+    "oos_precision": 0.8186462324393359
+   },
+   {
+    "tau": 0.36666666666666664,
+    "in_scope_accuracy": 0.9057777777777778,
+    "in_scope_acceptance": 0.9668888888888889,
+    "oos_recall": 0.66,
+    "joint_accuracy": 0.8610909090909091,
+    "oos_precision": 0.8158220024721878
+   },
+   {
+    "tau": 0.3833333333333333,
+    "in_scope_accuracy": 0.9048888888888889,
+    "in_scope_acceptance": 0.964,
+    "oos_recall": 0.681,
+    "joint_accuracy": 0.8641818181818182,
+    "oos_precision": 0.8078291814946619
+   },
+   {
+    "tau": 0.4,
+    "in_scope_accuracy": 0.9037777777777778,
+    "in_scope_acceptance": 0.9615555555555556,
+    "oos_recall": 0.69,
+    "joint_accuracy": 0.864909090909091,
+    "oos_precision": 0.7995365005793743
+   },
+   {
+    "tau": 0.4166666666666667,
+    "in_scope_accuracy": 0.9015555555555556,
+    "in_scope_acceptance": 0.9582222222222222,
+    "oos_recall": 0.7,
+    "joint_accuracy": 0.864909090909091,
+    "oos_precision": 0.7882882882882883
+   },
+   {
+    "tau": 0.43333333333333335,
+    "in_scope_accuracy": 0.9004444444444445,
+    "in_scope_acceptance": 0.9562222222222222,
+    "oos_recall": 0.712,
+    "joint_accuracy": 0.8661818181818182,
+    "oos_precision": 0.7832783278327833
+   },
+   {
+    "tau": 0.45,
+    "in_scope_accuracy": 0.8966666666666666,
+    "in_scope_acceptance": 0.9513333333333334,
+    "oos_recall": 0.732,
+    "joint_accuracy": 0.8667272727272727,
+    "oos_precision": 0.7697160883280757
+   },
+   {
+    "tau": 0.4666666666666667,
+    "in_scope_accuracy": 0.8946666666666667,
+    "in_scope_acceptance": 0.9482222222222222,
+    "oos_recall": 0.741,
+    "joint_accuracy": 0.8667272727272727,
+    "oos_precision": 0.7607802874743327
+   },
+   {
+    "tau": 0.48333333333333334,
+    "in_scope_accuracy": 0.892,
+    "in_scope_acceptance": 0.9433333333333334,
+    "oos_recall": 0.754,
+    "joint_accuracy": 0.866909090909091,
+    "oos_precision": 0.7472745292368682
+   },
+   {
+    "tau": 0.5,
+    "in_scope_accuracy": 0.8888888888888888,
+    "in_scope_acceptance": 0.9364444444444444,
+    "oos_recall": 0.762,
+    "joint_accuracy": 0.8658181818181818,
+    "oos_precision": 0.7270992366412213
+   },
+   {
+    "tau": 0.5166666666666666,
+    "in_scope_accuracy": 0.8853333333333333,
+    "in_scope_acceptance": 0.9306666666666666,
+    "oos_recall": 0.771,
+    "joint_accuracy": 0.8645454545454545,
+    "oos_precision": 0.7119113573407202
+   },
+   {
+    "tau": 0.5333333333333333,
+    "in_scope_accuracy": 0.8813333333333333,
+    "in_scope_acceptance": 0.9224444444444444,
+    "oos_recall": 0.781,
+    "joint_accuracy": 0.8630909090909091,
+    "oos_precision": 0.6911504424778762
+   },
+   {
+    "tau": 0.55,
+    "in_scope_accuracy": 0.8782222222222222,
+    "in_scope_acceptance": 0.9162222222222223,
+    "oos_recall": 0.786,
+    "joint_accuracy": 0.8614545454545455,
+    "oos_precision": 0.6758383490971626
+   },
+   {
+    "tau": 0.5666666666666667,
+    "in_scope_accuracy": 0.8731111111111111,
+    "in_scope_acceptance": 0.9086666666666666,
+    "oos_recall": 0.799,
+    "joint_accuracy": 0.8596363636363636,
+    "oos_precision": 0.6603305785123967
+   },
+   {
+    "tau": 0.5833333333333334,
+    "in_scope_accuracy": 0.8671111111111112,
+    "in_scope_acceptance": 0.9008888888888889,
+    "oos_recall": 0.806,
+    "joint_accuracy": 0.856,
+    "oos_precision": 0.6437699680511182
+   },
+   {
+    "tau": 0.6,
+    "in_scope_accuracy": 0.8615555555555555,
+    "in_scope_acceptance": 0.8942222222222223,
+    "oos_recall": 0.818,
+    "joint_accuracy": 0.8536363636363636,
+    "oos_precision": 0.6321483771251932
+   },
+   {
+    "tau": 0.6166666666666667,
+    "in_scope_accuracy": 0.8573333333333333,
+    "in_scope_acceptance": 0.8888888888888888,
+    "oos_recall": 0.824,
+    "joint_accuracy": 0.8512727272727273,
+    "oos_precision": 0.622356495468278
+   },
+   {
+    "tau": 0.6333333333333333,
+    "in_scope_accuracy": 0.8535555555555555,
+    "in_scope_acceptance": 0.8842222222222222,
+    "oos_recall": 0.832,
+    "joint_accuracy": 0.8496363636363636,
+    "oos_precision": 0.614929785661493
+   },
+   {
+    "tau": 0.65,
+    "in_scope_accuracy": 0.8491111111111111,
+    "in_scope_acceptance": 0.8782222222222222,
+    "oos_recall": 0.839,
+    "joint_accuracy": 0.8472727272727273,
+    "oos_precision": 0.6049026676279741
+   },
+   {
+    "tau": 0.6666666666666666,
+    "in_scope_accuracy": 0.8417777777777777,
+    "in_scope_acceptance": 0.8682222222222222,
+    "oos_recall": 0.844,
+    "joint_accuracy": 0.8421818181818181,
+    "oos_precision": 0.5873347251217815
+   },
+   {
+    "tau": 0.6833333333333333,
+    "in_scope_accuracy": 0.8364444444444444,
+    "in_scope_acceptance": 0.862,
+    "oos_recall": 0.853,
+    "joint_accuracy": 0.8394545454545455,
+    "oos_precision": 0.578697421981004
+   },
+   {
+    "tau": 0.7,
+    "in_scope_accuracy": 0.8304444444444444,
+    "in_scope_acceptance": 0.8548888888888889,
+    "oos_recall": 0.862,
+    "joint_accuracy": 0.8361818181818181,
+    "oos_precision": 0.568976897689769
+   },
+   {
+    "tau": 0.7166666666666667,
+    "in_scope_accuracy": 0.8255555555555556,
+    "in_scope_acceptance": 0.8482222222222222,
+    "oos_recall": 0.865,
+    "joint_accuracy": 0.8327272727272728,
+    "oos_precision": 0.5587855297157622
+   },
+   {
+    "tau": 0.7333333333333333,
+    "in_scope_accuracy": 0.8182222222222222,
+    "in_scope_acceptance": 0.8393333333333334,
+    "oos_recall": 0.873,
+    "joint_accuracy": 0.8281818181818181,
+    "oos_precision": 0.5469924812030075
+   },
+   {
+    "tau": 0.75,
+    "in_scope_accuracy": 0.8102222222222222,
+    "in_scope_acceptance": 0.83,
+    "oos_recall": 0.881,
+    "joint_accuracy": 0.8230909090909091,
+    "oos_precision": 0.5352369380315918
+   },
+   {
+    "tau": 0.7666666666666666,
+    "in_scope_accuracy": 0.8013333333333333,
+    "in_scope_acceptance": 0.82,
+    "oos_recall": 0.883,
+    "joint_accuracy": 0.8161818181818182,
+    "oos_precision": 0.5215593620791494
+   },
+   {
+    "tau": 0.7833333333333333,
+    "in_scope_accuracy": 0.7922222222222223,
+    "in_scope_acceptance": 0.8095555555555556,
+    "oos_recall": 0.89,
+    "joint_accuracy": 0.81,
+    "oos_precision": 0.5094447624499141
+   },
+   {
+    "tau": 0.8,
+    "in_scope_accuracy": 0.78,
+    "in_scope_acceptance": 0.7966666666666666,
+    "oos_recall": 0.895,
+    "joint_accuracy": 0.8009090909090909,
+    "oos_precision": 0.494475138121547
+   },
+   {
+    "tau": 0.8166666666666667,
+    "in_scope_accuracy": 0.7693333333333333,
+    "in_scope_acceptance": 0.7846666666666666,
+    "oos_recall": 0.901,
+    "joint_accuracy": 0.7932727272727272,
+    "oos_precision": 0.4818181818181818
+   },
+   {
+    "tau": 0.8333333333333334,
+    "in_scope_accuracy": 0.7557777777777778,
+    "in_scope_acceptance": 0.7697777777777778,
+    "oos_recall": 0.909,
+    "joint_accuracy": 0.7836363636363637,
+    "oos_precision": 0.4673521850899743
+   },
+   {
+    "tau": 0.85,
+    "in_scope_accuracy": 0.74,
+    "in_scope_acceptance": 0.752,
+    "oos_recall": 0.919,
+    "joint_accuracy": 0.7725454545454545,
+    "oos_precision": 0.4515970515970516
+   },
+   {
+    "tau": 0.8666666666666667,
+    "in_scope_accuracy": 0.7211111111111111,
+    "in_scope_acceptance": 0.7317777777777777,
+    "oos_recall": 0.929,
+    "joint_accuracy": 0.7589090909090909,
+    "oos_precision": 0.4349250936329588
+   },
+   {
+    "tau": 0.8833333333333333,
+    "in_scope_accuracy": 0.6995555555555556,
+    "in_scope_acceptance": 0.7086666666666667,
+    "oos_recall": 0.935,
+    "joint_accuracy": 0.7423636363636363,
+    "oos_precision": 0.41629563668744435
+   },
+   {
+    "tau": 0.9,
+    "in_scope_accuracy": 0.6695555555555556,
+    "in_scope_acceptance": 0.6775555555555556,
+    "oos_recall": 0.941,
+    "joint_accuracy": 0.7189090909090909,
+    "oos_precision": 0.3933946488294314
+   },
+   {
+    "tau": 0.9166666666666666,
+    "in_scope_accuracy": 0.6284444444444445,
+    "in_scope_acceptance": 0.6342222222222222,
+    "oos_recall": 0.957,
+    "joint_accuracy": 0.6881818181818182,
+    "oos_precision": 0.36765270841336917
+   },
+   {
+    "tau": 0.9333333333333333,
+    "in_scope_accuracy": 0.5644444444444444,
+    "in_scope_acceptance": 0.5684444444444444,
+    "oos_recall": 0.971,
+    "joint_accuracy": 0.6383636363636364,
+    "oos_precision": 0.3333333333333333
+   },
+   {
+    "tau": 0.95,
+    "in_scope_accuracy": 0.45466666666666666,
+    "in_scope_acceptance": 0.4568888888888889,
+    "oos_recall": 0.983,
+    "joint_accuracy": 0.5507272727272727,
+    "oos_precision": 0.2868398015757222
+   },
+   {
+    "tau": 0.9666666666666667,
+    "in_scope_accuracy": 0.2831111111111111,
+    "in_scope_acceptance": 0.2842222222222222,
+    "oos_recall": 0.996,
+    "joint_accuracy": 0.4127272727272727,
+    "oos_precision": 0.2361868626986009
+   },
+   {
+    "tau": 0.9833333333333333,
+    "in_scope_accuracy": 0.068,
+    "in_scope_acceptance": 0.068,
+    "oos_recall": 1.0,
+    "joint_accuracy": 0.23745454545454545,
+    "oos_precision": 0.19252984212552945
+   },
+   {
+    "tau": 1.0,
+    "in_scope_accuracy": 0.0,
+    "in_scope_acceptance": 0.0,
+    "oos_recall": 1.0,
+    "joint_accuracy": 0.18181818181818182,
+    "oos_precision": 0.18181818181818182
+   }
+  ]
+ },
+ "operating_point": {
+  "tau": 0.2833333333333333,
+  "model": "tfidf_char+oos_class",
+  "mechanism": "oos_class",
+  "selected_on": "validation",
+  "target_oos_recall": 0.6,
+  "validation": {
+   "in_scope_accuracy": 0.9083333333333333,
+   "oos_recall": 0.62
+  },
+  "test": {
+   "in_scope_accuracy": 0.9091111111111111,
+   "oos_recall": 0.563,
+   "oos_recall_ci95": [
+    0.532,
+    0.5930249999999998
+   ],
+   "joint_accuracy": 0.8461818181818181
+  }
+ },
+ "track_b": {
+  "circular": false,
+  "description": "CLINC150 utterances re-labelled onto the shuttle handler taxonomy. Utterances real, mapping mine.",
+  "mapping": {
+   "current_location": "nearest_stop",
+   "distance": "trip_planning",
+   "directions": "trip_planning",
+   "traffic": "service_disruption",
+   "restaurant_suggestion": "poi_near_stop",
+   "uber": "ride_request"
+  },
+  "positive_rate": 0.03272727272727273,
+  "n_test": 5500,
+  "selected_model": "tfidf_union_svm",
+  "validation": {
+   "most_frequent": {
+    "accuracy": 0.9612903225806452,
+    "macro_f1": 0.16337719298245615
+   },
+   "keyword_rules": {
+    "accuracy": 0.9083870967741936,
+    "macro_f1": 0.5447842470292164
+   },
+   "tfidf_word": {
+    "accuracy": 0.9890322580645161,
+    "macro_f1": 0.8451239209133945
+   },
+   "tfidf_char": {
+    "accuracy": 0.9925806451612903,
+    "macro_f1": 0.9140036377605439
+   },
+   "tfidf_union": {
+    "accuracy": 0.9909677419354839,
+    "macro_f1": 0.8738110139711971
+   },
+   "tfidf_union_svm": {
+    "accuracy": 0.9941935483870967,
+    "macro_f1": 0.931765956416078
+   }
+  },
+  "test": {
+   "name": "tfidf_union_svm",
+   "accuracy": 0.9916363636363636,
+   "macro_precision": 0.9164534591233117,
+   "macro_recall": 0.8855158730158731,
+   "macro_f1": 0.8991469204134453,
+   "weighted_f1": 0.9914719803310111,
+   "n": 5500,
+   "per_class": [
+    {
+     "label": "nearest_stop",
+     "precision": 0.8709677419354839,
+     "recall": 0.9,
+     "f1": 0.8852459016393444,
+     "support": 30
+    },
+    {
+     "label": "poi_near_stop",
+     "precision": 0.875,
+     "recall": 0.7,
+     "f1": 0.7777777777777777,
+     "support": 30
+    },
+    {
+     "label": "reject",
+     "precision": 0.9949324324324325,
+     "recall": 0.9964285714285714,
+     "f1": 0.995679939894816,
+     "support": 5320
+    },
+    {
+     "label": "ride_request",
+     "precision": 0.967741935483871,
+     "recall": 1.0,
+     "f1": 0.9836065573770492,
+     "support": 30
+    },
+    {
+     "label": "service_disruption",
+     "precision": 0.9655172413793104,
+     "recall": 0.9333333333333333,
+     "f1": 0.9491525423728815,
+     "support": 30
+    },
+    {
+     "label": "trip_planning",
+     "precision": 0.8245614035087719,
+     "recall": 0.7833333333333333,
+     "f1": 0.8034188034188033,
+     "support": 60
+    }
+   ]
+  },
+  "top_confusions": [
+   {
+    "true_label": "trip_planning",
+    "predicted_label": "reject",
+    "count": 13,
+    "rate": 0.21666666666666667,
+    "examples": [
+     "what's the mileage to get the the taj mahal in atlantic city",
+     "how much time is left until we get there"
+    ]
+   },
+   {
+    "true_label": "reject",
+    "predicted_label": "trip_planning",
+    "count": 10,
+    "rate": 0.0018796992481203006,
+    "examples": [
+     "show allison how to get to me",
+     "can i get to susan's house with my current tank"
+    ]
+   },
+   {
+    "true_label": "poi_near_stop",
+    "predicted_label": "reject",
+    "count": 9,
+    "rate": 0.3,
+    "examples": [
+     "i need some suggestions for dinner places tonight",
+     "where can i get some good food"
+    ]
+   },
+   {
+    "true_label": "reject",
+    "predicted_label": "nearest_stop",
+    "count": 4,
+    "rate": 0.0007518796992481203,
+    "examples": [
+     "i'd like for this person to know my location",
+     "what is my current location"
+    ]
+   },
+   {
+    "true_label": "nearest_stop",
+    "predicted_label": "reject",
+    "count": 3,
+    "rate": 0.1,
+    "examples": [
+     "i am currently located in what town",
+     "what could help me locate myself"
+    ]
+   },
+   {
+    "true_label": "reject",
+    "predicted_label": "poi_near_stop",
+    "count": 3,
+    "rate": 0.0005639097744360903,
+    "examples": [
+     "i want to eat at seven in the restaurant for two people",
+     "i want to explore a new place but don't know where i should go do you have any ideas"
+    ]
+   },
+   {
+    "true_label": "service_disruption",
+    "predicted_label": "reject",
+    "count": 2,
+    "rate": 0.06666666666666667,
+    "examples": [
+     "what kind of traffic can i expect driving to newark, new jersey on i-95 from philadelphia at noon",
+     "what does post rush hour traffic generally look like heading into the lincoln tunnel in manhattan from new jersey"
+    ]
+   },
+   {
+    "true_label": "reject",
+    "predicted_label": "ride_request",
+    "count": 1,
+    "rate": 0.00018796992481203009,
+    "examples": [
+     "call an uber to take me to the closest grocery store"
+    ]
+   },
+   {
+    "true_label": "reject",
+    "predicted_label": "service_disruption",
+    "count": 1,
+    "rate": 0.00018796992481203009,
+    "examples": [
+     "give me the number of a traffic attorney near here"
+    ]
+   }
+  ],
+  "rejected_mappings": [
+   {
+    "clinc_intent": "travel_alert",
+    "example": "does ireland have any travel alerts i should be aware of",
+    "why_not": "Country-level advisories, not this service being disrupted."
+   },
+   {
+    "clinc_intent": "lost_luggage",
+    "example": "locate lost luggage from flight america airlines in o'hare",
+    "why_not": "Airline baggage systems. A shuttle lost-item report has no flight number."
+   },
+   {
+    "clinc_intent": "timezone",
+    "example": "what is the time zone of france",
+    "why_not": "A geography question. Nothing to do with when the shuttle runs."
+   },
+   {
+    "clinc_intent": "time",
+    "example": "what time is it in punta gorda, florida",
+    "why_not": "The clock in another city, not this service's hours."
+   },
+   {
+    "clinc_intent": "find_phone",
+    "example": "i need help finding my mobile phone",
+    "why_not": "Ringing your own device remotely, not reporting an item left on board. The closest call on this list."
+   },
+   {
+    "clinc_intent": "travel_suggestion",
+    "example": "please suggest some fun tourist activities in tokyo",
+    "why_not": "Things to do in a destination city, not what is near this stop."
+   },
+   {
+    "clinc_intent": "restaurant_reviews",
+    "example": "are the donuts at tgi well reviewed",
+    "why_not": "Reviews of a named item at a named place, not a nearby-place lookup."
+   },
+   {
+    "clinc_intent": "how_busy",
+    "example": "how long will the wait be at noon if we went to nagomi",
+    "why_not": "Restaurant queue length. There is no crowding handler, so it rejects."
+   },
+   {
+    "clinc_intent": "car_rental",
+    "example": "i want to reserve a convertible from july 2nd through july 18th",
+    "why_not": "A multi-day rental with dates and a city, not a request to be picked up."
+   },
+   {
+    "clinc_intent": "share_location",
+    "example": "share my location with brad and terry",
+    "why_not": "Messaging someone else. The assistant has no contacts and should not."
+   },
+   {
+    "clinc_intent": "book_hotel",
+    "example": "i need a room in indianapolis near the track from may 2nd",
+    "why_not": "Booking accommodation. Near-a-landmark phrasing is the only overlap."
+   }
+  ]
+ },
+ "track_c": {
+  "circular": true,
+  "warning": "Track C utterances were written by the author. Any score computed on them measures phrasing consistency, not generalisation to real passengers.",
+  "description": "Shuttle-specific intents. Positive utterances written by the author.",
+  "cv_macro_f1": {
+   "tfidf_word": 0.5300763945816812,
+   "tfidf_char": 0.5404544245930071,
+   "keyword_rules": 0.36536683944055914
+  },
+  "false_alarm_rate_on_real_utterances": 0.024,
+  "n_real_negatives": 5500,
+  "false_alarm_examples": [
+   "is my phone somewhere around here",
+   "where's my phone at",
+   "where's my phone",
+   "i've lost my phone somewhere",
+   "i think i lost my phone",
+   "are there travel alerts in mexico",
+   "mexico travel alerts",
+   "are there travel alerts for the us",
+   "when's pay day for me",
+   "when's my next pay day"
+  ],
+  "negative_ratio_study": [
+   {
+    "n_negatives": 0,
+    "domain_macro_f1": 0.6060030671230159,
+    "domain_accuracy": 0.6137931034482759,
+    "domain_over_rejected": 0,
+    "domain_over_rejected_rate": 0.0,
+    "false_alarm_rate": 1.0,
+    "n_false_alarms": 5500,
+    "n_real": 5500
+   },
+   {
+    "n_negatives": 150,
+    "domain_macro_f1": 0.5361821416674868,
+    "domain_accuracy": 0.5517241379310345,
+    "domain_over_rejected": 46,
+    "domain_over_rejected_rate": 0.15862068965517243,
+    "false_alarm_rate": 0.1761818181818182,
+    "n_false_alarms": 969,
+    "n_real": 5500
+   },
+   {
+    "n_negatives": 300,
+    "domain_macro_f1": 0.5507130014211319,
+    "domain_accuracy": 0.5551724137931034,
+    "domain_over_rejected": 51,
+    "domain_over_rejected_rate": 0.17586206896551723,
+    "false_alarm_rate": 0.09254545454545454,
+    "n_false_alarms": 509,
+    "n_real": 5500
+   },
+   {
+    "n_negatives": 1000,
+    "domain_macro_f1": 0.5404544245930071,
+    "domain_accuracy": 0.5137931034482759,
+    "domain_over_rejected": 84,
+    "domain_over_rejected_rate": 0.2896551724137931,
+    "false_alarm_rate": 0.024,
+    "n_false_alarms": 132,
+    "n_real": 5500
+   },
+   {
+    "n_negatives": 3000,
+    "domain_macro_f1": 0.48410805289085784,
+    "domain_accuracy": 0.43448275862068964,
+    "domain_over_rejected": 113,
+    "domain_over_rejected_rate": 0.3896551724137931,
+    "false_alarm_rate": 0.007454545454545454,
+    "n_false_alarms": 41,
+    "n_real": 5500
+   },
+   {
+    "n_negatives": 6000,
+    "domain_macro_f1": 0.44568977399859744,
+    "domain_accuracy": 0.3793103448275862,
+    "domain_over_rejected": 140,
+    "domain_over_rejected_rate": 0.4827586206896552,
+    "false_alarm_rate": 0.005818181818181818,
+    "n_false_alarms": 32,
+    "n_real": 5500
+   }
+  ],
+  "perturbation_macro_f1": {
+   "none": 0.5404544245930071,
+   "typo": 0.46228766955393313,
+   "drop": 0.4590355000466857,
+   "shuffle": 0.5404544245930071,
+   "contract": 0.5394522660977866
+  },
+  "keyword_safety": {
+   "recall_on_author_written_emergencies": 0.6333333333333333,
+   "n_emergencies": 30,
+   "false_alarm_rate_on_real_utterances": 0.0016363636363636363,
+   "n_real_negatives": 5500
+  }
+ },
+ "transit": {
+  "agency": "Avon Transit",
+  "date_evaluated": "2026-09-18",
+  "n_stops": 27,
+  "n_stops_served_today": 26,
+  "n_routes": 3,
+  "n_routes_today": 2,
+  "n_trips": 155,
+  "n_trips_today": 62,
+  "service_span": [
+   23280,
+   79200
+  ],
+  "fare": {
+   "amount": 0.0,
+   "currency": "USD"
+  },
+  "block_inference": {
+   "trips_chained": 152,
+   "pairs_total": 650,
+   "pairs_changed": 219,
+   "median_minutes_saved": 30.0,
+   "max_minutes_saved": 30.0
+  }
+ },
+ "handlers": [
+  {
+   "name": "next_departure",
+   "blurb": "When does the next shuttle leave from a stop?",
+   "in_clinc": false
+  },
+  {
+   "name": "trip_planning",
+   "blurb": "How do I get from one stop to another?",
+   "in_clinc": true
+  },
+  {
+   "name": "nearest_stop",
+   "blurb": "Which stop is closest to me?",
+   "in_clinc": true
+  },
+  {
+   "name": "poi_near_stop",
+   "blurb": "What is near a stop?",
+   "in_clinc": true
+  },
+  {
+   "name": "service_hours",
+   "blurb": "When does the service start and finish?",
+   "in_clinc": false
+  },
+  {
+   "name": "fares",
+   "blurb": "What does it cost, and how do I pay?",
+   "in_clinc": false
+  },
+  {
+   "name": "accessibility",
+   "blurb": "Wheelchair, lift, mobility aid, service animal.",
+   "in_clinc": false
+  },
+  {
+   "name": "service_disruption",
+   "blurb": "Is it delayed, is it running at all?",
+   "in_clinc": true
+  },
+  {
+   "name": "lost_item",
+   "blurb": "I left something on board.",
+   "in_clinc": false
+  },
+  {
+   "name": "ride_request",
+   "blurb": "Come and get me / can I book a vehicle?",
+   "in_clinc": true
+  },
+  {
+   "name": "safety_emergency",
+   "blurb": "Something is wrong and it cannot wait.",
+   "in_clinc": false
+  }
+ ]
+}

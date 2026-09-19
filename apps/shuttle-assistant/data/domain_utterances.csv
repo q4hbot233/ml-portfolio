@@ -1,0 +1,291 @@
+text,label
+when is the next shuttle,next_departure
+when does the next bus leave from here,next_departure
+how long until the next one comes,next_departure
+what time is the next departure from avon station,next_departure
+next shuttle from city market please,next_departure
+is there another bus tonight,next_departure
+when's the following bus after this one,next_departure
+how many minutes till the next pickup,next_departure
+what time does the red line come to elk lot,next_departure
+next departure walmart,next_departure
+when will a shuttle show up at comfort inn,next_departure
+do i have time to grab a coffee before the next bus,next_departure
+what's the next bus out of westgate plaza,next_departure
+how frequently do these run,next_departure
+how often does the blue line come by,next_departure
+when is the last one tonight from avon station,next_departure
+give me the upcoming departures at lake street,next_departure
+what time does the next one arrive here,next_departure
+is the next shuttle soon,next_departure
+schedule for christie lodge,next_departure
+times for the avon east route at river edge,next_departure
+"i just missed one, when's the next",next_departure
+when's the following departure,next_departure
+tell me the next three buses from avon station,next_departure
+what time is the next one to buffalo ridge,next_departure
+upcoming shuttle times please,next_departure
+how long is the wait for the next shuttle here,next_departure
+next bus at spring hill suites,next_departure
+when does a vehicle next stop at aspens,next_departure
+any more shuttles today from elk lot,next_departure
+how do i get from walmart to avon station,trip_planning
+i want to go from city market to the aspens,trip_planning
+what's the best way to reach elk lot from here,trip_planning
+route from comfort inn to buffalo ridge east,trip_planning
+can i get to westgate plaza from lake street,trip_planning
+how many stops to river edge,trip_planning
+do i need to change buses to reach christie lodge,trip_planning
+which route takes me to spring hill suites,trip_planning
+i'm at avon station and i need to get to walmart,trip_planning
+plan me a trip to eaglebend north,trip_planning
+what bus goes to city market,trip_planning
+how long does it take to get from here to stonebridge dr,trip_planning
+is there a direct bus to westgate plaza,trip_planning
+where do i transfer to reach buffalo ridge west,trip_planning
+take me from piedmont eb to loaded joes,trip_planning
+getting to christy sports from the aspens,trip_planning
+"i need to be at avon station by five, what do i take",trip_planning
+which line should i board to reach lake street,trip_planning
+can you route me to the elk lot,trip_planning
+from northside kitchen to american national bank how,trip_planning
+best way to travel to comfort inn,trip_planning
+do i have to switch lines to get to river edge,trip_planning
+i want to go to walmart,trip_planning
+what's the trip from here to avon crossing,trip_planning
+how do i reach eaglebend west,trip_planning
+journey from city market to sheraton mountain vista,trip_planning
+which shuttle connects lake street and elk lot,trip_planning
+get me to buffalo ridge east please,trip_planning
+how do i travel between piedmont wb and the aspens,trip_planning
+directions to westgate plaza by shuttle,trip_planning
+where is the closest stop,nearest_stop
+which stop am i nearest to,nearest_stop
+what's the nearest pickup point,nearest_stop
+"i'm lost, where do i catch the shuttle",nearest_stop
+closest bus stop to me right now,nearest_stop
+where should i wait for the shuttle,nearest_stop
+find me the nearest stop,nearest_stop
+which stop is walking distance from here,nearest_stop
+how far is the closest stop,nearest_stop
+where do i board from my current position,nearest_stop
+nearest shuttle stop please,nearest_stop
+what stop is near me,nearest_stop
+"i don't know where i am, find the closest stop",nearest_stop
+which pickup location is closest,nearest_stop
+where's the stop nearest to my location,nearest_stop
+"i'm on foot, what's the closest place to catch it",nearest_stop
+point me to the nearest shuttle stop,nearest_stop
+what is the closest boarding point,nearest_stop
+closest stop to where i'm standing,nearest_stop
+which one of your stops is nearest,nearest_stop
+where is the stop closest to my gps location,nearest_stop
+how far do i have to walk to a stop,nearest_stop
+show me the nearest stop on the map,nearest_stop
+nearest place to catch the blue line,nearest_stop
+what stop should i walk to,nearest_stop
+is there anywhere to eat near this stop,poi_near_stop
+what's around avon station,poi_near_stop
+any coffee close to city market,poi_near_stop
+where can i get groceries near my stop,poi_near_stop
+is there a pharmacy near elk lot,poi_near_stop
+what's nearby if i get off at walmart,poi_near_stop
+restaurants close to christie lodge,poi_near_stop
+anything to do around westgate plaza,poi_near_stop
+is there a bank near the stop,poi_near_stop
+what shops are near comfort inn,poi_near_stop
+can i find a bar close to loaded joes,poi_near_stop
+somewhere to eat within walking distance of avon station,poi_near_stop
+is there a hotel near this stop,poi_near_stop
+what's worth seeing around river edge,poi_near_stop
+any restaurants near where i'm getting off,poi_near_stop
+medical care close to the stop,poi_near_stop
+where do i buy food near lake street,poi_near_stop
+is there a ski shop nearby,poi_near_stop
+what amenities are around buffalo ridge west,poi_near_stop
+anything open near spring hill suites,poi_near_stop
+places to visit near my stop,poi_near_stop
+is there parking at elk lot,poi_near_stop
+what's close to the aspens stop,poi_near_stop
+good food near piedmont eb,poi_near_stop
+where can i find an atm near the stop,poi_near_stop
+what time do you start running,service_hours
+how late does the shuttle run,service_hours
+what are your operating hours,service_hours
+do you run on sundays,service_hours
+is the service running today,service_hours
+when does the first bus leave in the morning,service_hours
+what time does service end tonight,service_hours
+are you open on holidays,service_hours
+do the shuttles run in winter,service_hours
+hours of operation please,service_hours
+what time is the last shuttle of the day,service_hours
+does the blue line run on weekends,service_hours
+when do you stop for the night,service_hours
+is there a service tomorrow morning,service_hours
+what days do you operate,service_hours
+how early can i catch the first one,service_hours
+do you run late in the evening,service_hours
+what's your schedule on saturdays,service_hours
+is the beaver creek express running this month,service_hours
+when does the seasonal route start,service_hours
+are shuttles running right now,service_hours
+what time do the buses stop tonight,service_hours
+do you operate all year,service_hours
+service hours for the red line,service_hours
+is anything running this early,service_hours
+how much does it cost to ride,fares
+what's the fare,fares
+do i need to pay,fares
+is this shuttle free,fares
+can i pay with a card,fares
+do you take cash,fares
+how much is a day pass,fares
+is there a discount for seniors,fares
+do kids ride free,fares
+what payment methods do you accept,fares
+price of a single ride,fares
+do i need a ticket to board,fares
+is there a monthly pass,fares
+how do i pay for this,fares
+do i tap my phone when i get on,fares
+student fare please,fares
+what does a round trip cost,fares
+are transfers included in the fare,fares
+do i pay the driver or online,fares
+is there a charge for luggage,fares
+how much for two adults,fares
+can i buy a ticket on board,fares
+is there a fee to ride the shuttle,fares
+cost per journey,fares
+do i need exact change,fares
+is this shuttle wheelchair accessible,accessibility
+can you deploy the ramp for me,accessibility
+"i use a wheelchair, can i board here",accessibility
+do you have a lift on this vehicle,accessibility
+is the stop step free,accessibility
+i need assistance getting on,accessibility
+can i bring my service dog,accessibility
+is there space for a mobility scooter,accessibility
+do you have priority seating,accessibility
+"i'm visually impaired, can someone help me board",accessibility
+is the ramp working today,accessibility
+accessible boarding at this stop,accessibility
+"i have a walker, is that ok",accessibility
+can someone help me with my luggage getting on,accessibility
+are your vehicles accessible for disabled passengers,accessibility
+i need the lift deployed at my stop,accessibility
+is there a step up into the vehicle,accessibility
+do you accommodate guide dogs,accessibility
+wheelchair access at avon station,accessibility
+"i can't manage stairs, is this suitable",accessibility
+is there an accessible entrance at this stop,accessibility
+can you lower the vehicle for me,accessibility
+do you have audio announcements for blind passengers,accessibility
+help me board with my crutches,accessibility
+is the shuttle suitable for someone with limited mobility,accessibility
+is the shuttle delayed,service_disruption
+why hasn't the bus come yet,service_disruption
+is there a disruption today,service_disruption
+the shuttle is late,service_disruption
+has service been suspended,service_disruption
+is anything running behind schedule,service_disruption
+"i've been waiting twenty minutes, where is it",service_disruption
+is the route closed today,service_disruption
+are there delays because of the snow,service_disruption
+did the bus already leave without me,service_disruption
+is service affected by the road works,service_disruption
+why is the shuttle not showing up,service_disruption
+has the red line stopped running,service_disruption
+is there a detour in place,service_disruption
+any service alerts right now,service_disruption
+the bus never arrived,service_disruption
+is traffic holding up the shuttle,service_disruption
+are you running on time,service_disruption
+is the route suspended because of weather,service_disruption
+how much later will it be,service_disruption
+has something happened to the service,service_disruption
+is the shuttle cancelled,service_disruption
+why is it taking so long today,service_disruption
+any problems on the blue line,service_disruption
+is the stop temporarily closed,service_disruption
+i left my bag on the shuttle,lost_item
+i think i lost my phone on the bus,lost_item
+how do i report a lost item,lost_item
+someone left a jacket on board,lost_item
+where is your lost and found,lost_item
+i forgot my backpack on the last shuttle,lost_item
+can you check if a wallet was handed in,lost_item
+i dropped my keys on the vehicle,lost_item
+lost my glasses on the red line this morning,lost_item
+who do i contact about something i left behind,lost_item
+i left my laptop on the seat,lost_item
+is there a lost property office,lost_item
+my umbrella is still on the bus,lost_item
+i forgot a shopping bag on board,lost_item
+how do i get back something i left on the shuttle,lost_item
+lost and found contact please,lost_item
+did anyone turn in a set of keys,lost_item
+i left my water bottle on the blue line,lost_item
+my child's toy is on the shuttle,lost_item
+reporting a lost purse from this morning,lost_item
+i think my phone slipped out of my pocket on board,lost_item
+can someone look for my bag on the vehicle,lost_item
+left my headphones on the seat,lost_item
+how long do you keep lost items,lost_item
+i lost my ski pass on the shuttle,lost_item
+can you send a shuttle to pick me up,ride_request
+i need a ride,ride_request
+book me a vehicle please,ride_request
+can i request a pickup here,ride_request
+send a van to my location,ride_request
+is on demand pickup available,ride_request
+i'd like to request a ride to avon station,ride_request
+can a shuttle come get me,ride_request
+how do i order a ride,ride_request
+request a vehicle for three people,ride_request
+can you dispatch a shuttle to my stop,ride_request
+i want to book a seat on the next run,ride_request
+arrange a pickup for me,ride_request
+can i reserve a ride for later today,ride_request
+i need transport from here,ride_request
+send the next available vehicle,ride_request
+can i hail a shuttle,ride_request
+pick me up at comfort inn please,ride_request
+i'd like a ride to the village,ride_request
+is there a shuttle i can call,ride_request
+book transport for two,ride_request
+can you get a vehicle to come here,ride_request
+requesting a ride now,ride_request
+i need a lift to walmart,ride_request
+order me a shuttle,ride_request
+help,safety_emergency
+there's been an accident,safety_emergency
+someone is hurt on the bus,safety_emergency
+i feel unsafe,safety_emergency
+call the police,safety_emergency
+i need medical help,safety_emergency
+someone is harassing me,safety_emergency
+there's smoke coming from the back,safety_emergency
+a passenger has collapsed,safety_emergency
+i'm being followed,safety_emergency
+emergency stop the vehicle,safety_emergency
+there's a fire,safety_emergency
+i think someone is having a heart attack,safety_emergency
+someone stole my bag just now,safety_emergency
+a man is threatening me on board,safety_emergency
+i need an ambulance,safety_emergency
+the vehicle has crashed,safety_emergency
+a child is alone and crying on the shuttle,safety_emergency
+someone is unconscious,safety_emergency
+i'm having trouble breathing,safety_emergency
+there's a fight happening,safety_emergency
+i need to get off right now something is wrong,safety_emergency
+call 911,safety_emergency
+someone has a weapon,safety_emergency
+i've fallen and i can't get up,safety_emergency
+get me help immediately,safety_emergency
+a passenger is behaving violently,safety_emergency
+i'm injured,safety_emergency
+there's been a collision,safety_emergency
+someone needs urgent assistance here,safety_emergency
