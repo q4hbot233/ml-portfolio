@@ -601,12 +601,19 @@ def figure_permutation_nulls(null: dict, attribute: str):
         if tail.size:
             ax.hist(tail, bins=bins, color=RED, alpha=0.7, lw=0)
         ax.axvline(obs, color=RED, lw=2.0, zorder=5)
-        inside = row["p_value"] >= 0.05
+        # Place the label on whichever side of the line has more room, and in AXES
+        # coordinates so it cannot leave this panel. Offsetting from the line in points
+        # let a label near an edge spill into the neighbouring subplot and collide with
+        # its label -- which is what happened between the false-alarm and catch-rate
+        # panels, where one gap sits high in its range and the next sits low in its own.
+        frac = obs / top if top else 0.5
+        right_of_line = frac <= 0.5
         ax.annotate(f"observed {obs:.2f} pts\np = {row['p_value']:.3f}",
-                    xy=(obs, ax.get_ylim()[1] * 0.98),
-                    xytext=(-5 if inside else 5, 0), textcoords="offset points",
-                    ha="right" if inside else "left", va="top",
-                    fontsize=8.5, color=RED, fontweight="semibold")
+                    xy=(min(max(frac + (0.025 if right_of_line else -0.025), 0.02), 0.98), 0.98),
+                    xycoords="axes fraction",
+                    ha="left" if right_of_line else "right", va="top",
+                    fontsize=8.5, color=RED, fontweight="semibold",
+                    annotation_clip=False)
         for side in ("top", "right", "left"):
             ax.spines[side].set_visible(False)
         ax.spines["bottom"].set_color(GRID)
@@ -615,8 +622,9 @@ def figure_permutation_nulls(null: dict, attribute: str):
         ax.set_xlim(0, top)
         ax.set_title(PARITY_LABEL[key], fontsize=9.5, color=INK, loc="left", pad=7,
                      fontweight="semibold")
-        ax.set_xlabel("gap between groups, percentage points", fontsize=8, color=MUTED,
-                      labelpad=5)
+    # One shared x-label: three copies of this string are wider than a third of the figure,
+    # so the outer two were being cut off by the figure edge.
+    fig.supxlabel("gap between groups, percentage points", fontsize=8, color=MUTED, y=0.02)
 
     verdict = {0: "none of the three gaps is", 1: "one of the three gaps is",
                2: "two of the three gaps are", 3: "all three gaps are"}[n_sig]
@@ -628,7 +636,7 @@ def figure_permutation_nulls(null: dict, attribute: str):
              "grey — gaps a random relabelling produces at these group sizes;   "
              "red — the shuffles that reach the observed gap",
              fontsize=8, color=MUTED, ha="left")
-    fig.tight_layout(rect=(0, 0, 1, 0.835))
+    fig.tight_layout(rect=(0, 0.06, 1, 0.835))
     return fig
 
 
