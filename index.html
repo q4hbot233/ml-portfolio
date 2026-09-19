@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Things I Made and Then Argued With</title>
-<meta name="description" content="Six machine learning and data science projects, each with a demo that runs in your browser.">
+<meta name="description" content="Eight machine learning and data science projects, each with a demo that runs in your browser.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
@@ -113,13 +113,13 @@ h1{
     <p class="eyebrow"><span class="dot"></span>Qixi (Jason) Huang<span>Machine learning &amp; data science</span></p>
     <h1>Things I made and then argued with</h1>
     <p class="deck">
-      Six projects. In most of them the interesting part is not the model — it is the moment it
+      Eight projects. In most of them the interesting part is not the model — it is the moment it
       turned out to be wrong, or right for a reason I hadn't noticed, or beaten by something
       embarrassingly simple. <em>Each one opens on the argument, not the accuracy.</em>
     </p>
     <p class="meta">
-      <span><b>6</b> projects</span>
-      <span><b>6</b> demos you can drive</span>
+      <span><b>8</b> projects</span>
+      <span><b>8</b> demos you can drive</span>
       <span>Everything runs in your browser</span>
     </p>
   </header>
@@ -199,6 +199,32 @@ h1{
         </div>
       </a>
 
+      <a class="card" href="apps/card-fraud/" style="--hue:#D9534F">
+        <img class="thumb" src="assets/patterns/card-fraud.svg" alt="" width="640" height="400" loading="lazy">
+        <div class="body">
+          <p class="kicker">Imbalance · evaluation · the queue</p>
+          <h3>What 492 frauds can tell you</h3>
+          <p>0.173% of transactions are fraud, and the advice everyone repeats is to rebalance.
+             I tested the advice instead. A threshold was the wrong object all along — a team
+             fixes how many alerts it can work, not a probability.</p>
+          <span class="finding">Every rebalancing trick applied to the tree lands where an untouched linear model already stood: −0.010 [−0.050, +0.020].</span>
+          <span class="go">Set the review budget <span class="arr">→</span></span>
+        </div>
+      </a>
+
+      <a class="card" href="apps/hmda-denial/" style="--hue:#C9822F">
+        <img class="thumb" src="assets/patterns/hmda-denial.svg" alt="" width="640" height="400" loading="lazy">
+        <div class="body">
+          <p class="kicker">Mortgage lending · bounds · omitted variables</p>
+          <h3>The variable that was left out</h3>
+          <p>297,104 mortgage applications. The label is not an event — it is a decision
+             somebody made, so a model that predicts it well has learned an institution's
+             policy. Two holes make the famous denial gap hard to read, and both can be bounded.</p>
+          <span class="finding">Lenders cite credit history for 30.5% of denials. Regulation C does not collect credit score.</span>
+          <span class="go">Move the assumption <span class="arr">→</span></span>
+        </div>
+      </a>
+
       <a class="card" href="apps/cloud-classification/" style="--hue:#8E3A33">
         <img class="thumb" src="assets/patterns/cloud-classification.svg" alt="" width="640" height="400" loading="lazy">
         <div class="body">
@@ -218,7 +244,7 @@ h1{
   <footer class="foot">
     <div>
       <h4>How these run</h4>
-      <p>Five of the six boot a Python interpreter inside your browser, so the models are
+      <p>Seven of the eight boot a Python interpreter inside your browser, so the models are
          genuinely fitting and scoring on your machine rather than replaying a recording. The first
          visit spends a few seconds fetching that interpreter. Race Control skips it and draws
          straight from an exported bundle.</p>

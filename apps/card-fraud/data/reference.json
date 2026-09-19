@@ -1,0 +1,671 @@
+{
+ "_source": "card-fraud-detection-imbalance (private repo)",
+ "_derived_from": "OpenML 1597 (creditcard), ULB Machine Learning Group",
+ "_note": "Derived artefacts only: one score and one outcome per held-out transaction. No features are shipped.",
+ "citation": "Dal Pozzolo, Caelen, Johnson and Bontempi (2015). Calibrating Probability with Undersampling for Unbalanced Classification. CIDM, IEEE.",
+ "dataset": {
+  "source": "OpenML 1597 (creditcard), ULB Machine Learning Group",
+  "citation": "Dal Pozzolo, Caelen, Johnson and Bontempi (2015). Calibrating Probability with Undersampling for Unbalanced Classification. CIDM, IEEE.",
+  "n_rows": 284807,
+  "n_frauds": 492,
+  "prevalence": 0.001727485630620034,
+  "observation_window_hours": 47.99777777777778
+ },
+ "split": {
+  "kind": "chronological, by Time quantile",
+  "fractions": [
+   0.7,
+   0.15,
+   0.15
+  ],
+  "t_train_end_s": 132929.0,
+  "t_valid_end_s": 151328.1,
+  "sizes": {
+   "test": {
+    "n": 42721,
+    "frauds": 52,
+    "rate": 0.0012172
+   },
+   "train": {
+    "n": 199368,
+    "frauds": 384,
+    "rate": 0.0019260864
+   },
+   "valid": {
+    "n": 42718,
+    "frauds": 56,
+    "rate": 0.0013109228
+   }
+  }
+ },
+ "prevalence_drift": {
+  "test": 0.0012172,
+  "train": 0.0019260864,
+  "valid": 0.0013109228
+ },
+ "split_comparison": [
+  {
+   "index": "shuffled",
+   "average_precision": 0.4823903405,
+   "roc_auc": 0.8441006074,
+   "precision_at_100": 0.55,
+   "recall_at_100": 0.7432432432,
+   "n_positives": 74.0
+  },
+  {
+   "index": "chronological",
+   "average_precision": 0.3165080987,
+   "roc_auc": 0.8117465694,
+   "precision_at_100": 0.36,
+   "recall_at_100": 0.6428571429,
+   "n_positives": 56.0
+  }
+ ],
+ "treatments": [
+  {
+   "index": 0,
+   "model": "lgbm",
+   "treatment": "none",
+   "average_precision": 0.3165080987,
+   "roc_auc": 0.8117465694,
+   "precision_at_100": 0.36,
+   "recall_at_100": 0.6428571429,
+   "alerts_per_fraud": 2.7777777778
+  },
+  {
+   "index": 1,
+   "model": "lgbm",
+   "treatment": "class_weight",
+   "average_precision": 0.8529241481,
+   "roc_auc": 0.982095977,
+   "precision_at_100": 0.48,
+   "recall_at_100": 0.8571428571,
+   "alerts_per_fraud": 2.0833333333
+  },
+  {
+   "index": 2,
+   "model": "lgbm",
+   "treatment": "scale_pos_weight",
+   "average_precision": 0.8529241481,
+   "roc_auc": 0.982095977,
+   "precision_at_100": 0.48,
+   "recall_at_100": 0.8571428571,
+   "alerts_per_fraud": 2.0833333333
+  },
+  {
+   "index": 3,
+   "model": "lgbm",
+   "treatment": "undersample",
+   "average_precision": 0.8244864858,
+   "roc_auc": 0.9841340068,
+   "precision_at_100": 0.48,
+   "recall_at_100": 0.8571428571,
+   "alerts_per_fraud": 2.0833333333
+  },
+  {
+   "index": 4,
+   "model": "lgbm",
+   "treatment": "smote",
+   "average_precision": 0.858272411,
+   "roc_auc": 0.9882870839,
+   "precision_at_100": 0.48,
+   "recall_at_100": 0.8571428571,
+   "alerts_per_fraud": 2.0833333333
+  },
+  {
+   "index": 5,
+   "model": "lgbm",
+   "treatment": "smote_tomek",
+   "average_precision": 0.858272411,
+   "roc_auc": 0.9882870839,
+   "precision_at_100": 0.48,
+   "recall_at_100": 0.8571428571,
+   "alerts_per_fraud": 2.0833333333
+  },
+  {
+   "index": 6,
+   "model": "logistic",
+   "treatment": "none",
+   "average_precision": 0.779689513,
+   "roc_auc": 0.9814961625,
+   "precision_at_100": 0.49,
+   "recall_at_100": 0.875,
+   "alerts_per_fraud": 2.0408163265
+  },
+  {
+   "index": 7,
+   "model": "logistic",
+   "treatment": "class_weight",
+   "average_precision": 0.8461973476,
+   "roc_auc": 0.9823454463,
+   "precision_at_100": 0.49,
+   "recall_at_100": 0.875,
+   "alerts_per_fraud": 2.0408163265
+  },
+  {
+   "index": 8,
+   "model": "logistic",
+   "treatment": "scale_pos_weight",
+   "average_precision": 0.8460036132,
+   "roc_auc": 0.9823487948,
+   "precision_at_100": 0.49,
+   "recall_at_100": 0.875,
+   "alerts_per_fraud": 2.0408163265
+  },
+  {
+   "index": 9,
+   "model": "logistic",
+   "treatment": "undersample",
+   "average_precision": 0.2619284576,
+   "roc_auc": 0.9793082837,
+   "precision_at_100": 0.33,
+   "recall_at_100": 0.5892857143,
+   "alerts_per_fraud": 3.0303030303
+  },
+  {
+   "index": 10,
+   "model": "logistic",
+   "treatment": "smote",
+   "average_precision": 0.8508792411,
+   "roc_auc": 0.9790839288,
+   "precision_at_100": 0.49,
+   "recall_at_100": 0.875,
+   "alerts_per_fraud": 2.0408163265
+  },
+  {
+   "index": 11,
+   "model": "logistic",
+   "treatment": "smote_tomek",
+   "average_precision": 0.8508792411,
+   "roc_auc": 0.9790839288,
+   "precision_at_100": 0.49,
+   "recall_at_100": 0.875,
+   "alerts_per_fraud": 2.0408163265
+  }
+ ],
+ "treatment_shapes": [
+  {
+   "index": 0,
+   "treatment": "none",
+   "rows": 199368,
+   "positives": 384,
+   "prevalence": "0.1926%",
+   "rows_added": 0,
+   "rows_removed": 0,
+   "note": "untouched"
+  },
+  {
+   "index": 1,
+   "treatment": "class_weight",
+   "rows": 199368,
+   "positives": 384,
+   "prevalence": "0.1926%",
+   "rows_added": 0,
+   "rows_removed": 0,
+   "note": "training rows untouched; only the loss is reweighted"
+  },
+  {
+   "index": 2,
+   "treatment": "scale_pos_weight",
+   "rows": 199368,
+   "positives": 384,
+   "prevalence": "0.1926%",
+   "rows_added": 0,
+   "rows_removed": 0,
+   "note": "training rows untouched; only the loss is reweighted"
+  },
+  {
+   "index": 3,
+   "treatment": "undersample",
+   "rows": 768,
+   "positives": 384,
+   "prevalence": "50.0000%",
+   "rows_added": 0,
+   "rows_removed": 198600,
+   "note": "real negatives discarded"
+  },
+  {
+   "index": 4,
+   "treatment": "smote",
+   "rows": 397968,
+   "positives": 198984,
+   "prevalence": "50.0000%",
+   "rows_added": 198600,
+   "rows_removed": 0,
+   "note": "synthetic positives interpolated between real ones"
+  },
+  {
+   "index": 5,
+   "treatment": "smote_tomek",
+   "rows": 397968,
+   "positives": 198984,
+   "prevalence": "50.0000%",
+   "rows_added": 198600,
+   "rows_removed": 0,
+   "note": "synthetic positives interpolated between real ones"
+  }
+ ],
+ "paired_vs_untouched": [
+  {
+   "model": "lgbm",
+   "treatment": "class_weight",
+   "d_average_precision": "0.5364 [0.4441, 0.6214]",
+   "ap_separated": true,
+   "d_precision_at_k": "0.1200 [0.0600, 0.1800]",
+   "queue_separated": true
+  },
+  {
+   "model": "lgbm",
+   "treatment": "scale_pos_weight",
+   "d_average_precision": "0.5364 [0.4441, 0.6214]",
+   "ap_separated": true,
+   "d_precision_at_k": "0.1200 [0.0600, 0.1800]",
+   "queue_separated": true
+  },
+  {
+   "model": "lgbm",
+   "treatment": "undersample",
+   "d_average_precision": "0.5080 [0.4124, 0.5983]",
+   "ap_separated": true,
+   "d_precision_at_k": "0.1200 [0.0700, 0.1800]",
+   "queue_separated": true
+  },
+  {
+   "model": "lgbm",
+   "treatment": "smote",
+   "d_average_precision": "0.5418 [0.4503, 0.6271]",
+   "ap_separated": true,
+   "d_precision_at_k": "0.1200 [0.0600, 0.1800]",
+   "queue_separated": true
+  },
+  {
+   "model": "lgbm",
+   "treatment": "smote_tomek",
+   "d_average_precision": "0.5418 [0.4503, 0.6271]",
+   "ap_separated": true,
+   "d_precision_at_k": "0.1200 [0.0600, 0.1800]",
+   "queue_separated": true
+  },
+  {
+   "model": "logistic",
+   "treatment": "class_weight",
+   "d_average_precision": "0.0665 [0.0111, 0.1278]",
+   "ap_separated": true,
+   "d_precision_at_k": "0.0000 [-0.0400, 0.0200]",
+   "queue_separated": false
+  },
+  {
+   "model": "logistic",
+   "treatment": "scale_pos_weight",
+   "d_average_precision": "0.0663 [0.0111, 0.1278]",
+   "ap_separated": true,
+   "d_precision_at_k": "0.0000 [-0.0400, 0.0200]",
+   "queue_separated": false
+  },
+  {
+   "model": "logistic",
+   "treatment": "undersample",
+   "d_average_precision": "-0.5178 [-0.5833, -0.4326]",
+   "ap_separated": true,
+   "d_precision_at_k": "-0.1600 [-0.2300, -0.0700]",
+   "queue_separated": true
+  },
+  {
+   "model": "logistic",
+   "treatment": "smote",
+   "d_average_precision": "0.0712 [0.0195, 0.1311]",
+   "ap_separated": true,
+   "d_precision_at_k": "0.0000 [-0.0300, 0.0300]",
+   "queue_separated": false
+  },
+  {
+   "model": "logistic",
+   "treatment": "smote_tomek",
+   "d_average_precision": "0.0712 [0.0195, 0.1311]",
+   "ap_separated": true,
+   "d_precision_at_k": "0.0000 [-0.0300, 0.0300]",
+   "queue_separated": false
+  }
+ ],
+ "best_tree_minus_untouched_logistic_queue": {
+  "point": -0.010000000000000009,
+  "ci_lo": -0.04999999999999999,
+  "ci_hi": 0.020000000000000018,
+  "n_boot": 2000
+ },
+ "smote_tomek_rows_removed": 0,
+ "calibration": [
+  {
+   "index": 0,
+   "model": "lgbm",
+   "treatment": "none",
+   "mean_predicted": 0.0093328502,
+   "actual_rate": 0.0013109228,
+   "brier": 0.0083666775,
+   "ECE": 0.0087709676
+  },
+  {
+   "index": 1,
+   "model": "lgbm",
+   "treatment": "class_weight",
+   "mean_predicted": 0.0011285402,
+   "actual_rate": 0.0013109228,
+   "brier": 0.000317273,
+   "ECE": 0.0001825724
+  },
+  {
+   "index": 2,
+   "model": "lgbm",
+   "treatment": "scale_pos_weight",
+   "mean_predicted": 0.0011285402,
+   "actual_rate": 0.0013109228,
+   "brier": 0.000317273,
+   "ECE": 0.0001825724
+  },
+  {
+   "index": 3,
+   "model": "lgbm",
+   "treatment": "undersample",
+   "mean_predicted": 0.0577895771,
+   "actual_rate": 0.0013109228,
+   "brier": 0.0372200691,
+   "ECE": 0.0564786543
+  },
+  {
+   "index": 4,
+   "model": "lgbm",
+   "treatment": "smote",
+   "mean_predicted": 0.0018341522,
+   "actual_rate": 0.0013109228,
+   "brier": 0.0005014154,
+   "ECE": 0.0006067979
+  },
+  {
+   "index": 5,
+   "model": "lgbm",
+   "treatment": "smote_tomek",
+   "mean_predicted": 0.0018341522,
+   "actual_rate": 0.0013109228,
+   "brier": 0.0005014154,
+   "ECE": 0.0006067979
+  },
+  {
+   "index": 6,
+   "model": "logistic",
+   "treatment": "none",
+   "mean_predicted": 0.0015137401,
+   "actual_rate": 0.0013109228,
+   "brier": 0.000572484,
+   "ECE": 0.0002028173
+  },
+  {
+   "index": 7,
+   "model": "logistic",
+   "treatment": "class_weight",
+   "mean_predicted": 0.0904249106,
+   "actual_rate": 0.0013109228,
+   "brier": 0.0321921344,
+   "ECE": 0.0891139878
+  },
+  {
+   "index": 8,
+   "model": "logistic",
+   "treatment": "scale_pos_weight",
+   "mean_predicted": 0.0906085367,
+   "actual_rate": 0.0013109228,
+   "brier": 0.0322611553,
+   "ECE": 0.0892976139
+  },
+  {
+   "index": 9,
+   "model": "logistic",
+   "treatment": "undersample",
+   "mean_predicted": 0.1036068208,
+   "actual_rate": 0.0013109228,
+   "brier": 0.032300393,
+   "ECE": 0.102295898
+  },
+  {
+   "index": 10,
+   "model": "logistic",
+   "treatment": "smote",
+   "mean_predicted": 0.0552172889,
+   "actual_rate": 0.0013109228,
+   "brier": 0.0187137994,
+   "ECE": 0.0539063661
+  },
+  {
+   "index": 11,
+   "model": "logistic",
+   "treatment": "smote_tomek",
+   "mean_predicted": 0.0552172889,
+   "actual_rate": 0.0013109228,
+   "brier": 0.0187137994,
+   "ECE": 0.0539063661
+  }
+ ],
+ "noise_floor": {
+  "n_positives_valid": 56,
+  "budget": 100,
+  "one_transaction_pct": 1.0,
+  "ceiling": 0.56,
+  "median_interval_width_pts": 9.512500000000001,
+  "estimates": [
+   {
+    "index": 9,
+    "label": "logistic / undersample",
+    "point": 0.33,
+    "lo": 0.26,
+    "hi": 0.42,
+    "n_boot": 2000
+   },
+   {
+    "index": 0,
+    "label": "lgbm / none",
+    "point": 0.36,
+    "lo": 0.29,
+    "hi": 0.42,
+    "n_boot": 2000
+   },
+   {
+    "index": 1,
+    "label": "lgbm / class_weight",
+    "point": 0.48,
+    "lo": 0.43,
+    "hi": 0.52,
+    "n_boot": 2000
+   },
+   {
+    "index": 2,
+    "label": "lgbm / scale_pos_weight",
+    "point": 0.48,
+    "lo": 0.43,
+    "hi": 0.52,
+    "n_boot": 2000
+   },
+   {
+    "index": 3,
+    "label": "lgbm / undersample",
+    "point": 0.48,
+    "lo": 0.43,
+    "hi": 0.53,
+    "n_boot": 2000
+   },
+   {
+    "index": 4,
+    "label": "lgbm / smote",
+    "point": 0.48,
+    "lo": 0.43,
+    "hi": 0.53,
+    "n_boot": 2000
+   },
+   {
+    "index": 5,
+    "label": "lgbm / smote_tomek",
+    "point": 0.48,
+    "lo": 0.43,
+    "hi": 0.53,
+    "n_boot": 2000
+   },
+   {
+    "index": 6,
+    "label": "logistic / none",
+    "point": 0.49,
+    "lo": 0.44,
+    "hi": 0.53,
+    "n_boot": 2000
+   },
+   {
+    "index": 7,
+    "label": "logistic / class_weight",
+    "point": 0.49,
+    "lo": 0.43975,
+    "hi": 0.53,
+    "n_boot": 2000
+   },
+   {
+    "index": 8,
+    "label": "logistic / scale_pos_weight",
+    "point": 0.49,
+    "lo": 0.43,
+    "hi": 0.53,
+    "n_boot": 2000
+   },
+   {
+    "index": 10,
+    "label": "logistic / smote",
+    "point": 0.49,
+    "lo": 0.44,
+    "hi": 0.53,
+    "n_boot": 2000
+   },
+   {
+    "index": 11,
+    "label": "logistic / smote_tomek",
+    "point": 0.49,
+    "lo": 0.44,
+    "hi": 0.53,
+    "n_boot": 2000
+   }
+  ]
+ },
+ "selection": {
+  "rule": "best precision@100 on validation; ties to the fewest interventions",
+  "tied_at_top": [
+   [
+    "logistic",
+    "none"
+   ],
+   [
+    "logistic",
+    "class_weight"
+   ],
+   [
+    "logistic",
+    "scale_pos_weight"
+   ],
+   [
+    "logistic",
+    "smote"
+   ],
+   [
+    "logistic",
+    "smote_tomek"
+   ]
+  ],
+  "selected": [
+   "logistic",
+   "none"
+  ]
+ },
+ "published_test": {
+  "n": 42721,
+  "n_frauds": 52,
+  "prevalence": 0.00121719997191077,
+  "metrics": {
+   "average_precision": {
+    "point": 0.6440303779521244,
+    "ci_lo": 0.5136133537021875,
+    "ci_hi": 0.7612155717262993,
+    "n_boot": 2000
+   },
+   "roc_auc": {
+    "point": 0.967554809202141,
+    "ci_lo": 0.9397435334065265,
+    "ci_hi": 0.9883286055269813,
+    "n_boot": 2000
+   }
+  },
+  "precision_at_budget": {
+   "point": 0.39,
+   "ci_lo": 0.33,
+   "ci_hi": 0.45,
+   "n_boot": 2000
+  },
+  "queue": [
+   {
+    "index": 0,
+    "k": 20,
+    "caught": 19,
+    "missed": 33,
+    "precision_at_k": 0.95,
+    "recall_at_k": 0.3653846154,
+    "alerts_per_fraud": 1.0526315789
+   },
+   {
+    "index": 1,
+    "k": 50,
+    "caught": 33,
+    "missed": 19,
+    "precision_at_k": 0.66,
+    "recall_at_k": 0.6346153846,
+    "alerts_per_fraud": 1.5151515152
+   },
+   {
+    "index": 2,
+    "k": 100,
+    "caught": 39,
+    "missed": 13,
+    "precision_at_k": 0.39,
+    "recall_at_k": 0.75,
+    "alerts_per_fraud": 2.5641025641
+   },
+   {
+    "index": 3,
+    "k": 200,
+    "caught": 41,
+    "missed": 11,
+    "precision_at_k": 0.205,
+    "recall_at_k": 0.7884615385,
+    "alerts_per_fraud": 4.8780487805
+   },
+   {
+    "index": 4,
+    "k": 500,
+    "caught": 42,
+    "missed": 10,
+    "precision_at_k": 0.084,
+    "recall_at_k": 0.8076923077,
+    "alerts_per_fraud": 11.9047619048
+   },
+   {
+    "index": 5,
+    "k": 1000,
+    "caught": 42,
+    "missed": 10,
+    "precision_at_k": 0.042,
+    "recall_at_k": 0.8076923077,
+    "alerts_per_fraud": 23.8095238095
+   }
+  ]
+ },
+ "budgets": [
+  20,
+  50,
+  100,
+  200,
+  500,
+  1000
+ ],
+ "headline_budget": 100
+}

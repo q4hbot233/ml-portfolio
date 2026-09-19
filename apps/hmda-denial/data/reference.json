@@ -1,0 +1,428 @@
+{
+ "_source": "hmda-mortgage-denial-audit (private repo)",
+ "_derived_from": "CFPB HMDA data browser (Regulation C loan/application register)",
+ "_note": "Derived artefacts only: outcome, predicted denial probability and the four audited attributes. No loan amounts, incomes or geography.",
+ "slice": {
+  "state": "GA",
+  "year": 2023
+ },
+ "n_published": 450495,
+ "n_modelled": 297104,
+ "dropped_by_the_convention": {
+  "withdrawn": 66448,
+  "incomplete": 24873,
+  "share_of_decided_applications": 0.2351058762952951
+ },
+ "manski": {
+  "by_group": [
+   {
+    "index": 0,
+    "group": "asian",
+    "observed_among_decided": 0.2177620512,
+    "lower": 0.1658933227,
+    "upper": 0.404083256,
+    "n_decided": 17239,
+    "n_undecided": 5390,
+    "n_total": 22629,
+    "undecided_share": 0.2381899333
+   },
+   {
+    "index": 1,
+    "group": "black",
+    "observed_among_decided": 0.4011104274,
+    "lower": 0.2992935333,
+    "upper": 0.5531310981,
+    "n_decided": 71504,
+    "n_undecided": 24325,
+    "n_total": 95829,
+    "undecided_share": 0.2538375648
+   },
+   {
+    "index": 2,
+    "group": "joint",
+    "observed_among_decided": 0.2313660945,
+    "lower": 0.1790718835,
+    "upper": 0.4050955414,
+    "n_decided": 4253,
+    "n_undecided": 1242,
+    "n_total": 5495,
+    "undecided_share": 0.2260236579
+   },
+   {
+    "index": 3,
+    "group": "not_provided",
+    "observed_among_decided": 0.3102599653,
+    "lower": 0.225625126,
+    "upper": 0.4984119782,
+    "n_decided": 57700,
+    "n_undecided": 21644,
+    "n_total": 79344,
+    "undecided_share": 0.2727868522
+   },
+   {
+    "index": 4,
+    "group": "white",
+    "observed_among_decided": 0.2420142803,
+    "lower": 0.1917691888,
+    "upper": 0.399381283,
+    "n_decided": 143694,
+    "n_undecided": 37649,
+    "n_total": 181343,
+    "undecided_share": 0.2076120942
+   }
+  ],
+  "black_minus_white": {
+   "observed_gap_among_decided": 0.1590961470429429,
+   "gap_lower": -0.10008774971026746,
+   "gap_upper": 0.36136190932696416,
+   "sign_is_determined": false
+  }
+ },
+ "stated_reasons": {
+  "by_race": [
+   {
+    "race": "american_indian",
+    "application incomplete": 0.1305970149,
+    "collateral": 0.1026119403,
+    "credit history": 0.3395522388,
+    "debt-to-income ratio": 0.302238806,
+    "employment history": 0.0037313433,
+    "exempt": 0.0055970149,
+    "insufficient cash": 0.0093283582,
+    "mortgage insurance denied": 0.0018656716,
+    "other": 0.0708955224,
+    "unverifiable information": 0.0335820896
+   },
+   {
+    "race": "asian",
+    "application incomplete": 0.1166755461,
+    "collateral": 0.0993606819,
+    "credit history": 0.1640916356,
+    "debt-to-income ratio": 0.4355354289,
+    "employment history": 0.016249334,
+    "exempt": 0.005061268,
+    "insufficient cash": 0.0367607885,
+    "mortgage insurance denied": 0.0,
+    "other": 0.0783164624,
+    "unverifiable information": 0.0479488546
+   },
+   {
+    "race": "black",
+    "application incomplete": 0.1039015376,
+    "collateral": 0.0821798403,
+    "credit history": 0.3592622294,
+    "debt-to-income ratio": 0.3147379798,
+    "employment history": 0.0112269447,
+    "exempt": 0.0048115477,
+    "insufficient cash": 0.0178166731,
+    "mortgage insurance denied": 0.000244064,
+    "other": 0.0736375998,
+    "unverifiable information": 0.0321815836
+   },
+   {
+    "race": "joint",
+    "application incomplete": 0.1107723577,
+    "collateral": 0.1046747967,
+    "credit history": 0.3729674797,
+    "debt-to-income ratio": 0.2754065041,
+    "employment history": 0.012195122,
+    "exempt": 0.0091463415,
+    "insufficient cash": 0.0162601626,
+    "mortgage insurance denied": 0.0,
+    "other": 0.0670731707,
+    "unverifiable information": 0.031504065
+   },
+   {
+    "race": "not_provided",
+    "application incomplete": 0.1361300413,
+    "collateral": 0.1265221763,
+    "credit history": 0.2461177522,
+    "debt-to-income ratio": 0.3096860686,
+    "employment history": 0.0136856217,
+    "exempt": 0.0101664618,
+    "insufficient cash": 0.019048151,
+    "mortgage insurance denied": 5.58597e-05,
+    "other": 0.0868618032,
+    "unverifiable information": 0.0517260641
+   },
+   {
+    "race": "two_or_more_minority",
+    "application incomplete": 0.1156069364,
+    "collateral": 0.08477842,
+    "credit history": 0.3468208092,
+    "debt-to-income ratio": 0.3275529865,
+    "employment history": 0.021194605,
+    "exempt": 0.0096339114,
+    "insufficient cash": 0.0038535645,
+    "mortgage insurance denied": 0.0019267823,
+    "other": 0.0712909441,
+    "unverifiable information": 0.0173410405
+   },
+   {
+    "race": "white",
+    "application incomplete": 0.1200253048,
+    "collateral": 0.1139866575,
+    "credit history": 0.3027375201,
+    "debt-to-income ratio": 0.3153611686,
+    "employment history": 0.0112433862,
+    "exempt": 0.012594893,
+    "insufficient cash": 0.0158730159,
+    "mortgage insurance denied": 8.62664e-05,
+    "other": 0.0714285714,
+    "unverifiable information": 0.036663216
+   }
+  ],
+  "credit_history_share_of_all_denials": 0.30519220425492954
+ },
+ "models": [
+  {
+   "index": 0,
+   "model": "majority",
+   "average_precision": 0.2941047778,
+   "roc_auc": 0.5
+  },
+  {
+   "index": 1,
+   "model": "logistic",
+   "average_precision": 0.7681100855,
+   "roc_auc": 0.8459125368
+  },
+  {
+   "index": 2,
+   "model": "lgbm",
+   "average_precision": 0.840313757,
+   "roc_auc": 0.8908299729
+  }
+ ],
+ "valid_strata": {
+  "focal": "black",
+  "reference": "white",
+  "n_strata_used": 10,
+  "raw_difference": 0.16052834128910834,
+  "raw_risk_ratio": 1.6670197217367029,
+  "stratified_difference": 0.0690885685226441,
+  "share_of_raw_gap_remaining": 0.4303823734041889
+ },
+ "valid_strata_rows": [
+  {
+   "index": 0,
+   "stratum": 0,
+   "n_focal": 581,
+   "n_reference": 3081,
+   "mean_predicted": 0.0255118557,
+   "rate_focal": 0.0240963855,
+   "rate_reference": 0.017526777,
+   "difference": 0.0065696085
+  },
+  {
+   "index": 1,
+   "stratum": 1,
+   "n_focal": 785,
+   "n_reference": 3105,
+   "mean_predicted": 0.0469729957,
+   "rate_focal": 0.0611464968,
+   "rate_reference": 0.0376811594,
+   "difference": 0.0234653374
+  },
+  {
+   "index": 2,
+   "stratum": 2,
+   "n_focal": 1233,
+   "n_reference": 2947,
+   "mean_predicted": 0.0624794469,
+   "rate_focal": 0.0892133009,
+   "rate_reference": 0.0430946725,
+   "difference": 0.0461186283
+  },
+  {
+   "index": 3,
+   "stratum": 3,
+   "n_focal": 1638,
+   "n_reference": 2774,
+   "mean_predicted": 0.0884770448,
+   "rate_focal": 0.1227106227,
+   "rate_reference": 0.0684931507,
+   "difference": 0.054217472
+  },
+  {
+   "index": 4,
+   "stratum": 4,
+   "n_focal": 1465,
+   "n_reference": 3053,
+   "mean_predicted": 0.128948819,
+   "rate_focal": 0.1651877133,
+   "rate_reference": 0.088765149,
+   "difference": 0.0764225643
+  },
+  {
+   "index": 5,
+   "stratum": 5,
+   "n_focal": 1385,
+   "n_reference": 3107,
+   "mean_predicted": 0.184785988,
+   "rate_focal": 0.2281588448,
+   "rate_reference": 0.1393627293,
+   "difference": 0.0887961154
+  },
+  {
+   "index": 6,
+   "stratum": 6,
+   "n_focal": 1581,
+   "n_reference": 2899,
+   "mean_predicted": 0.2585935914,
+   "rate_focal": 0.3194180898,
+   "rate_reference": 0.2062780269,
+   "difference": 0.1131400629
+  },
+  {
+   "index": 7,
+   "stratum": 7,
+   "n_focal": 1815,
+   "n_reference": 2612,
+   "mean_predicted": 0.3894797262,
+   "rate_focal": 0.470523416,
+   "rate_reference": 0.3032159265,
+   "difference": 0.1673074895
+  },
+  {
+   "index": 8,
+   "stratum": 8,
+   "n_focal": 1811,
+   "n_reference": 2653,
+   "mean_predicted": 0.761346366,
+   "rate_focal": 0.818332413,
+   "rate_reference": 0.724839804,
+   "difference": 0.093492609
+  },
+  {
+   "index": 9,
+   "stratum": 9,
+   "n_focal": 1951,
+   "n_reference": 2398,
+   "mean_predicted": 0.9857375934,
+   "rate_focal": 0.9958995387,
+   "rate_reference": 0.9945788157,
+   "difference": 0.001320723
+  }
+ ],
+ "e_values": {
+  "raw_risk_ratio": 1.6670197217367029,
+  "raw": 2.7215030221840886,
+  "residual_risk_ratio": 1.256509811956101,
+  "residual": 1.8242307782642468
+ },
+ "parity_permutation": {
+  "selection_rate_difference": {
+   "observed": 0.13223399956638188,
+   "p_value": 0.0004997501249375312,
+   "null_median": 0.014848081464595986,
+   "null_q95": 0.031982059155676826,
+   "n_perm": 2000
+  },
+  "fnr_difference": {
+   "observed": 0.0650466285512673,
+   "p_value": 0.08295852073963018,
+   "null_median": 0.033333284194255575,
+   "null_q95": 0.07042323843484366,
+   "n_perm": 2000
+  },
+  "fpr_difference": {
+   "observed": 0.03190924885415437,
+   "p_value": 0.0004997501249375312,
+   "null_median": 0.00808470278436589,
+   "null_q95": 0.01829059129705452,
+   "n_perm": 2000
+  }
+ },
+ "published_test": {
+  "n": 59420,
+  "denial_rate": 0.29410972736452373,
+  "average_precision": 0.8438360696806969,
+  "roc_auc": 0.8931144696869256,
+  "raw_black_minus_white": {
+   "focal": "black",
+   "reference": "white",
+   "point": 0.16266941636904858,
+   "ci_lo": 0.15345339574963707,
+   "ci_hi": 0.17247525371352926,
+   "n_boot": 2000
+  },
+  "stratified_difference": 0.06633299170208061,
+  "share_of_raw_gap_remaining": 0.40777789201376835,
+  "residual_risk_ratio": 1.2453706924502326,
+  "e_value": 1.7981613120918283
+ },
+ "excluded_on_purpose": {
+  "tract_minority_population_percent": "neighbourhood racial composition; including it is redlining by construction",
+  "tract_to_msa_income_percentage": "neighbourhood income, a close proxy for the above",
+  "derived_race": "protected attribute, audit only",
+  "derived_sex": "protected attribute, audit only",
+  "derived_ethnicity": "protected attribute, audit only",
+  "applicant_age": "protected attribute, audit only",
+  "denial_reason-1": "recorded after the decision it would be predicting",
+  "interest_rate": "priced after approval; absent on every denied row",
+  "rate_spread": "same",
+  "total_loan_costs": "same"
+ },
+ "min_audit_cell": 300,
+ "race_codes": {
+  "american_indian": 0,
+  "asian": 1,
+  "black": 2,
+  "joint": 3,
+  "not_provided": 4,
+  "pacific_islander": 5,
+  "two_or_more_minority": 6,
+  "white": 7
+ },
+ "outcome_counts_by_race": {
+  "american_indian": {
+   "denied": 536,
+   "incomplete": 184,
+   "originated": 608,
+   "withdrawn": 283
+  },
+  "asian": {
+   "denied": 3754,
+   "incomplete": 1330,
+   "originated": 13485,
+   "withdrawn": 4060
+  },
+  "black": {
+   "denied": 28681,
+   "incomplete": 6348,
+   "originated": 42823,
+   "withdrawn": 17977
+  },
+  "joint": {
+   "denied": 984,
+   "incomplete": 283,
+   "originated": 3269,
+   "withdrawn": 959
+  },
+  "not_provided": {
+   "denied": 17902,
+   "incomplete": 6064,
+   "originated": 39798,
+   "withdrawn": 15580
+  },
+  "pacific_islander": {
+   "denied": 229,
+   "incomplete": 51,
+   "originated": 254,
+   "withdrawn": 103
+  },
+  "two_or_more_minority": {
+   "denied": 519,
+   "incomplete": 144,
+   "originated": 568,
+   "withdrawn": 306
+  },
+  "white": {
+   "denied": 34776,
+   "incomplete": 10469,
+   "originated": 108918,
+   "withdrawn": 27180
+  }
+ }
+}
