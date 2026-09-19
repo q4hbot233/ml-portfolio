@@ -686,7 +686,7 @@ def main() -> None:
 
     t_opt = get_optimal(cost_ratio)
     if "threshold" not in st.session_state:
-        st.session_state["threshold"] = snap_to_grid(0.1065)
+        st.session_state["threshold"] = snap_to_grid(float(ref["frozen"]["threshold"]))
     if snap:
         st.session_state["threshold"] = snap_to_grid(t_opt)
     threshold = float(st.slider(
@@ -758,7 +758,7 @@ def main() -> None:
         "At the deployed cut the two sexes are wrong in opposite directions: men are "
         "flagged more often and absorb more false flags, while women absorb more missed "
         "defaults. Notice too that the spread across age band and education is roughly "
-        "three times the spread across sex."
+        "four to five times the spread across sex."
     )
 
     with st.expander("The numbers behind those bars"):
@@ -823,56 +823,91 @@ def main() -> None:
     )
 
     st.divider()
-    st.subheader("4 · Was it even the right model?")
+    st.subheader("4 · What changing the model actually bought")
     st.markdown(
-        "Everything above takes the model as given. That model was chosen on **average "
-        "precision**, which integrates precision over the whole recall axis \u2014 and this rule "
-        "operates at recall 0.88 and precision 0.30, one end of it. I picked between two "
-        "families using a number that averages over everywhere, to deploy in one place."
+        "The rule on screen is the **second** model this project put on the test split, and the "
+        "story of why is the most useful thing here. The first version chose between logistic "
+        "regression and LightGBM on **average precision**, got an interval straddling zero, "
+        "called it a tie and kept the simpler model. Average precision integrates precision over "
+        "the whole recall axis \u2014 and this rule operates at recall 0.92, one end of it."
     )
     sa = ref.get("selection_audit")
+    sw = ref.get("swap")
     if sa:
         rows = []
         for key, label in (("average_precision", "average precision"),
-                           # r is the audit's own frozen 10, NOT the slider above: that run is fixed, and
-            # relabelling it with whatever r is on screen would claim a result it never had.
-            ("expected_cost",
-             f"expected cost at r = {sa['design']['cost_ratio_ASSUMED']:g}")):
+                           # r is the audit's own frozen 10, NOT the slider above: that run is
+                           # fixed, and relabelling it with whatever r is on screen would claim
+                           # a result it never had.
+                           ("expected_cost",
+                            f"expected cost at r = {sa['design']['cost_ratio_ASSUMED']:g}")):
             v = sa["summary"][key]
+            d = v["lgbm_minus_logistic"]
             rows.append({
                 "inner selection metric": label,
                 "logistic": f"{v['logistic_mean_cost']:,.0f}",
                 "LightGBM": f"{v['lgbm_mean_cost']:,.0f}",
-                "difference": f"{v['paired_difference']:+,.1f}",
-                "95% interval": f"[{v['ci_lo']:+,.1f}, {v['ci_hi']:+,.1f}]",
-                "LightGBM cheaper on": f"{v['lgbm_cheaper_on_n_folds']} of {v['n_folds']} folds",
+                "difference": f"{d['point']:+,.1f}",
+                "95% interval": f"[{d['ci_lo']:+,.1f}, {d['ci_hi']:+,.1f}]",
+                "LightGBM cheaper on": f"{d['cheaper_on_n_folds']} of {d['n_folds']} folds",
             })
         st.table(pd.DataFrame(rows).set_index("inner selection metric"))
         st.caption(
             f"Nested cross-validation on {sa['design']['n_rows']:,} pooled training and "
             f"validation clients, {sa['design']['outer']}. The inner loop tunes **each family "
-            f"separately on outer-training rows only**, so neither model has seen the rows it "
-            f"is scored on and neither gets a hyperparameter chosen with a peek. Both arms are "
-            f"isotonic-calibrated, so this compares families and not calibration states. "
-            f"Costs in units of one false alarm. The test split is never read."
+            f"separately on outer-training rows only**, and both arms are built exactly as the "
+            f"deployed model is, so this compares families and not calibration states. A single "
+            f"6,000-row validation split cannot see this difference at all \u2014 its paired "
+            f"bootstrap on cost runs from about \u2212318 to +81. Ten folds over 24,000 rows can."
         )
-        a, b = st.columns(2)
-        a.markdown(
-            "**LightGBM really is cheaper here** \u2014 about 5% at the operating point, on every "
-            "one of the ten folds. The tie on average precision was a real tie. It was a tie "
-            "about a question I was never going to act on."
+        st.markdown(
+            "So the selection rule changed, the model changed with it, and the test split was "
+            "opened a second time."
         )
-        b.markdown(
-            "**But swapping the selection metric would not have saved me.** Tuning on cost "
-            "instead of average precision moves the answer by 22 units, inside its own "
-            "interval. The gain is in the *model family*, not the metric \u2014 \"optimise the "
-            "business number directly\" would not have found this on its own."
+
+    if sw:
+        a, b = sw["arms"]["superseded"], sw["arms"]["current"]
+        st.markdown(f"#### And then it was worth {abs(sw['difference_at_frozen_cuts']):,.0f} units "
+                    f"out of {a['cost_at_frozen_cut']:,.0f}")
+        st.table(pd.DataFrame([
+            {"model": a["label"], "at the frozen cut": f"{a['cost_at_frozen_cut']:,.0f}",
+             "at its own best cut on test": f"{a['cost_at_own_best_cut_on_test']:,.0f}",
+             "threshold transfer loss": f"{a['threshold_transfer_loss']:+,.0f}"},
+            {"model": b["label"], "at the frozen cut": f"{b['cost_at_frozen_cut']:,.0f}",
+             "at its own best cut on test": f"{b['cost_at_own_best_cut_on_test']:,.0f}",
+             "threshold transfer loss": f"{b['threshold_transfer_loss']:+,.0f}"},
+            {"model": "difference",
+             "at the frozen cut": f"{sw['difference_at_frozen_cuts']:+,.0f}",
+             "at its own best cut on test": f"{sw['difference_at_own_best_cuts']:+,.0f}",
+             "threshold transfer loss": ""},
+        ]).set_index("model"))
+        st.caption(
+            f"The nested comparison implied roughly 180 units on 6,000 rows. The frozen cuts "
+            f"delivered {abs(sw['difference_at_frozen_cuts']):,.0f} \u2014 "
+            f"{abs(sw['difference_at_frozen_cuts']) / a['cost_at_frozen_cut']:.2%}."
+        )
+        c1, c2 = st.columns(2)
+        c1.markdown(
+            f"**LightGBM's threshold travels worse.** Its cost curve is less flat near the "
+            f"minimum, so a cut chosen on a different 6,000 rows lands further from optimal "
+            f"({b['threshold_transfer_loss']:+,.0f} against {a['threshold_transfer_loss']:+,.0f}). "
+            f"That is {sw['explained_by_threshold_transfer']:+,.0f} units of the gap, and the "
+            f"nested design is blind to it \u2014 it gives every fold its own cheapest cut."
+        )
+        c2.markdown(
+            f"**The rest is noise.** Expected cost on these 6,000 clients has a bootstrap "
+            f"standard deviation of **{sw['bootstrap_sd_of_expected_cost']:,.0f} units**. So "
+            f"{sw['difference_at_own_best_cuts']:+,.0f} and \u2212180 are not distinguishable from "
+            f"each other, and neither is distinguishable from zero."
         )
         st.info(
-            "**The model on screen is still the logistic regression.** Swapping it in on the "
-            "strength of this would mean a second look at the test split, and a single-shot "
-            "test evaluation is worth more to me than 5% of a cost figure denominated in a "
-            "ratio I made up. The gap is reported, not quietly closed.",
+            "**What this cost.** \"Held out, opened once\" became \"opened twice under a rule "
+            "that changed in between\", in exchange for 0.18%. Nothing on the test split informed "
+            "the change \u2014 the nested comparison never reads those rows \u2014 but that is a defence, "
+            "not a justification. The one unambiguous gain is elsewhere: re-running the "
+            "calibration rule for the new model **rejected isotonic** (it improves Brier and "
+            "worsens ECE) and adopted sigmoid, which more than halves expected calibration error "
+            "on test, 0.0150 \u2192 0.0062.",
             icon=":material/flag:",
         )
 
@@ -882,20 +917,26 @@ def main() -> None:
         diff = ms["lgbm_minus_logistic_ap"]
         st.markdown(
             f"""
-**The rule on screen.** L2 logistic regression on 19 predictors, isotonic-calibrated,
-selected on average precision by 5-fold cross-validation — accuracy was ruled out before
-anything was fitted, because flagging nobody is right 77.9% of the time. LightGBM won the
-cross-validation ({ms['lgbm_cv']:.4f} against {ms['logistic_cv']:.4f}) and then produced a
-paired difference on validation of **{diff['point']:+.5f}, 95% interval
-[{diff['ci_lo']:+.4f}, {diff['ci_hi']:+.4f}]**. I kept the logistic regression — a call that
-section 4 above revisits, and that average precision turned out to be the wrong ruler for. On the test
-split it scores average precision **{published['average_precision']['point']:.4f}**
+**The rule on screen.** LightGBM on 19 predictors, sigmoid-calibrated, selected on **expected
+cost at r = {ref['frozen']['cost_ratio_ASSUMED']:g} under nested cross-validation** — accuracy
+was ruled out before anything was fitted, because flagging nobody is right 77.9% of the time,
+and average precision was ruled out later, for the reason in section 4. On average precision
+the two families are a tie: LightGBM wins the cross-validation
+({ms['lgbm_cv']:.4f} against {ms['logistic_cv']:.4f}) and then produces a paired difference on
+validation of **{diff['point']:+.5f}, 95% interval [{diff['ci_lo']:+.4f}, {diff['ci_hi']:+.4f}]**.
+
+On the test split it scores average precision **{published['average_precision']['point']:.4f}**
 [{published['average_precision']['ci_lo']:.4f}, {published['average_precision']['ci_hi']:.4f}]
 against a floor of {ref['dataset']['prevalence']:.4f}, ROC-AUC
 **{published['roc_auc']['point']:.4f}**, and expected calibration error
 **{published['ece']:.4f}** — calibration checked first, because a cost rule applied to an
-uncalibrated score is arithmetic on the wrong quantity. The test split was opened once, at
-the end.
+uncalibrated score is arithmetic on the wrong quantity. The calibration method was chosen by a
+rule written down before either model existed: adopt only if **both** Brier and ECE improve on
+validation. For this model that rule **rejected isotonic** and adopted sigmoid.
+
+**The test split has been opened twice** — once for a logistic regression selected on average
+precision, and again for this model after the selection rule changed. Nothing on the test split
+informed that change, but "opened once" is a stronger claim than this project can now make.
 
 **This is behavioural scoring, not underwriting.** Every client already holds a card and six
 months of history, so it says nothing about who should have been given one. Everyone here was

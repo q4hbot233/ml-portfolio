@@ -63,7 +63,11 @@ def main() -> int:
         load_bearing = {"numpy", "pandas", "scipy", "scikit-learn", "lightgbm"}
         if load_bearing.intersection(missing):
             raise SystemExit(f"selection audit ran without {sorted(load_bearing & set(missing))}")
+    swap = json.loads((REPO / "reports/audit/swap_comparison.json").read_text())
+    swap.pop("_environment", None)
     selection_audit = {"design": audit["design"], "summary": audit["summary"],
+                       "selected_family": audit["selected_family"],
+                       "selection_reason": audit["selection_reason"],
                        "n_outer_folds": len(audit["folds"]) // len(audit["summary"])}
 
     spec = selection["selected_spec"]
@@ -194,6 +198,11 @@ def main() -> int:
         # Standalone audit, not a notebook result: read straight out of reports/audit/ and
         # carried through verbatim. It changed no shipped number, which is the point of it.
         "selection_audit": selection_audit,
+        # What the swap was actually worth on the test split, and where the rest of the
+        # nested-CV estimate went. Both models at their frozen cut, and both at their own
+        # cheapest cut on test -- the difference between those two columns is the part the
+        # nested comparison could not see, because that design gives each fold its own cut.
+        "swap": swap,
         "attribution": ("Yeh, I-C. (2009). Default of Credit Card Clients [Dataset]. "
                         "UCI Machine Learning Repository. https://doi.org/10.24432/C55S3H. "
                         "Licensed CC BY 4.0."),
