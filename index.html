@@ -7,376 +7,256 @@
 <meta name="description" content="Eight machine learning and quantitative research projects, each with a demo that runs in your browser.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Roboto+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
 <style>
+/* A single visual world: this page is printed dark. Every colour is explicit so
+   it holds whatever ground the browser puts behind it. */
 :root{
-  /* risograph inks on stock — three plates, nothing else */
-  --stock:#EDEDE6; --stock-2:#E4E4DB; --stock-3:#DBDBD1;
-  --ink:#1B1B18; --ink-soft:#4A4A44; --ink-faint:#86867C;
-  --blue:#1B4FA0; --pink:#E0417F; --yellow:#E0AE12;
-  --rule:#C5C5B9;
-  --disp:"Bricolage Grotesque",Impact,sans-serif;
-  --body:"Newsreader",Georgia,serif;
+  --void:#08090B; --panel:#101216; --panel-2:#161920; --edge:#1F232B; --edge-2:#2B313B;
+  --text:#F2F3F5; --dim:#99A0AC; --faint:#626A78;
+  --sans:"Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"Roboto Mono",ui-monospace,Menlo,monospace;
+  --r:14px;
 }
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --stock:#16161A; --stock-2:#1D1D22; --stock-3:#25252B;
-    --ink:#EDEDE4; --ink-soft:#B4B4A8; --ink-faint:#7A7A70;
-    --blue:#6AA0F0; --pink:#FF6FA8; --yellow:#F0C845;
-    --rule:#33333B;
-  }
-}
-:root[data-theme="dark"]{
-  --stock:#16161A; --stock-2:#1D1D22; --stock-3:#25252B;
-  --ink:#EDEDE4; --ink-soft:#B4B4A8; --ink-faint:#7A7A70;
-  --blue:#6AA0F0; --pink:#FF6FA8; --yellow:#F0C845;
-  --rule:#33333B;
-}
-
 *{box-sizing:border-box}
+html{scroll-behavior:smooth}
 body{
-  margin:0; padding-inline:22px; background:var(--stock); color:var(--ink);
-  font-family:var(--body); font-size:16.5px; line-height:1.62;
-  -webkit-font-smoothing:antialiased;
+  margin:0; padding-inline:24px; background:var(--void); color:var(--text);
+  font-family:var(--sans); font-size:15px; line-height:1.62; -webkit-font-smoothing:antialiased;
 }
-/* paper grain — the stock, not an effect on top of it */
-body::before{
-  content:""; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.5;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4'/><feColorMatrix type='saturate' values='0'/></filter><rect width='180' height='180' filter='url(%23g)' opacity='0.35'/></svg>");
-  mix-blend-mode:multiply;
-}
-@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) body::before{mix-blend-mode:screen;opacity:.16} }
-:root[data-theme="dark"] body::before{mix-blend-mode:screen;opacity:.16}
-.sheet{max-width:1000px;margin-inline:auto;position:relative;z-index:1;padding-block:0 76px}
-a{color:var(--blue)}
-a:focus-visible{outline:2px solid var(--pink);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto} *{transition:none!important}}
+.wrap{max-width:1140px; margin-inline:auto; padding-block:0 96px}
+a{color:inherit}
+a:focus-visible{outline:2px solid #6E8FA8; outline-offset:3px; border-radius:4px}
 
-/* ---------- masthead ---------- */
-.cover{padding-block:58px 0;position:relative}
-.crop{position:absolute;width:15px;height:15px;border:0;pointer-events:none}
-.crop.tl{top:26px;left:-12px;border-top:1px solid var(--rule);border-left:1px solid var(--rule)}
-.crop.tr{top:26px;right:-12px;border-top:1px solid var(--rule);border-right:1px solid var(--rule)}
-.issue{
-  font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
-  color:var(--ink-faint);display:flex;gap:16px;flex-wrap:wrap;margin-bottom:24px;
+/* ---------- hero ---------- */
+.hero{padding-block:84px 56px; max-width:820px}
+.eyebrow{
+  font-family:var(--mono); font-size:11px; letter-spacing:.17em; text-transform:uppercase;
+  color:var(--faint); margin:0 0 22px; display:flex; gap:14px; flex-wrap:wrap; align-items:center;
 }
-.issue b{color:var(--pink);font-weight:500}
+.eyebrow .dot{width:5px;height:5px;border-radius:50%;background:#C0533A;display:inline-block}
 h1{
-  font-family:var(--disp);font-weight:800;font-size:clamp(42px,8.4vw,86px);line-height:.94;
-  letter-spacing:-.025em;margin:0;text-wrap:balance;position:relative;
+  font-size:clamp(38px,6.2vw,66px); line-height:1.04; letter-spacing:-.033em; font-weight:700;
+  margin:0; text-wrap:balance;
 }
-/* misregistration: the pink plate sits a hair off the black one */
-h1 .mis{position:absolute;inset:0;color:var(--pink);transform:translate(2.5px,-2px);
-  z-index:-1;opacity:.85;pointer-events:none}
-.deck{
-  font-size:19.5px;line-height:1.5;max-width:46ch;margin:26px 0 0;color:var(--ink-soft);
+.deck{font-size:19px; line-height:1.55; color:var(--dim); max-width:56ch; margin:26px 0 0}
+.deck em{font-style:normal; color:var(--text)}
+.meta{
+  margin-top:34px; display:flex; gap:26px; flex-wrap:wrap;
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.06em; color:var(--faint);
 }
-.deck em{font-style:italic;color:var(--ink)}
-.byline{
-  margin-top:30px;padding-top:14px;border-top:2px solid var(--ink);
-  font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;
-  display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;color:var(--ink-soft);
-}
+.meta b{color:var(--text); font-weight:500}
 
-/* ---------- contents ---------- */
-.contents{margin-top:54px}
-.secmark{
-  font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
-  color:var(--pink);margin:0 0 16px;
+/* ---------- grid ---------- */
+.gridhead{
+  display:flex; align-items:baseline; justify-content:space-between; gap:20px; flex-wrap:wrap;
+  padding-bottom:16px; border-bottom:1px solid var(--edge); margin-bottom:26px;
 }
-.toc{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
-.toc li{border-bottom:1px solid var(--rule)}
-.toc a{
-  display:grid;grid-template-columns:38px 1fr auto;gap:16px;align-items:baseline;
-  padding:11px 2px;text-decoration:none;color:var(--ink);
-}
-.toc a:hover{background:var(--stock-2)}
-.toc a:hover .tt{color:var(--blue)}
-.toc .tn{font-family:var(--mono);font-size:11.5px;color:var(--pink)}
-.toc .tt{font-family:var(--disp);font-weight:700;font-size:17.5px;letter-spacing:-.01em}
-.toc .td{display:block;font-family:var(--body);font-weight:400;font-size:14.5px;
-  color:var(--ink-faint);letter-spacing:0;margin-top:1px}
-.toc .tk{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
-  color:var(--ink-faint);text-align:right;padding-top:4px}
+.gridhead h2{font-size:14px; font-weight:600; letter-spacing:.01em; margin:0}
+.gridhead span{font-family:var(--mono); font-size:11px; color:var(--faint); letter-spacing:.09em}
+.grid{display:grid; grid-template-columns:repeat(2,1fr); gap:20px}
 
-/* ---------- entries ---------- */
-.entry{
-  margin-top:64px;padding-top:28px;border-top:2px solid var(--ink);
-  display:grid;grid-template-columns:92px 1fr;gap:26px;
+.card{
+  background:var(--panel); border:1px solid var(--edge); border-radius:var(--r);
+  overflow:hidden; display:flex; flex-direction:column; text-decoration:none;
+  transition:border-color .18s ease, transform .18s ease, background .18s ease;
 }
-.entry .folio{font-family:var(--mono);font-size:11px;color:var(--pink);letter-spacing:.1em;padding-top:5px}
-.entry .folio span{display:block;color:var(--ink-faint);margin-top:7px;font-size:9.5px;line-height:1.5}
-.entry h2{
-  font-family:var(--disp);font-weight:700;font-size:clamp(25px,3.6vw,34px);line-height:1.08;
-  letter-spacing:-.02em;margin:0 0 14px;text-wrap:balance;
+.card:hover{border-color:var(--edge-2); background:var(--panel-2); transform:translateY(-2px)}
+.thumb{display:block; width:100%; aspect-ratio:16/10; object-fit:cover; border-bottom:1px solid var(--edge)}
+.card .body{padding:20px 21px 21px; display:flex; flex-direction:column; flex:1}
+.kicker{
+  font-family:var(--mono); font-size:10px; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--faint); margin:0 0 9px;
 }
-.entry .q{font-size:17px;line-height:1.58;margin:0 0 16px;max-width:60ch}
-.entry .q em{font-style:italic}
-.cols{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:18px 0 0}
-.col h3{
-  font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--ink-faint);margin:0 0 6px;font-weight:400;
+.card h3{font-size:19.5px; font-weight:600; letter-spacing:-.016em; margin:0 0 9px; line-height:1.24}
+.card p{margin:0 0 15px; font-size:14px; color:var(--dim); line-height:1.56; flex:1}
+.finding{
+  display:block; font-family:var(--mono); font-size:12px; line-height:1.5;
+  color:var(--text); background:#0B0D11; border:1px solid var(--edge);
+  border-left:2px solid var(--hue,#6E8FA8); border-radius:0 6px 6px 0;
+  padding:9px 11px; margin:0 0 15px; font-variant-numeric:tabular-nums;
 }
-.col p{margin:0;font-size:14.6px;line-height:1.56;color:var(--ink-soft)}
-.pull{
-  margin:20px 0 0;padding:15px 17px;background:var(--stock-2);
-  border-left:3px solid var(--pink);
+.go{
+  font-family:var(--mono); font-size:11px; letter-spacing:.11em; text-transform:uppercase;
+  color:var(--dim); display:inline-flex; align-items:center; gap:7px; margin-top:auto;
 }
-.pull .lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--pink);display:block;margin-bottom:5px}
-.pull p{margin:0;font-size:15.5px;line-height:1.55}
-.pull b{font-family:var(--mono);font-size:14.5px;font-weight:500;font-variant-numeric:tabular-nums}
-.actions{margin-top:20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.btn{
-  font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;
-  text-decoration:none;color:var(--stock);background:var(--ink);
-  padding:9px 15px;display:inline-block;
-}
-.btn:hover{background:var(--blue)}
-.src{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);letter-spacing:.06em}
+.card:hover .go{color:var(--text)}
+.go .arr{transition:transform .18s ease}
+.card:hover .go .arr{transform:translateX(3px)}
 
-/* ---------- colophon ---------- */
-.colophon{
-  margin-top:70px;padding-top:22px;border-top:2px solid var(--ink);
-  display:grid;grid-template-columns:1fr 1fr;gap:26px;
+/* ---------- foot ---------- */
+.foot{
+  margin-top:76px; padding-top:30px; border-top:1px solid var(--edge);
+  display:grid; grid-template-columns:1fr 1fr; gap:34px;
 }
-.colophon h3{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--pink);margin:0 0 8px;font-weight:400}
-.colophon p{margin:0 0 9px;font-size:13.8px;line-height:1.58;color:var(--ink-soft)}
-.colophon a{color:var(--ink)}
+.foot h4{
+  font-family:var(--mono); font-size:10px; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--faint); margin:0 0 10px; font-weight:400;
+}
+.foot p{margin:0 0 10px; font-size:13.5px; color:var(--dim); line-height:1.6; max-width:52ch}
+.foot a{color:var(--text); text-decoration:underline; text-decoration-color:var(--edge-2);
+  text-underline-offset:3px}
+.foot a:hover{text-decoration-color:currentColor}
 
-@media (max-width:760px){
-  .entry{grid-template-columns:1fr;gap:12px}
-  .entry .folio{display:flex;gap:14px;align-items:baseline;padding-top:0}
-  .entry .folio span{margin-top:0}
-  .cols,.colophon{grid-template-columns:1fr}
-  .toc a{grid-template-columns:30px 1fr;gap:12px}
-  .toc .tk{display:none}
+@media (max-width:860px){
+  .grid{grid-template-columns:1fr}
+  .foot{grid-template-columns:1fr; gap:24px}
+  .hero{padding-block:56px 40px}
 }
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<div class="sheet">
+<div class="wrap">
 
-  <header class="cover">
-    <i class="crop tl"></i><i class="crop tr"></i>
-    <p class="issue"><b>No. 01</b><span>Qixi (Jason) Huang</span><span>Machine learning &amp; quantitative research</span></p>
-    <h1><span class="mis" aria-hidden="true">Things I Made and&nbsp;Then Argued With</span>Things I Made and&nbsp;Then Argued With</h1>
+  <header class="hero">
+    <p class="eyebrow"><span class="dot"></span>Qixi (Jason) Huang<span>Machine learning &amp; quantitative research</span></p>
+    <h1>Things I made and then argued with</h1>
     <p class="deck">
-      Eight projects. In most of them the interesting part is not the model — it is the moment the
-      model turned out to be wrong, or right for a reason I had not noticed, or beaten by something
-      embarrassingly simple. <em>Those moments are what each page is built around.</em>
+      Eight projects. In most of them the interesting part is not the model — it is the moment it
+      turned out to be wrong, or right for a reason I hadn't noticed, or beaten by something
+      embarrassingly simple. <em>Each one opens on the argument, not the accuracy.</em>
     </p>
-    <p class="byline">
-      <span>Every project has a demo you can drive</span>
-      <span>Eight demos · one afternoon of clicking</span>
+    <p class="meta">
+      <span><b>8</b> projects</span>
+      <span><b>8</b> demos you can drive</span>
+      <span>Everything runs in your browser</span>
     </p>
   </header>
 
-  <nav class="contents" aria-label="Contents">
-    <p class="secmark">Contents</p>
-    <ol class="toc">
-      <li><a href="apps/f1-dashboard/"><span class="tn">01</span><span class="tt">Race Control<span class="td">A Grand Prix replayed lap by lap, with four models running alongside it</span></span><span class="tk">Telemetry</span></a></li>
-      <li><a href="apps/shuttle-assistant/"><span class="tn">02</span><span class="tt">A Shuttle Assistant That Refuses<span class="td">It declines a medical emergency at 0.988 confidence. That is the project.</span></span><span class="tk">NLP</span></a></li>
-      <li><a href="apps/credit-default/"><span class="tn">03</span><span class="tt">Who Pays for the Mistakes<span class="td">Credit default taken past the ROC curve, to the money and to who absorbs it</span></span><span class="tk">Fairness</span></a></li>
-      <li><a href="apps/pairs-trading/"><span class="tn">04</span><span class="tt">Dies Once You Pay For It<span class="td">A strategy that mean-reverts exactly as promised and still loses</span></span><span class="tk">Quant</span></a></li>
-      <li><a href="apps/walk-forward/"><span class="tn">05</span><span class="tt">Only Works If Trading Is Free<span class="td">A real signal, far too small to survive its own turnover</span></span><span class="tk">Quant</span></a></li>
-      <li><a href="apps/f1-telemetry/"><span class="tn">06</span><span class="tt">Is It the Car or the Driver<span class="td">A diagnosis only exists relative to a reference. So pick two.</span></span><span class="tk">Diagnosis</span></a></li>
-      <li><a href="apps/movielens/"><span class="tn">07</span><span class="tt">Who Does the Recommender Fail<span class="td">Two percent apart on the metric everyone reports, sixty-nine times apart in behaviour</span></span><span class="tk">RecSys</span></a></li>
-      <li><a href="apps/cloud-classification/"><span class="tn">08</span><span class="tt">A Pipeline You Can Trust<span class="td">The classification is trivial on purpose. Everything around it is the work.</span></span><span class="tk">Engineering</span></a></li>
-    </ol>
-  </nav>
-
-  <!-- 01 -->
-  <article class="entry" id="p01">
-    <p class="folio">01<span>Telemetry<br>Replay · 4 models</span></p>
-    <div>
-      <h2>Race Control</h2>
-      <p class="q">A race weekend produces more numbers than anyone can read while it is happening.
-        So I rebuilt the 2023 Spanish Grand Prix as something that <em>unfolds</em> — press play and
-        the order, gaps, tyre ages and lap times advance the way they would on the pit wall, with
-        four models trying to say something useful before the lap is over.</p>
-      <div class="cols">
-        <div class="col"><h3>What it does</h3><p>Turns a finished session into 1,312 ordered lap states, then predicts lap times from a partial lap, fits tyre degradation, flags anomalous laps, and estimates the pit window. Click a driver to follow them around the circuit.</p></div>
-        <div class="col"><h3>Why this race</h3><p>Barcelona 2023 ran without a single safety car, which is exactly why the degradation fit is clean: nothing neutralised the field and confounded the pace.</p></div>
-      </div>
-      <div class="pull"><span class="lbl">The honest bit</span>
-        <p>The lap-time model only earns its keep once two sectors are already in. At the start of a
-        lap it wins <b>44%</b> of the time against the baseline — a coin flip. The card shows all
-        three states rather than the flattering one.</p></div>
-      <p class="actions"><a class="btn" href="apps/f1-dashboard/">Open Race Control</a>
-        <span class="src">Timing data via FastF1 · derived export, 0.8 MB</span></p>
+  <section>
+    <div class="gridhead">
+      <h2>Projects</h2>
+      <span>Pick one — each opens a working demo</span>
     </div>
-  </article>
 
-  <!-- 02 -->
-  <article class="entry" id="p02">
-    <p class="folio">02<span>NLP<br>Intent · refusal</span></p>
-    <div>
-      <h2>A Shuttle Assistant That Refuses</h2>
-      <p class="q">Anyone can build the half that routes a question to an answer. The half that
-        decides <em>this one is not mine</em> is the half that determines whether the thing can go
-        on a vehicle carrying people.</p>
-      <div class="cols">
-        <div class="col"><h3>What it does</h3><p>Type a question. A classifier — fitted in your browser when the page loads — routes it to a handler that answers from a real timetable, or refuses. A slider moves the confidence threshold so you can watch accuracy and coverage trade against each other.</p></div>
-        <div class="col"><h3>The data</h3><p>CLINC150, which exists precisely because it ships a deliberate out-of-scope set, plus the open GTFS feed for a free town shuttle in Avon, Colorado. Both public, both attributed.</p></div>
-      </div>
-      <div class="pull"><span class="lbl">The honest bit</span>
-        <p>Ask it <em>"my chest hurts"</em>. It refuses — at <b>0.988</b> confidence, with the
-        safety handler scoring <b>0.008</b>. The keyword tripwire meant to catch that case misses it
-        too. A model this confident about the wrong thing is the argument for the refusal layer.</p></div>
-      <p class="actions"><a class="btn" href="apps/shuttle-assistant/">Ask it something</a>
-        <span class="src">CLINC150 CC BY 3.0 · Avon Transit GTFS CC BY 4.0</span></p>
+    <div class="grid">
+
+      <a class="card" href="apps/f1-dashboard/" style="--hue:#D8382F">
+        <img class="thumb" src="assets/patterns/f1-dashboard.svg" alt="" width="640" height="400" loading="lazy">
+        <div class="body">
+          <p class="kicker">Telemetry · replay · 4 models</p>
+          <h3>Race Control</h3>
+          <p>The 2023 Spanish Grand Prix rebuilt as something that unfolds. Press play and the order,
+             gaps and tyre ages advance the way they would on the pit wall, with four models trying
+             to say something useful before the lap is over.</p>
+          <span class="finding">Lap-time model wins 44% of laps at the start of a lap — a tie. It only pulls ahead once two sectors are in.</span>
+          <span class="go">Open Race Control <span class="arr">→</span></span>
+        </div>
+      </a>
+
+      <a class="card" href="apps/shuttle-assistant/" style="--hue:#C0503C">
+        <img class="thumb" src="assets/patterns/shuttle-assistant.svg" alt="" width="640" height="400" loading="lazy">
+        <div class="body">
+          <p class="kicker">NLP · intent · refusal</p>
+          <h3>A shuttle assistant that refuses</h3>
+          <p>Anyone can build the half that routes a question to an answer. The half that decides
+             <em>this one isn't mine</em> is the half that determines whether the thing can go on a
+             vehicle carrying people.</p>
+          <span class="finding">Ask it "my chest hurts" → refused at 0.988 confidence. The safety handler scored 0.008.</span>
+          <span class="go">Ask it something <span class="arr">→</span></span>
+        </div>
+      </a>
+
+      <a class="card" href="apps/credit-default/" style="--hue:#5B7FA6">
+        <img class="thumb" src="assets/patterns/credit-default.svg" alt="" width="640" height="400" loading="lazy">
+        <div class="body">
+          <p class="kicker">Credit risk · interpretability · fairness</p>
+          <h3>Who pays for the mistakes</h3>
+          <p>Every credit-default project ends at an AUC. But a probability isn't a decision —
+             somebody has to draw a line, and the moment that line exists it hands a bill to
+             somebody. Set the cost ratio and watch who receives it.</p>
+          <span class="finding">I first read four real disparities. A permutation test put one at p = 0.29. Three survived; that one was noise.</span>
+          <span class="go">Draw the line yourself <span class="arr">→</span></span>
+        </div>
+      </a>
+
+      <a class="card" href="apps/pairs-trading/" style="--hue:#2E9B93">
+        <img class="thumb" src="assets/patterns/pairs-trading.svg" alt="" width="640" height="400" loading="lazy">
+        <div class="body">
+          <p class="kicker">Quant · statistical arbitrage</p>
+          <h3>Dies once you pay for it</h3>
+          <p>Two funds track roughly the same thing, their prices wander apart, and if the gap is
+             stationary it's a forecast. The textbook version works — which is exactly what makes the
+             part where it doesn't worth publishing.</p>
+          <span class="finding">Gross Sharpe −0.3560, net −0.5188. It was already losing before a single basis point was charged.</span>
+          <span class="go">Re-price the backtest <span class="arr">→</span></span>
+        </div>
+      </a>
+
+      <a class="card" href="apps/walk-forward/" style="--hue:#C9784E">
+        <img class="thumb" src="assets/patterns/walk-forward.svg" alt="" width="640" height="400" loading="lazy">
+        <div class="body">
+          <p class="kicker">Quant · walk-forward</p>
+          <h3>Only works if trading is free</h3>
+          <p>Does a cross-sectional forecast of next-month industry returns survive being traded
+             honestly — the model never seeing a day that hadn't happened yet when the portfolio was
+             decided? The answer was neither of the two I expected.</p>
+          <span class="finding">Signal is real: permutation p = 0.001, rank IC 0.0578 at t = 5.82. Break-even 35.8 bp against 5.9× turnover.</span>
+          <span class="go">Drag the cost <span class="arr">→</span></span>
+        </div>
+      </a>
+
+      <a class="card" href="apps/f1-telemetry/" style="--hue:#C0533A">
+        <img class="thumb" src="assets/patterns/f1-telemetry.svg" alt="" width="640" height="400" loading="lazy">
+        <div class="body">
+          <p class="kicker">Diagnosis · two reference frames</p>
+          <h3>Is it the car or the driver</h3>
+          <p>A driver says the car feels wrong and can't say what's wrong. Twenty minutes until the
+             next run, and telemetry is the only evidence. A diagnosis only exists relative to a
+             reference — so this builds two, and shows where they disagree.</p>
+          <span class="finding">The deficit isn't spread around the lap. Turn 8 alone accounts for 49% of it.</span>
+          <span class="go">Switch the reference <span class="arr">→</span></span>
+        </div>
+      </a>
+
+      <a class="card" href="apps/movielens/" style="--hue:#6E8FA8">
+        <img class="thumb" src="assets/patterns/movielens.svg" alt="" width="640" height="400" loading="lazy">
+        <div class="body">
+          <p class="kicker">Recommenders · evaluation</p>
+          <h3>Who does the recommender fail</h3>
+          <p>Thousands of MovieLens notebooks end the same way: four RMSEs within a couple of
+             hundredths, a winner picked on the third decimal. I came back with a different question —
+             when this thing is wrong, is it wrong about everyone?</p>
+          <span class="finding">Two models 2.1% apart on RMSE turn out to be 69× apart on precision@10.</span>
+          <span class="go">Compare the engines <span class="arr">→</span></span>
+        </div>
+      </a>
+
+      <a class="card" href="apps/cloud-classification/" style="--hue:#8E3A33">
+        <img class="thumb" src="assets/patterns/cloud-classification.svg" alt="" width="640" height="400" loading="lazy">
+        <div class="body">
+          <p class="kicker">ML engineering · pipeline</p>
+          <h3>A pipeline you can trust</h3>
+          <p>Two satellite scenes diced into super-pixels. Before fitting anything I wanted a floor:
+             how much does one threshold on one column already explain? All of it — the scenes were
+             calibrated differently. So the engineering became the project.</p>
+          <span class="finding">An off-by-one meant it read 2,047 of 2,048 rows, and the "class balance" was an artifact of the config.</span>
+          <span class="go">Move the threshold <span class="arr">→</span></span>
+        </div>
+      </a>
+
     </div>
-  </article>
+  </section>
 
-  <!-- 03 -->
-  <article class="entry" id="p03">
-    <p class="folio">03<span>Fairness<br>Interpretability</span></p>
+  <footer class="foot">
     <div>
-      <h2>Who Pays for the Mistakes</h2>
-      <p class="q">Every credit-default project on the internet ends at an AUC in the high 0.70s.
-        But a probability is not a decision — somebody has to draw a line, and the moment that line
-        exists it hands a bill to somebody.</p>
-      <div class="cols">
-        <div class="col"><h3>What it does</h3><p>Set how much more a missed default costs than a false alarm, and the threshold, the money and the burden across demographic groups all move together. LIME and SHAP explain individual calls; fairlearn audits the groups.</p></div>
-        <div class="col"><h3>Where it came from</h3><p>A rebuild on public UCI data of an analysis first done for a private recruiting case. Only the method carried over — no proprietary data, values or results.</p></div>
-      </div>
-      <div class="pull"><span class="lbl">The honest bit</span>
-        <p>I first read four real disparities. A permutation test — labels shuffled 5,000 times with
-        the model and threshold held fixed — put the true-positive gap by sex at <b>p = 0.29</b>.
-        Three of the four survived. That one was noise, and the test now ships with the repo.</p></div>
-      <p class="actions"><a class="btn" href="apps/credit-default/">Draw the line yourself</a>
-        <span class="src">UCI dataset 350 · CC BY 4.0 · 30,000 accounts</span></p>
-    </div>
-  </article>
-
-  <!-- 04 -->
-  <article class="entry" id="p04">
-    <p class="folio">04<span>Quant<br>Stat arb</span></p>
-    <div>
-      <h2>Dies Once You Pay For It</h2>
-      <p class="q">Two funds track roughly the same thing. Their prices wander apart. If the gap is
-        stationary, it is a forecast. The textbook version of this works — and that is exactly what
-        makes it worth publishing the part where it doesn't.</p>
-      <div class="cols">
-        <div class="col"><h3>What it does</h3><p>Picks pairs on a formation window that never touches the trading window, tests cointegration, trades the z-score, and lets you re-price the whole backtest at any cost assumption with a slider.</p></div>
-        <div class="col"><h3>Why the separation matters</h3><p>Choosing pairs on data you then trade is the most common way this strategy is accidentally made to look profitable. Fourteen deliberately injected faults all trip the test suite.</p></div>
-      </div>
-      <div class="pull"><span class="lbl">The honest bit</span>
-        <p>Gross Sharpe <b>−0.3560</b>, net <b>−0.5188</b> after five basis points a side and fifty
-        a year of borrow. The spread mean-reverts exactly as theory says. The book still loses money
-        — and it was already losing before a single basis point was charged.</p></div>
-      <p class="actions"><a class="btn" href="apps/pairs-trading/">Re-price the backtest</a>
-        <span class="src">40 US-listed ETFs · 4,662 out-of-sample days</span></p>
-    </div>
-  </article>
-
-  <!-- 05 -->
-  <article class="entry" id="p05">
-    <p class="folio">05<span>Quant<br>Walk-forward</span></p>
-    <div>
-      <h2>Only Works If Trading Is Free</h2>
-      <p class="q">I wanted to know whether a cross-sectional forecast of next-month industry
-        returns survives being traded honestly — the model never seeing a day that had not yet
-        happened when the portfolio was decided.</p>
-      <div class="cols">
-        <div class="col"><h3>What it does</h3><p>Refits on an expanding window every twelve months across 636 out-of-sample months, then lets you drag the transaction cost and watch a real edge become no edge.</p></div>
-        <div class="col"><h3>How look-ahead was ruled out</h3><p>Not by reading the code. Every observation after the cutoff was poisoned with garbage and the feature panel rebuilt — it came back bit-identical.</p></div>
-      </div>
-      <div class="pull"><span class="lbl">The honest bit</span>
-        <p>The answer was neither of the two I expected. The signal is real — permutation
-        <b>p = 0.001</b>, rank IC <b>0.0578</b> at <b>t = 5.82</b> — and the strategy still fails,
-        because harvesting it turns over nearly six times the book's notional every year.
-        Break-even lands at <b>35.8 bp</b>.</p></div>
-      <p class="actions"><a class="btn" href="apps/walk-forward/">Drag the cost</a>
-        <span class="src">Fama–French 49 industries · 1973–2026</span></p>
-    </div>
-  </article>
-
-  <!-- 06 -->
-  <article class="entry" id="p06">
-    <p class="folio">06<span>Diagnosis<br>Telemetry</span></p>
-    <div>
-      <h2>Is It the Car or the Driver</h2>
-      <p class="q">A driver says the car feels wrong and cannot tell you what is wrong. You have
-        twenty minutes before the next run and the only evidence is telemetry. Almost everything
-        written with F1 telemetry is performance analysis; this is the question an engineer
-        actually has to answer between runs.</p>
-      <div class="cols">
-        <div class="col"><h3>What it does</h3><p>Builds two reference frames — the teammate, which holds the machinery roughly constant, and the driver's own earlier laps, which hold style constant — then decomposes the lap corner by corner so the problem has a location.</p></div>
-        <div class="col"><h3>The case</h3><p>Verstappen's Singapore 2023 qualifying: Red Bull's one anomalous weekend of that season, and his worst qualifying of the year by a factor of 2.4.</p></div>
-      </div>
-      <div class="pull"><span class="lbl">The honest bit</span>
-        <p>The deficit is not spread around the lap. Turn 8 alone accounts for <b>49%</b> of it.
-        A loss concentrated in one corner invites a different explanation from one smeared evenly —
-        but telemetry supports a hypothesis, not a proven mechanical cause, and the page says so.</p></div>
-      <p class="actions"><a class="btn" href="apps/f1-telemetry/">Switch the reference</a>
-        <span class="src">FastF1 · derived per-corner aggregates only</span></p>
-    </div>
-  </article>
-
-  <!-- 07 -->
-  <article class="entry" id="p07">
-    <p class="folio">07<span>RecSys<br>Evaluation</span></p>
-    <div>
-      <h2>Who Does the Recommender Fail</h2>
-      <p class="q">MovieLens is the most-worked dataset on the internet and thousands of notebooks
-        end the same way: four RMSEs within a couple of hundredths, a winner picked on the third
-        decimal. I came back to it with a different question — <em>when this thing is wrong, is it
-        wrong about everyone?</em></p>
-      <div class="cols">
-        <div class="col"><h3>What it does</h3><p>Compares four engines past RMSE: catalogue coverage, popularity bias, error by how active a user is, and cold start. Pick a model and a user segment and watch where the averages were hiding things.</p></div>
-        <div class="col"><h3>What it ships</h3><p>Only aggregate tables. GroupLens forbids redistributing the dataset, so no ratings and no user records leave the private repository.</p></div>
-      </div>
-      <div class="pull"><span class="lbl">The honest bit</span>
-        <p>Two models <b>2.1%</b> apart on RMSE turn out to be <b>69×</b> apart on precision@10.
-        RMSE cannot see that, and it is the number everyone reports.</p></div>
-      <p class="actions"><a class="btn" href="apps/movielens/">Compare the engines</a>
-        <span class="src">MovieLens-100K via GroupLens · aggregates only</span></p>
-    </div>
-  </article>
-
-  <!-- 08 -->
-  <article class="entry" id="p08">
-    <p class="folio">08<span>Engineering<br>Pipeline</span></p>
-    <div>
-      <h2>A Pipeline You Can Trust</h2>
-      <p class="q">Two satellite scenes, diced into super-pixels. Before fitting anything I wanted a
-        floor — how much of the target does one threshold on one column already explain? All of it,
-        as it turns out. The scenes were calibrated differently.</p>
-      <div class="cols">
-        <div class="col"><h3>What it does</h3><p>Pick a column, move the threshold, and watch a single stump separate the classes. The point is what surrounds that: YAML config, containers, artifacts that reproduce byte for byte, and tests that catch real regressions.</p></div>
-        <div class="col"><h3>Why keep it</h3><p>A trivial task is an honest place to show engineering. Pretending the modelling was hard would have been the dishonest option.</p></div>
-      </div>
-      <div class="pull"><span class="lbl">The honest bit</span>
-        <p>A row-boundary off-by-one meant the pipeline was reading <b>2,047</b> of 2,048
-        super-pixels, and the resulting 1024/1023 "class balance" had been written up as a property
-        of the data. It was an artifact of the config. Mutation testing now pins the boundary in
-        both directions.</p></div>
-      <p class="actions"><a class="btn" href="apps/cloud-classification/">Move the threshold</a>
-        <span class="src">UCI clouds · CC BY 4.0 · 125 tests, pylint 10.00</span></p>
-    </div>
-  </article>
-
-  <footer class="colophon">
-    <div>
-      <h3>How these run</h3>
+      <h4>How these run</h4>
       <p>Seven of the eight boot a Python interpreter inside your browser, so the models are
-        genuinely fitting and scoring on your machine rather than replaying a recording. The first
-        visit spends a few seconds fetching that interpreter. Race Control skips it and draws
-        straight from an exported bundle.</p>
-      <p>Nothing is uploaded anywhere. There is no server behind any of this.</p>
+         genuinely fitting and scoring on your machine rather than replaying a recording. The first
+         visit spends a few seconds fetching that interpreter. Race Control skips it and draws
+         straight from an exported bundle.</p>
+      <p>Nothing is uploaded. There's no server behind any of this.</p>
     </div>
     <div>
-      <h3>Colophon</h3>
-      <p>The full analyses — code, tests and executed notebooks — live in private repositories.
-        What is published here is derived: summary tables, scored predictions, return series. Where
-        a licence forbids redistribution, the data stayed behind and the demo works from aggregates.</p>
-      <p>Built with <a href="https://github.com/whitphx/stlite">stlite</a>. Sources and licences are
-        credited inside each project. Set in Bricolage Grotesque and Newsreader.</p>
+      <h4>Colophon</h4>
+      <p>The full analyses — code, tests and executed notebooks — live in private repositories. What's
+         published here is derived: summary tables, scored predictions, return series. Where a licence
+         forbids redistribution, the data stayed behind and the demo works from aggregates.</p>
+      <p>Each cover is distilled from one of my own photographs — a mosaic floor, a colonnade, a
+         banked corner, surf meeting sand — reduced to the structure it had in common with its
+         project. Built with <a href="https://github.com/whitphx/stlite">stlite</a>; sources and
+         licences are credited inside each demo.</p>
     </div>
   </footer>
 
