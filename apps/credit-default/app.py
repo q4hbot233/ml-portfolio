@@ -713,12 +713,20 @@ def main() -> None:
         "Dashed line: the cut this project deployed. Solid line: where you have put it."
     )
     st.markdown(
-        "**The catch-rate gap collapses as the line comes down, and the selection-rate gap "
-        "does not.** That is mechanical rather than moral: at a cut that flags three quarters "
-        "of the book, almost every defaulter in every group is flagged, so the catch rate has "
-        "no room left to differ — while the selection rate has all the room in the world. "
-        "A fairness claim that only holds at one end of this chart is a claim about the "
-        "threshold, and the threshold came from an assumption I made up."
+        "**Every gap vanishes at both ends, and that is arithmetic rather than fairness.** "
+        "Flag almost everyone and no group can differ from another; flag almost nobody and "
+        "the same. The gaps live in the middle, and what separates them is *where* in the "
+        "middle.\n\n"
+        "Across the whole high-flagging half of this range the **catch-rate gap sits near "
+        "0.9 points** while the other two climb to 6 and 7 — at a cut this low almost every "
+        "defaulter in every group is flagged, so the catch rate has no room left to differ. "
+        "That is the reading most audits of this model would stop at. **Push the line the "
+        "other way, to where only 15% of the book is flagged, and the catch-rate gap becomes "
+        "the largest of the three** (4.5 points against 3.3 and 1.8).\n\n"
+        "So \"the catch-rate gap is negligible\" is not a property of this rule. It is a "
+        "property of this rule *at this threshold*, and the threshold came from a cost ratio "
+        "I made up. The jaggedness on the right is real rather than rendering: past that "
+        "point so few clients are flagged that one person moves a group rate."
     )
 
     with st.expander("The numbers behind those bars"):
