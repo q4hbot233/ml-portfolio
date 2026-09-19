@@ -578,5 +578,42 @@
    }
   ]
  },
+ "selection_audit": {
+  "design": {
+   "rows": "pooled train + valid; test split never read",
+   "n_rows": 24000,
+   "n_positives": 5309,
+   "outer": "5-fold x 2 repeats, stratified",
+   "inner": "3-fold, run separately per family on outer-training rows only",
+   "calibration": "isotonic on both arms",
+   "cost_ratio_ASSUMED": 10.0,
+   "threshold": "cheapest cut swept per fold, so the comparison is of rankings",
+   "seed": 907,
+   "n_bootstrap": 4000
+  },
+  "summary": {
+   "average_precision": {
+    "logistic_mean_cost": 3439.9,
+    "lgbm_mean_cost": 3255.8,
+    "paired_difference": -184.1,
+    "ci_lo": -216.3025,
+    "ci_hi": -154.4,
+    "separated_from_zero": true,
+    "lgbm_cheaper_on_n_folds": 10,
+    "n_folds": 10
+   },
+   "expected_cost": {
+    "logistic_mean_cost": 3421.6,
+    "lgbm_mean_cost": 3259.7,
+    "paired_difference": -161.9,
+    "ci_lo": -195.1,
+    "ci_hi": -126.7,
+    "separated_from_zero": true,
+    "lgbm_cheaper_on_n_folds": 10,
+    "n_folds": 10
+   }
+  },
+  "n_outer_folds": 10
+ },
  "attribution": "Yeh, I-C. (2009). Default of Credit Card Clients [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C55S3H. Licensed CC BY 4.0."
 }

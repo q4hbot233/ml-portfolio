@@ -54,6 +54,17 @@ def main() -> int:
     analysis = json.loads((REPO / "reports/results/analysis.json").read_text())
     selection = json.loads((REPO / "reports/results/02_model_selection.json").read_text())
     thr_rep = json.loads((REPO / "reports/results/03_calibration_threshold.json").read_text())
+    audit_path = REPO / "reports/audit/selection_audit.json"
+    audit = json.loads(audit_path.read_text())
+    if audit.get("_environment_matches_requirements") is False:
+        missing = [k for k, v in audit["_environment"].items() if v is None]
+        # Only refuse if something the audit actually computes with is off-pin. lime, shap
+        # and fairlearn are absent from that script's import graph entirely.
+        load_bearing = {"numpy", "pandas", "scipy", "scikit-learn", "lightgbm"}
+        if load_bearing.intersection(missing):
+            raise SystemExit(f"selection audit ran without {sorted(load_bearing & set(missing))}")
+    selection_audit = {"design": audit["design"], "summary": audit["summary"],
+                       "n_outer_folds": len(audit["folds"]) // len(audit["summary"])}
 
     spec = selection["selected_spec"]
     calibration = thr_rep["calibration"]["method"]
@@ -180,6 +191,9 @@ def main() -> int:
         "parity_at_frozen_threshold": analysis["fairness"]["parity_by_attribute"],
         "permutation_test_at_frozen_threshold": summary,
         "mitigation": analysis["fairness"]["mitigation"],
+        # Standalone audit, not a notebook result: read straight out of reports/audit/ and
+        # carried through verbatim. It changed no shipped number, which is the point of it.
+        "selection_audit": selection_audit,
         "attribution": ("Yeh, I-C. (2009). Default of Credit Card Clients [Dataset]. "
                         "UCI Machine Learning Repository. https://doi.org/10.24432/C55S3H. "
                         "Licensed CC BY 4.0."),

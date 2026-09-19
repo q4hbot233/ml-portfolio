@@ -823,6 +823,60 @@ def main() -> None:
     )
 
     st.divider()
+    st.subheader("4 · Was it even the right model?")
+    st.markdown(
+        "Everything above takes the model as given. That model was chosen on **average "
+        "precision**, which integrates precision over the whole recall axis \u2014 and this rule "
+        "operates at recall 0.88 and precision 0.30, one end of it. I picked between two "
+        "families using a number that averages over everywhere, to deploy in one place."
+    )
+    sa = ref.get("selection_audit")
+    if sa:
+        rows = []
+        for key, label in (("average_precision", "average precision"),
+                           # r is the audit's own frozen 10, NOT the slider above: that run is fixed, and
+            # relabelling it with whatever r is on screen would claim a result it never had.
+            ("expected_cost",
+             f"expected cost at r = {sa['design']['cost_ratio_ASSUMED']:g}")):
+            v = sa["summary"][key]
+            rows.append({
+                "inner selection metric": label,
+                "logistic": f"{v['logistic_mean_cost']:,.0f}",
+                "LightGBM": f"{v['lgbm_mean_cost']:,.0f}",
+                "difference": f"{v['paired_difference']:+,.1f}",
+                "95% interval": f"[{v['ci_lo']:+,.1f}, {v['ci_hi']:+,.1f}]",
+                "LightGBM cheaper on": f"{v['lgbm_cheaper_on_n_folds']} of {v['n_folds']} folds",
+            })
+        st.table(pd.DataFrame(rows).set_index("inner selection metric"))
+        st.caption(
+            f"Nested cross-validation on {sa['design']['n_rows']:,} pooled training and "
+            f"validation clients, {sa['design']['outer']}. The inner loop tunes **each family "
+            f"separately on outer-training rows only**, so neither model has seen the rows it "
+            f"is scored on and neither gets a hyperparameter chosen with a peek. Both arms are "
+            f"isotonic-calibrated, so this compares families and not calibration states. "
+            f"Costs in units of one false alarm. The test split is never read."
+        )
+        a, b = st.columns(2)
+        a.markdown(
+            "**LightGBM really is cheaper here** \u2014 about 5% at the operating point, on every "
+            "one of the ten folds. The tie on average precision was a real tie. It was a tie "
+            "about a question I was never going to act on."
+        )
+        b.markdown(
+            "**But swapping the selection metric would not have saved me.** Tuning on cost "
+            "instead of average precision moves the answer by 22 units, inside its own "
+            "interval. The gain is in the *model family*, not the metric \u2014 \"optimise the "
+            "business number directly\" would not have found this on its own."
+        )
+        st.info(
+            "**The model on screen is still the logistic regression.** Swapping it in on the "
+            "strength of this would mean a second look at the test split, and a single-shot "
+            "test evaluation is worth more to me than 5% of a cost figure denominated in a "
+            "ratio I made up. The gap is reported, not quietly closed.",
+            icon=":material/flag:",
+        )
+
+    st.divider()
     with st.expander("What this is, and what it is not"):
         ms = ref["model"]
         diff = ms["lgbm_minus_logistic_ap"]
@@ -833,7 +887,8 @@ selected on average precision by 5-fold cross-validation — accuracy was ruled 
 anything was fitted, because flagging nobody is right 77.9% of the time. LightGBM won the
 cross-validation ({ms['lgbm_cv']:.4f} against {ms['logistic_cv']:.4f}) and then produced a
 paired difference on validation of **{diff['point']:+.5f}, 95% interval
-[{diff['ci_lo']:+.4f}, {diff['ci_hi']:+.4f}]**. I kept the logistic regression. On the test
+[{diff['ci_lo']:+.4f}, {diff['ci_hi']:+.4f}]**. I kept the logistic regression — a call that
+section 4 above revisits, and that average precision turned out to be the wrong ruler for. On the test
 split it scores average precision **{published['average_precision']['point']:.4f}**
 [{published['average_precision']['ci_lo']:.4f}, {published['average_precision']['ci_hi']:.4f}]
 against a floor of {ref['dataset']['prevalence']:.4f}, ROC-AUC
