@@ -29,7 +29,6 @@ DATA_DIR = Path(__file__).resolve().parent / "data"
 ATTRIBUTES = ("sex", "age_band", "education", "marriage")
 
 #: The parity statistics with a shipped permutation null.
-PARITY_KEYS = ("demographic_parity_difference", "fpr_difference", "tpr_difference")
 
 PARITY_LABEL = {
     "demographic_parity_difference": "selection-rate gap",
@@ -77,11 +76,6 @@ def load_reference(data_dir: Path | str = DATA_DIR) -> dict:
 def load_rows(data_dir: Path | str = DATA_DIR) -> pd.DataFrame:
     """One row per test client: calibrated score, outcome, and the four audited attributes."""
     return pd.read_csv(Path(data_dir) / "test_predictions.csv")
-
-
-def load_nulls(data_dir: Path | str = DATA_DIR) -> pd.DataFrame:
-    """The 5,000 permutation draws per ``attribute__statistic``, at the frozen threshold."""
-    return pd.read_csv(Path(data_dir) / "permutation_nulls.csv")
 
 
 # =====================================================================================
@@ -288,7 +282,9 @@ def parity_gaps_from_rates(rates) -> dict:
     Every measure here is ``max - min`` across groups, which for two groups is an absolute
     difference. That shape is the reason a bootstrap interval cannot test any of them: the
     statistic is non-negative by construction, so its interval can approach zero but never
-    straddle it. :func:`permutation_null` is what tests them.
+    straddle it. What tests them is a permutation null -- shuffle the group labels with
+    everything else held fixed -- computed in the analysis repository and shipped here
+    as p-values rather than recomputed on the page.
     """
     def gap(name: str) -> float:
         v = np.asarray(rates[name], dtype=float)
@@ -334,99 +330,6 @@ def headline_gaps(tables: dict, min_n: int = MIN_AUDIT_CELL) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-# =====================================================================================
-# IS THE GAP REAL?
-# =====================================================================================
-
-def permutation_null(y_true, y_pred, groups, keys=PARITY_KEYS, n_perm: int = 5000,
-                     seed: int = PERMUTATION_SEED, min_n: int = MIN_AUDIT_CELL) -> dict:
-    """Shuffle the group labels; keep the model, the cut and every outcome fixed.
-
-    Under the null that group membership is unrelated to how this rule treats a client,
-    every relabelling is as likely as the observed one, so the share of shuffles reaching
-    the observed gap is a one-sided p-value. Group sizes are preserved by construction,
-    which is the right conditioning -- they are a property of the sample, not an estimate.
-
-    Cells below ``min_n`` are dropped once, before shuffling, so the observed statistic and
-    the null are computed over the same groups.
-
-    The p-value is the add-one estimator ``(1 + #{null >= observed}) / (1 + n_perm)``: the
-    observed labelling is itself an arrangement under the null, so a finite run of shuffles
-    cannot honestly report zero.
-
-    Returns ``{key: {"observed", "p_value", "null_median", "null_q95", "n_perm", "draws"}}``.
-    """
-    y = np.asarray(y_true).astype(int)
-    p = np.asarray(y_pred).astype(int)
-    g = np.asarray(groups).astype(object)
-
-    full = group_table(y, p, g)
-    keep = np.isin(g, list(full.index[full["n"] >= min_n]))
-    y, p, g = y[keep], p[keep], g[keep]
-
-    observed = parity_gaps(group_table(y, p, g))
-    codes, levels = group_codes(g)
-    k = len(levels)
-    index = {name: np.flatnonzero(mask) for name, mask in
-             {"tp": (y == 1) & (p == 1), "fp": (y == 0) & (p == 1),
-              "fn": (y == 1) & (p == 0), "tn": (y == 0) & (p == 0)}.items()}
-
-    rng = np.random.default_rng(seed)
-    draws = {key: np.empty(int(n_perm), dtype=float) for key in keys}
-    for i in range(int(n_perm)):
-        permuted = rng.permutation(codes)
-        counts = {name: np.bincount(permuted[idx], minlength=k) for name, idx in index.items()}
-        gaps = parity_gaps_from_rates(rates_from_counts(counts))
-        for key in keys:
-            draws[key][i] = gaps[key]
-
-    out = {}
-    for key in keys:
-        d = draws[key]
-        d = d[np.isfinite(d)]
-        out[key] = {
-            "observed": float(observed[key]),
-            "p_value": (float((1.0 + np.sum(d >= observed[key])) / (1.0 + d.size))
-                        if d.size else float("nan")),
-            "null_median": float(np.median(d)) if d.size else float("nan"),
-            "null_q95": float(np.quantile(d, 0.95)) if d.size else float("nan"),
-            "n_perm": int(n_perm),
-            "draws": d,
-        }
-    return out
-
-
-def shipped_null(nulls: pd.DataFrame, reference: dict, attribute: str, keys=PARITY_KEYS) -> dict:
-    """The published 5,000-shuffle null for one attribute, read back from ``data/``.
-
-    Same shape as :func:`permutation_null`, so the two are interchangeable at the call site.
-    """
-    published = reference["permutation_test_at_frozen_threshold"][attribute]
-    return {key: {**{k: float(published[key][k]) for k in
-                     ("observed", "p_value", "null_median", "null_q95")},
-                  "n_perm": int(published[key]["n_perm"]),
-                  "draws": nulls[f"{attribute}__{key}"].to_numpy(dtype=float)}
-            for key in keys}
-
-
-def null_for_threshold(rows: pd.DataFrame, nulls: pd.DataFrame, reference: dict,
-                       attribute: str, threshold: float,
-                       n_perm: int = 2000) -> tuple[dict, bool]:
-    """The null for the decision currently on screen, and whether it is the published one.
-
-    The null depends on the decision, not on the number that produced it. Whenever the
-    threshold on screen flags exactly the clients the frozen cut flagged, the shipped
-    5,000-shuffle result *is* the right answer and is returned unchanged; only a genuinely
-    different decision triggers a fresh run.
-    """
-    score = rows["score"].to_numpy()
-    pred = flag(score, threshold)
-    frozen = flag(score, float(reference["frozen"]["threshold"]))
-    if np.array_equal(pred, frozen):
-        return shipped_null(nulls, reference, attribute), True
-    return permutation_null(rows["defaulted"].to_numpy(), pred,
-                            rows[attribute].to_numpy(), n_perm=n_perm), False
-
 
 # =====================================================================================
 # THE SAME COMPUTATIONS, ADDRESSED BY THE UI -- still plain Python, still testable
@@ -458,10 +361,9 @@ def compute_audit(threshold: float, data_dir: Path | str = DATA_DIR) -> dict:
     return audit_tables(load_rows(data_dir), threshold)
 
 
-def compute_null(attribute: str, threshold: float, n_perm: int = 2000,
-                 data_dir: Path | str = DATA_DIR) -> tuple[dict, bool]:
-    return null_for_threshold(load_rows(data_dir), load_nulls(data_dir),
-                              load_reference(data_dir), attribute, threshold, n_perm)
+def compute_gap_curve(attribute: str, thresholds: tuple, data_dir: Path | str = DATA_DIR):
+    """Cache-friendly wrapper: ``thresholds`` is a tuple so the key is hashable."""
+    return gap_curve(load_rows(data_dir), attribute, np.asarray(thresholds, dtype=float))
 
 
 # =====================================================================================
@@ -584,59 +486,54 @@ def figure_group_errors(tables: dict, threshold: float, min_n: int = MIN_AUDIT_C
     return fig
 
 
-def figure_permutation_nulls(null: dict, attribute: str):
-    """The null each gap is tested against, with the observed gap drawn on it."""
-    fig, axes = plt.subplots(1, 3, figsize=(7.2, 3.3), dpi=110)
-    fig.patch.set_facecolor("white")
-    n_sig = sum(null[k]["p_value"] < 0.05 for k in PARITY_KEYS)
+def gap_curve(rows: pd.DataFrame, attribute: str, thresholds: np.ndarray,
+              min_n: int = MIN_AUDIT_CELL) -> pd.DataFrame:
+    """Each parity gap for one attribute, at every threshold in ``thresholds``.
 
-    for ax, key in zip(axes, PARITY_KEYS):
-        row = null[key]
-        draws, obs = row["draws"] * 100, row["observed"] * 100
-        ax.set_facecolor("white")
-        top = max(float(np.quantile(draws, 0.999)), obs) * 1.14
-        bins = np.linspace(0, top, 46)
-        ax.hist(draws, bins=bins, color=GREY, alpha=0.5, lw=0)
-        tail = draws[draws >= obs]
-        if tail.size:
-            ax.hist(tail, bins=bins, color=RED, alpha=0.7, lw=0)
-        ax.axvline(obs, color=RED, lw=2.0, zorder=5)
-        # Place the label on whichever side of the line has more room, and in AXES
-        # coordinates so it cannot leave this panel. Offsetting from the line in points
-        # let a label near an edge spill into the neighbouring subplot and collide with
-        # its label -- which is what happened between the false-alarm and catch-rate
-        # panels, where one gap sits high in its range and the next sits low in its own.
-        frac = obs / top if top else 0.5
-        right_of_line = frac <= 0.5
-        ax.annotate(f"observed {obs:.2f} pts\np = {row['p_value']:.3f}",
-                    xy=(min(max(frac + (0.025 if right_of_line else -0.025), 0.02), 0.98), 0.98),
-                    xycoords="axes fraction",
-                    ha="left" if right_of_line else "right", va="top",
-                    fontsize=8.5, color=RED, fontweight="semibold",
-                    annotation_clip=False)
-        for side in ("top", "right", "left"):
-            ax.spines[side].set_visible(False)
-        ax.spines["bottom"].set_color(GRID)
-        ax.tick_params(colors=MUTED, labelsize=8, length=3)
-        ax.set_yticks([])
-        ax.set_xlim(0, top)
-        ax.set_title(PARITY_LABEL[key], fontsize=9.5, color=INK, loc="left", pad=7,
-                     fontweight="semibold")
-    # One shared x-label: three copies of this string are wider than a third of the figure,
-    # so the outer two were being cut off by the figure edge.
-    fig.supxlabel("gap between groups, percentage points", fontsize=8, color=MUTED, y=0.02)
+    A single gap at a single cut is a fact about one arbitrary operating point. Sweeping
+    the cut shows which gaps are a property of the *rule* and which are a property of
+    *where the rule happens to sit* -- and those are different claims about fairness.
+    """
+    y = rows["defaulted"].to_numpy()
+    groups = rows[attribute].to_numpy()
+    score = rows["score"].to_numpy()
+    out = []
+    for t in thresholds:
+        table = group_table(y, flag(score, t), groups)
+        kept = table.loc[table["n"] >= min_n]
+        out.append({"threshold": float(t), **parity_gaps(kept[list(GROUP_METRICS)]),
+                    "selection_rate": float((score >= t).mean())})
+    return pd.DataFrame(out)
 
-    verdict = {0: "none of the three gaps is", 1: "one of the three gaps is",
-               2: "two of the three gaps are", 3: "all three gaps are"}[n_sig]
-    fig.suptitle(
-        f"Shuffling {ATTRIBUTE_LABEL[attribute]} {null[PARITY_KEYS[0]]['n_perm']:,} times: "
-        f"{verdict} bigger than chance produces",
-        fontsize=11.5, color=INK, x=0.011, ha="left", y=0.99, fontweight="semibold")
-    fig.text(0.011, 0.875,
-             "grey — gaps a random relabelling produces at these group sizes;   "
-             "red — the shuffles that reach the observed gap",
-             fontsize=8, color=MUTED, ha="left")
-    fig.tight_layout(rect=(0, 0.06, 1, 0.835))
+
+GAP_LABEL = {
+    "demographic_parity_difference": "selection-rate gap",
+    "fpr_difference": "false-alarm-rate gap",
+    "tpr_difference": "catch-rate gap",
+}
+GAP_COLOUR = {"demographic_parity_difference": BLUE,
+              "fpr_difference": RED,
+              "tpr_difference": "#7A8796"}
+
+
+def figure_gap_vs_threshold(curve: pd.DataFrame, attribute: str, threshold: float,
+                            frozen: float):
+    """The three gaps as a function of where the line is drawn."""
+    fig, ax = plt.subplots(figsize=(7.2, 3.1), dpi=110)
+    for key, label in GAP_LABEL.items():
+        ax.plot(curve["threshold"], curve[key] * 100, lw=2.0, color=GAP_COLOUR[key],
+                label=label, zorder=3)
+    ax.axvline(frozen, color=GRID, lw=1.2, ls=(0, (4, 3)), zorder=2)
+    ax.axvline(threshold, color=INK, lw=1.4, zorder=4)
+    ax.annotate(f"you are here\n{threshold:.4f}", xy=(threshold, ax.get_ylim()[1]),
+                xytext=(6, -4), textcoords="offset points", ha="left", va="top",
+                fontsize=8.5, color=INK, fontweight="semibold")
+    ax.set_xlim(float(curve["threshold"].min()), float(curve["threshold"].max()))
+    ax.set_ylim(bottom=0)
+    _dress(ax, title=f"How the {ATTRIBUTE_LABEL[attribute]} gaps move as the line moves",
+           xlabel="decision threshold", ylabel="gap between groups, percentage points")
+    ax.legend(frameon=False, fontsize=8.5, loc="upper right", labelcolor=MUTED)
+    fig.tight_layout()
     return fig
 
 
@@ -655,7 +552,7 @@ def main() -> None:
     get_optimal = cache(compute_optimal)
     get_decision = cache(compute_decision)
     get_audit = cache(compute_audit)
-    get_null = cache(compute_null)
+    get_gap_curve = cache(compute_gap_curve)
 
     ref = get_reference()
     frozen_t = float(ref["frozen"]["threshold"])
@@ -757,16 +654,71 @@ def main() -> None:
     st.subheader("2 · Who absorbs the errors")
     st.markdown(
         "The same rule, sliced four ways. These four attributes were carried through the "
-        "whole project for this panel alone and never reached a `fit` call. Drag the "
-        "threshold above and watch the bars move."
+        "whole project for this panel alone and never reached a `fit` call — the model has "
+        "never seen any of them. Drag the threshold above and watch the bars move."
     )
     tables = get_audit(threshold)
     st.pyplot(figure_group_errors(tables, threshold), use_container_width=True)
+    st.markdown(
+        "**Read the two bars separately: they have different denominators.** The red bar is "
+        "a share of that group's *defaulters* — the ones it let through. The blue bar is a "
+        "share of that group's *non-defaulters* — the ones it flagged anyway. A single "
+        "error rate would average these two into a number that hides the thing worth seeing, "
+        "which is that a group can be treated worse in **two opposite directions at once**."
+    )
+
+    sex_tab = tables["sex"].loc[["female", "male"]] if "male" in tables["sex"].index else None
+    if sex_tab is not None:
+        f, m = sex_tab.loc["female"], sex_tab.loc["male"]
+        st.markdown(
+            f"At this cut men absorb more false alarms ({m['fpr']:.1%} of male non-defaulters "
+            f"against {f['fpr']:.1%} of female ones) and women absorb more missed defaults "
+            f"({f['fnr']:.1%} against {m['fnr']:.1%}). **Which of those is the harm is not a "
+            f"question the data can answer.** If a flag is a declined card, the men are the "
+            f"ones being hurt. If a flag is a phone call before the account goes bad, the "
+            f"women are the ones not getting it. Same numbers, opposite conclusion, and the "
+            f"choice belongs to whoever decides what a flag *does*."
+        )
+
+    gaps = headline_gaps(tables)
+    gaps = gaps.set_index("attribute")
+    worst = gaps["demographic_parity_difference"].idxmax()
+    st.markdown(
+        f"**The protected attribute everyone audits is not where the spread is.** At this "
+        f"cut the selection-rate gap across `{worst}` is "
+        f"{gaps.loc[worst, 'demographic_parity_difference']:.1%} against "
+        f"{gaps.loc['sex', 'demographic_parity_difference']:.1%} across `sex` — and the model "
+        f"was given neither. Excluding an attribute from the feature matrix removes it as an "
+        f"*input*, not as a *pattern*; the correlated proxies are all still there. That is why "
+        f"this panel measures outcomes rather than inspecting inputs."
+    )
+
+    st.markdown("##### One gap at one cut is a fact about that cut")
+    st.markdown(
+        "Everything above describes a single operating point. Sweeping the threshold "
+        "separates gaps that are a property of the **rule** from gaps that are a property of "
+        "**where the rule happens to sit** — which are different claims, and only the first "
+        "survives someone changing the cost assumption."
+    )
+    gap_attr = st.selectbox(
+        "Attribute to sweep", ATTRIBUTES, index=ATTRIBUTES.index("sex"),
+        format_func=lambda a: f"{ATTRIBUTE_LABEL[a]}"
+        f"{'  —  pre-specified primary' if a == ref['frozen']['primary_attribute'] else '  —  exploratory'}",
+        key="gap_attr")
+    grid = np.linspace(max(THRESHOLD_MIN, 0.01), min(THRESHOLD_MAX, 0.60), 70)
+    st.pyplot(figure_gap_vs_threshold(get_gap_curve(gap_attr, tuple(np.round(grid, 5))),
+                                      gap_attr, threshold, frozen_t),
+              use_container_width=True)
     st.caption(
-        "At the deployed cut the two sexes are wrong in opposite directions: men are "
-        "flagged more often and absorb more false flags, while women absorb more missed "
-        "defaults. Notice too that the spread across age band and education is roughly "
-        "four to five times the spread across sex."
+        "Dashed line: the cut this project deployed. Solid line: where you have put it."
+    )
+    st.markdown(
+        "**The catch-rate gap collapses as the line comes down, and the selection-rate gap "
+        "does not.** That is mechanical rather than moral: at a cut that flags three quarters "
+        "of the book, almost every defaulter in every group is flagged, so the catch rate has "
+        "no room left to differ — while the selection rate has all the room in the world. "
+        "A fairness claim that only holds at one end of this chart is a claim about the "
+        "threshold, and the threshold came from an assumption I made up."
     )
 
     with st.expander("The numbers behind those bars"):
@@ -781,67 +733,102 @@ def main() -> None:
                                         "missed-default rate": "{:.1%}"}),
                      use_container_width=True)
         st.caption(
-            "Base rates differ across every attribute audited, so demographic parity and "
-            "equalised odds cannot both hold. Both are shown and no winner is declared. "
-            "Groups under 100 rows are printed with their n but kept out of every gap."
+            "Base rates differ across every attribute audited — look at the second column — "
+            "so demographic parity and equalised odds cannot both hold: a calibrated score "
+            "applied to groups that default at different rates must flag them at different "
+            "rates. Both are shown and no winner is declared. Groups under "
+            f"{MIN_AUDIT_CELL} rows are printed with their n but kept out of every gap."
         )
 
-    st.divider()
-    st.subheader("3 · Is the gap real?")
-    st.markdown(
-        "My first reading of these gaps was the obvious one: the bootstrap intervals "
-        "excluded zero, so there were four real disparities. That reading is wrong. Every "
-        "measure here is a `max − min` statistic, so its bootstrap distribution is "
-        "non-negative by construction — an interval can approach zero but never straddle "
-        "it. *Excludes zero* describes how precisely a gap is estimated, not whether there "
-        "is one. The null I actually care about is easy to sample exactly: hold the model, "
-        "the cut and every client's outcome fixed, and shuffle the group labels."
-    )
-    attribute = st.selectbox(
-        "Attribute", ATTRIBUTES, index=0,
-        format_func=lambda a: ATTRIBUTE_LABEL[a] +
-        ("  —  pre-specified primary" if a == "sex" else "  —  exploratory"))
-    n_perm = 2000
-    with st.spinner("Shuffling group labels…"):
-        null, is_published = get_null(attribute, threshold, n_perm)
-    st.pyplot(figure_permutation_nulls(null, attribute), use_container_width=True)
-    if is_published:
-        st.caption(
-            "This is the published run: 5,000 shuffles, seed 907, at the frozen cut. The "
-            "sex catch-rate gap is 0.0197 and randomly relabelling 6,000 clients exceeds it "
-            "about 29% of the time — squarely inside what noise generates at these group "
-            "sizes — while the selection-rate and false-alarm gaps for the same attribute "
-            "sit far outside their nulls (p = 0.0006 and p = 0.005). Three of the four sex "
-            "gaps are real in this sample, one is not, and nothing in the bootstrap "
-            "intervals distinguishes them."
-        )
-    else:
-        st.caption(
-            f"Your threshold flags a different set of clients than the frozen cut, so this "
-            f"null was recomputed for the decision on screen: {n_perm:,} shuffles, seed 907. "
-            f"The published run used 5,000 at the frozen cut — set the threshold back to "
-            f"{snap_to_grid(frozen_t):.4f} to see it."
-        )
-    st.caption(
-        "The pattern repeats across all four attributes: selection-rate and false-alarm "
-        "gaps real and large, catch-rate gaps mostly not. That is mechanically sensible — "
-        "at a cut this low nearly every defaulter is flagged in every group, so the catch "
-        "rate has almost no room to differ while the selection rate has all the room in "
-        "the world."
-    )
+        perm = ref.get("permutation_test_at_frozen_threshold") or {}
+        if perm:
+            st.markdown("**Which of these gaps is bigger than chance produces?**")
+            rows_p = []
+            for attr in ATTRIBUTES:
+                for key, label in GAP_LABEL.items():
+                    e = perm.get(attr, {}).get(key)
+                    if not e:
+                        continue
+                    rows_p.append({
+                        "attribute": ATTRIBUTE_LABEL[attr], "gap": label,
+                        "observed": f"{e['observed'] * 100:.2f} pts",
+                        "p": f"{e['p_value']:.3f}",
+                        "verdict": "larger than chance" if e["p_value"] < 0.05
+                                   else "inside what noise makes",
+                    })
+            st.dataframe(pd.DataFrame(rows_p).set_index(["attribute", "gap"]),
+                         use_container_width=True)
+            st.caption(
+                "A bootstrap interval cannot answer this. Every gap here is a `max − min` "
+                "statistic, so it is non-negative by construction and its interval can "
+                "approach zero but never straddle it — \"excludes zero\" describes how "
+                "precisely the gap is estimated, not whether there is one. The exact null is "
+                "cheap instead: hold the model, the cut and every client's outcome fixed and "
+                "shuffle the group labels 5,000 times. These p-values are from the deployed "
+                "cut, not from wherever your slider is."
+            )
 
     st.divider()
-    st.subheader("4 · What changing the model actually bought")
+    st.subheader("3 · Why this model and not the simpler one")
     st.markdown(
-        "The rule on screen is the **second** model this project put on the test split, and the "
-        "story of why is the most useful thing here. The first version chose between logistic "
-        "regression and LightGBM on **average precision**, got an interval straddling zero, "
-        "called it a tie and kept the simpler model. Average precision integrates precision over "
-        "the whole recall axis \u2014 and this rule operates at recall 0.92, one end of it."
+        "Two families were fitted, tuned and calibrated the same way: an L2 logistic "
+        "regression and LightGBM. One of them has to ship. **The interesting part of this "
+        "project is not which one won — it is that the obvious way to decide was the wrong "
+        "way, and it took a specific piece of machinery to see that.**"
     )
+
+    st.markdown("##### The default answer, and why it is not obviously right")
+    ms = ref["model"]
+    d_ap = ms["lgbm_minus_logistic_ap"]
+    st.markdown(
+        f"The reflex is to pick whichever scores better on the cross-validation metric. Here "
+        f"that metric is **average precision**, and by it the two are a tie: LightGBM wins the "
+        f"cross-validation ({ms['lgbm_cv']:.4f} against {ms['logistic_cv']:.4f}) and then "
+        f"produces a paired difference on validation of **{d_ap['point']:+.5f}, 95% interval "
+        f"[{d_ap['ci_lo']:+.4f}, {d_ap['ci_hi']:+.4f}]** — an interval straddling zero. On that "
+        f"reading you keep the simpler model, and the first version of this project did.\n\n"
+        f"Average precision integrates precision over the **whole** recall axis. It gives the "
+        f"stretch at recall 0.1 — where precision is high and this rule never operates — the "
+        f"same standing as recall {published['confusion']['tpr']:.2f}, which is where the rule "
+        f"actually lives. **Choosing with a number that averages over everywhere, in order to "
+        f"act in one place, is a decision rather than a default**, and it is not one I had "
+        f"made deliberately."
+    )
+
+    st.markdown("##### The obstacle: one validation split cannot answer the better question")
+    st.markdown(
+        "The better question is which family is cheaper at the operating point — expected "
+        "cost at r = 10, the quantity the decision actually pays. Asked on the 6,000-row "
+        "validation split, the paired bootstrap on that difference runs from about "
+        "**−318 to +81**: LightGBM cheaper in 88% of resamples and still not separated from "
+        "zero. The effect is real and smaller than one split of this size can resolve, which "
+        "is exactly why the reassuring paragraph above sounded so safe."
+    )
+
     sa = ref.get("selection_audit")
     sw = ref.get("swap")
     if sa:
+        st.markdown("##### The design, and what each piece of it is for")
+        st.markdown(
+            f"Nested cross-validation over the **{sa['design']['n_rows']:,} pooled training "
+            f"and validation rows** ({sa['design']['outer']}). Four choices, each one closing "
+            f"a specific way the comparison could have flattered one side:\n\n"
+            "- **The outer loop holds out a fold and never touches it.** The number reported "
+            "for a fold is scored on rows nothing in that fold's pipeline has seen.\n"
+            "- **The inner loop tunes each family separately, on outer-training rows only.** "
+            "Neither family gets a hyperparameter chosen with a peek at what judges it, and "
+            "neither gets a longer look than the other.\n"
+            "- **Both arms are built exactly as the deployed model is** — same calibration "
+            "wrapper, same folds, same settings. Give one family a five-fold calibration and "
+            "the other a bare three-fold and you are comparing calibration states, not model "
+            "families. That was a real bug in the first version of this comparison.\n"
+            "- **Each fold is charged its own cheapest cut**, not a threshold fixed elsewhere. "
+            "That makes the statistic a property of the *ranking*, so a family is not "
+            "penalised for a cut that happens to suit the other one.\n\n"
+            "And the inner loop runs **twice** — once selecting hyperparameters on average "
+            "precision, once on expected cost — which turns \"would a cost-aware rule have "
+            "caught this on its own?\" into a measurement instead of an opinion."
+        )
         rows = []
         for key, label in (("average_precision", "average precision"),
                            # r is the audit's own frozen 10, NOT the slider above: that run is
@@ -860,23 +847,40 @@ def main() -> None:
                 "LightGBM cheaper on": f"{d['cheaper_on_n_folds']} of {d['n_folds']} folds",
             })
         st.table(pd.DataFrame(rows).set_index("inner selection metric"))
-        st.caption(
-            f"Nested cross-validation on {sa['design']['n_rows']:,} pooled training and "
-            f"validation clients, {sa['design']['outer']}. The inner loop tunes **each family "
-            f"separately on outer-training rows only**, and both arms are built exactly as the "
-            f"deployed model is, so this compares families and not calibration states. A single "
-            f"6,000-row validation split cannot see this difference at all \u2014 its paired "
-            f"bootstrap on cost runs from about \u2212318 to +81. Ten folds over 24,000 rows can."
+        st.caption("Costs in units of one false alarm, per fold of 4,800 held-out clients.")
+
+        st.markdown("##### The rule that was applied to that table")
+        st.info(
+            "**Switch away from the simpler incumbent only if the paired interval on expected "
+            "cost is clear of zero.** Winning on average is not enough. This is the *same* "
+            "rule that kept the logistic regression in the first version — only the statistic "
+            "it is applied to changed. Writing it down before looking is the difference "
+            "between a rule and a rationalisation.",
+            icon=":material/rule:",
         )
-        st.markdown(
-            "So the selection rule changed, the model changed with it, and the test split was "
-            "opened a second time."
+        c1, c2 = st.columns(2)
+        c1.markdown(
+            "**LightGBM clears it, on every fold, under both criteria.** The tie on average "
+            "precision was a real tie — about a question this project was never going to act "
+            "on."
+        )
+        c2.markdown(
+            "**But changing the selection metric is not what found it.** Tuning on cost rather "
+            "than average precision moves the answer by less than its own interval. "
+            "**The gain is in the model family, not the metric** — \"optimise the business "
+            "number directly\" would not have got here on its own."
         )
 
     if sw:
         a, b = sw["arms"]["superseded"], sw["arms"]["current"]
-        st.markdown(f"#### And then it was worth {abs(sw['difference_at_frozen_cuts']):,.0f} units "
-                    f"out of {a['cost_at_frozen_cut']:,.0f}")
+        st.markdown("##### What the decision was worth when it met the held-out data")
+        st.markdown(
+            f"That is the rationale, and it is only half the story. The rule changed, the "
+            f"model changed with it, the test split was opened a second time — and the swap "
+            f"was worth **{abs(sw['difference_at_frozen_cuts']):,.0f} units out of "
+            f"{a['cost_at_frozen_cut']:,.0f}**, against the roughly 180 the nested comparison "
+            f"implied for 6,000 rows."
+        )
         st.table(pd.DataFrame([
             {"model": a["label"], "at the frozen cut": f"{a['cost_at_frozen_cut']:,.0f}",
              "at its own best cut on test": f"{a['cost_at_own_best_cut_on_test']:,.0f}",
@@ -889,33 +893,30 @@ def main() -> None:
              "at its own best cut on test": f"{sw['difference_at_own_best_cuts']:+,.0f}",
              "threshold transfer loss": ""},
         ]).set_index("model"))
-        st.caption(
-            f"The nested comparison implied roughly 180 units on 6,000 rows. The frozen cuts "
-            f"delivered {abs(sw['difference_at_frozen_cuts']):,.0f} \u2014 "
-            f"{abs(sw['difference_at_frozen_cuts']) / a['cost_at_frozen_cut']:.2%}."
-        )
         c1, c2 = st.columns(2)
         c1.markdown(
-            f"**LightGBM's threshold travels worse.** Its cost curve is less flat near the "
-            f"minimum, so a cut chosen on a different 6,000 rows lands further from optimal "
-            f"({b['threshold_transfer_loss']:+,.0f} against {a['threshold_transfer_loss']:+,.0f}). "
-            f"That is {sw['explained_by_threshold_transfer']:+,.0f} units of the gap, and the "
-            f"nested design is blind to it \u2014 it gives every fold its own cheapest cut."
+            f"**One of my four design choices came back.** Charging every fold its own "
+            f"cheapest cut made the statistic a property of the ranking, which is what I "
+            f"wanted — and it made the design blind to the fact that LightGBM transfers a "
+            f"*frozen* threshold worse ({b['threshold_transfer_loss']:+,.0f} against "
+            f"{a['threshold_transfer_loss']:+,.0f}). Its cost curve is less flat near the "
+            f"minimum. That is {sw['explained_by_threshold_transfer']:+,.0f} units of the gap."
         )
         c2.markdown(
             f"**The rest is noise.** Expected cost on these 6,000 clients has a bootstrap "
-            f"standard deviation of **{sw['bootstrap_sd_of_expected_cost']:,.0f} units**. So "
-            f"{sw['difference_at_own_best_cuts']:+,.0f} and \u2212180 are not distinguishable from "
+            f"standard deviation of **{sw['bootstrap_sd_of_expected_cost']:,.0f} units**, so "
+            f"{sw['difference_at_own_best_cuts']:+,.0f} and −180 are not distinguishable from "
             f"each other, and neither is distinguishable from zero."
         )
         st.info(
-            "**What this cost.** \"Held out, opened once\" became \"opened twice under a rule "
-            "that changed in between\", in exchange for 0.18%. Nothing on the test split informed "
-            "the change \u2014 the nested comparison never reads those rows \u2014 but that is a defence, "
-            "not a justification. The one unambiguous gain is elsewhere: re-running the "
-            "calibration rule for the new model **rejected isotonic** (it improves Brier and "
-            "worsens ECE) and adopted sigmoid, which more than halves expected calibration error "
-            "on test, 0.0150 \u2192 0.0062.",
+            "**So was the decision wrong?** The reasoning holds and the payoff did not arrive. "
+            "Ten nested folds over 24,000 rows can see a difference that one 6,000-row split "
+            "cannot confirm; both of those are true and the second governs what I am allowed "
+            "to claim. What it cost is concrete: \"held out, opened once\" became \"opened "
+            "twice under a rule that changed in between\". The unambiguous gain was somewhere "
+            "I was not looking — re-running the calibration rule for the new model **rejected "
+            "isotonic** and adopted sigmoid, more than halving expected calibration error on "
+            "test, 0.0150 → 0.0062.",
             icon=":material/flag:",
         )
 

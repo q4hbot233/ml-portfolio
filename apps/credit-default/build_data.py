@@ -156,8 +156,9 @@ def main() -> int:
     })
     rows.to_csv(OUT / "test_predictions.csv", index=False)
 
-    pd.DataFrame({k: np.round(v, 6) for k, v in draws.items()}).to_csv(
-        OUT / "permutation_nulls.csv", index=False)
+    # The null draws themselves are no longer shipped: the page reports the p-values from
+    # reference.json rather than drawing the distributions, and the draws were 520 KB of a
+    # 816 KB payload. The summary below is what survives of that run.
 
     reference = {
         "_source": "credit-default-risk-interpretability-fairness (private repo)",
