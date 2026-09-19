@@ -63,6 +63,64 @@ button.ctl:focus-visible,select.ctl:focus-visible,#scrub:focus-visible{outline:2
 
 /* ---------- body ---------- */
 main{display:grid;grid-template-columns:392px 1fr;flex:1;min-height:0}
+main[hidden]{display:none!important}
+/* The tower gains a pit-probability column. 26px is enough for "31%" at this size and
+   the gap column gives it up, because a gap is readable a character narrower. */
+.row.hasP{grid-template-columns:26px 3px 52px 1fr 56px 44px 34px}
+.row .pp{font-family:var(--mono);font-size:11px;text-align:right;font-variant-numeric:tabular-nums;
+  color:var(--dim)}
+.row .pp.hot{color:var(--amber);font-weight:700}
+.row .pp.vhot{color:var(--red);font-weight:700}
+/* Map and lap chart share the top of the right column. The map was taking the whole of
+   it; at 46% it is still legible and the chart beside it is the thing that gets read. */
+.toprow{display:grid;grid-template-columns:46% 1fr;flex:1;min-height:0;border-bottom:1px solid var(--edge)}
+.lapchart{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;background:var(--panel)}
+.lapchart .chead{display:flex;align-items:center;gap:8px;padding:7px 11px;border-bottom:1px solid var(--edge);
+  background:var(--panel-2);flex:none}
+.lapchart .chead .t{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;color:var(--faint);
+  text-transform:uppercase}
+.lapchart select{margin-left:auto;background:var(--panel);color:var(--ink);border:1px solid var(--edge-2);
+  font-family:var(--mono);font-size:10.5px;padding:2px 6px;border-radius:2px}
+.lapchart svg{flex:1;min-height:0;width:100%}
+.lapchart .cnote{font-family:var(--mono);font-size:9.5px;color:var(--faint);padding:0 11px 7px;line-height:1.5}
+.lapchart .cnote b{color:var(--amber)}
+/* Strategy sits under the model cards, bottom right. */
+.strategy{border-top:1px solid var(--edge);background:var(--panel-2);flex:none;padding:9px 12px 11px;
+  display:grid;grid-template-columns:auto auto 1fr;gap:6px 18px;align-items:baseline}
+.strategy .sk{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;color:var(--faint);text-transform:uppercase}
+.strategy .sv{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.strategy .sv small{font-size:10px;font-weight:400;color:var(--dim)}
+.strategy .srec{grid-column:1/-1;font-size:11.5px;color:var(--dim);line-height:1.55;margin-top:2px}
+.strategy .srec b{color:var(--ink)}
+/* Tabs */
+.tabs{display:flex;gap:2px;margin-left:14px}
+.tab{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  background:transparent;color:var(--faint);border:1px solid var(--edge-2);border-bottom:none;
+  padding:6px 13px;cursor:pointer;border-radius:2px 2px 0 0}
+.tab[aria-selected="true"]{background:var(--panel);color:var(--ink);border-color:var(--edge-2)}
+.racesel{background:var(--panel);color:var(--ink);border:1px solid var(--edge-2);font-family:var(--cond);
+  font-size:13px;padding:4px 8px;border-radius:2px;max-width:230px}
+/* Model tab */
+main.mx{display:block;overflow-y:auto;padding:16px 18px 40px}
+.mx h2{font-family:var(--cond);font-size:19px;font-weight:700;margin:0 0 4px;letter-spacing:.01em}
+.mx .lede{font-size:12.5px;color:var(--dim);max-width:86ch;line-height:1.6;margin:0 0 16px}
+.mx .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:12px;margin-bottom:16px}
+.mx .card{background:var(--panel);border:1px solid var(--edge);padding:13px 14px}
+.mx .card h3{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--faint);margin:0 0 9px;font-weight:400}
+.mx table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px;
+  font-variant-numeric:tabular-nums}
+.mx th{text-align:right;color:var(--faint);font-weight:400;padding:3px 0;border-bottom:1px solid var(--edge)}
+.mx th:first-child,.mx td:first-child{text-align:left}
+.mx td{padding:3px 0;border-bottom:1px solid #12151B}
+.mx td.sep{color:var(--green)} .mx td.nosep{color:var(--amber)}
+.mx .bar{height:8px;background:var(--cyan);border-radius:1px;display:inline-block;vertical-align:middle}
+.mx .note{font-size:11.5px;color:var(--dim);line-height:1.6;margin-top:9px}
+.mx .note b{color:var(--ink)}
+.mx .cl{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.mx .cl span{font-family:var(--mono);font-size:10px;padding:3px 7px;border:1px solid var(--edge-2);
+  border-radius:2px;color:var(--dim)}
+@media (max-width:1100px){.toprow{grid-template-columns:1fr;grid-template-rows:minmax(180px,34vh) 1fr}}
 .tower{border-right:1px solid var(--edge);background:var(--panel);display:flex;flex-direction:column;min-height:0}
 .towerhead,.panelhead{
   font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;color:var(--faint);text-transform:uppercase;
@@ -110,7 +168,7 @@ main{display:grid;grid-template-columns:392px 1fr;flex:1;min-height:0}
   font-family:var(--mono);font-size:11px;font-variant-numeric:tabular-nums}
 .focuscard dt{color:var(--faint)} .focuscard dd{margin:0;text-align:right}
 
-.models{border-top:1px solid var(--edge);background:var(--panel);flex:none;max-height:38vh;overflow-y:auto}
+.models{border-top:1px solid var(--edge);background:var(--panel);flex:none;max-height:31vh;overflow-y:auto}
 .mgrid{display:grid;grid-template-columns:repeat(4,1fr)}
 .mcard{padding:11px 13px 13px;border-right:1px solid var(--edge)}
 .mcard:last-child{border-right:0}
@@ -164,6 +222,11 @@ footer a{color:var(--dim)}
     <div class="hstat"><div class="k">Race clock</div><div class="v" id="clock">—</div></div>
     <div class="hstat"><div class="k">Leader</div><div class="v" id="leader">—</div></div>
     <div class="flagpill" id="flag">GREEN</div>
+    <select class="racesel" id="raceSel" aria-label="Race"></select>
+    <div class="tabs" role="tablist">
+      <button class="tab" id="tabRace" role="tab" aria-selected="true">Race control</button>
+      <button class="tab" id="tabModel" role="tab" aria-selected="false">Models</button>
+    </div>
     <div class="spacer"></div>
     <div class="transport">
       <button class="ctl primary" id="play">PLAY</button>
@@ -180,17 +243,27 @@ footer a{color:var(--dim)}
     <input id="scrub" type="range" min="0" max="1000" value="0" step="1" aria-label="Scrub through the race">
   </div>
 
-  <main>
+  <main id="mainRace">
     <section class="tower">
       <div class="towerhead">Timing — classified order at the current lap</div>
       <div class="rows" id="rows"></div>
     </section>
 
     <section class="right">
-      <div class="mapwrap">
-        <svg id="map" role="img" aria-label="Circuit map with car positions"></svg>
-        <div class="mapnote" id="mapnote">CIRCUIT TRACE — LOADING</div>
-        <div class="focuscard" id="focus" hidden></div>
+      <div class="toprow">
+        <div class="mapwrap">
+          <svg id="map" role="img" aria-label="Circuit map with car positions"></svg>
+          <div class="mapnote" id="mapnote">CIRCUIT TRACE — LOADING</div>
+          <div class="focuscard" id="focus" hidden></div>
+        </div>
+        <div class="lapchart">
+          <div class="chead">
+            <span class="t">Lap times</span>
+            <select id="lapDrv" aria-label="Driver for the lap-time chart"></select>
+          </div>
+          <svg id="lapSvg" role="img" aria-label="Lap times for the selected driver"></svg>
+          <div class="cnote" id="lapNote">—</div>
+        </div>
       </div>
 
       <div class="models">
@@ -225,7 +298,64 @@ footer a{color:var(--dim)}
           </div>
         </div>
       </div>
+
+      <div class="strategy">
+        <div><div class="sk">Pit loss</div><div class="sv" id="stLoss">—<small> s</small></div></div>
+        <div><div class="sk">Model stint</div><div class="sv" id="stOpt">—<small> laps</small></div></div>
+        <div><div class="sk">Teams actually stopped</div><div class="sv" id="stObs">—</div></div>
+        <div class="srec" id="stRec">—</div>
+      </div>
     </section>
+  </main>
+
+  <main class="mx" id="mainModel" hidden>
+    <h2>The two models that need more than one race</h2>
+    <p class="lede">
+      Lap-time prediction and the anomaly flag are questions inside a session, and one race is the
+      right substrate for them. These two are not. <b>When does a team pit</b> and <b>how fast does a
+      compound fall away</b> are questions about circuits, conditions and rules — fit either on a
+      single race and you have measured that race. Both are fitted on <span id="mxCorpus">—</span>,
+      split by season rather than at random: a random split puts the 2023 and 2024 running of the
+      same circuit on opposite sides, and scores the model on a track it has already learned.
+    </p>
+    <div class="cards">
+      <div class="card">
+        <h3>Pit probability — held-out season</h3>
+        <table id="mxPit"></table>
+        <div class="note" id="mxPitNote">—</div>
+      </div>
+      <div class="card">
+        <h3>What the pit model leans on</h3>
+        <table id="mxImp"></table>
+        <div class="note">Permutation importance, measured on the <b>held-out season</b> — drop in
+          average precision when one feature is shuffled. Measuring it on training rows would say
+          which features the model memorised with.</div>
+      </div>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <h3>Degradation by compound</h3>
+        <table id="mxComp"></table>
+        <div class="note" id="mxCompNote">—</div>
+      </div>
+      <div class="card">
+        <h3>Circuits that wear tyres alike</h3>
+        <div id="mxClusters"></div>
+        <div class="note">Clustered on the degradation each compound produces there, standardised so
+          a circuit that is simply slow does not group with another slow one for that reason.</div>
+      </div>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <h3>Durability against pace</h3>
+        <table id="mxTrade"></table>
+        <div class="note" id="mxTradeNote">—</div>
+      </div>
+      <div class="card">
+        <h3>What this cannot tell you</h3>
+        <div class="note" id="mxCaveats">—</div>
+      </div>
+    </div>
   </main>
 
   <footer id="foot">—</footer>
@@ -238,7 +368,8 @@ const DATA = "data/";
 const S = {
   meta:null, replay:null, models:null, track:null,
   t:0, tMax:0, playing:false, speed:120, sel:null, raf:null, last:null,
-  byDriver:null, sessionBest:null, anomSet:null, lapEnds:null
+  byDriver:null, sessionBest:null, anomSet:null, lapEnds:null,
+  races:null, slug:null, corpus:null, pitByDriverLap:null, lapDrv:null, tab:"race"
 };
 
 const fmtLap = ms => {
@@ -259,8 +390,43 @@ const fmtGap = (ms, lapsDown) => {
 };
 
 /* ---------------- load ---------------- */
+const jget = async u => (await fetch(u)).json();
+
 async function boot(){
-  const j = async f => (await fetch(DATA+f)).json();
+  const [races, corpus] = await Promise.all([
+    jget(DATA+"races.json"), jget(DATA+"models_corpus.json").catch(()=>null)]);
+  S.races = races; S.corpus = corpus;
+  const sel = $("raceSel");
+  races.races.forEach(r => {
+    const o = document.createElement("option");
+    o.value = r.slug; o.textContent = r.year + " " + r.event.replace(" Grand Prix", " GP");
+    o.title = r.rationale; sel.appendChild(o);
+  });
+  sel.value = races.default;
+  sel.addEventListener("change", () => loadRace(sel.value));
+  $("tabRace").addEventListener("click", ()=>setTab("race"));
+  $("tabModel").addEventListener("click", ()=>setTab("model"));
+  if (corpus) renderModelTab(corpus);
+  await loadRace(races.default);
+  $("boot").remove(); $("app").hidden = false;
+}
+
+function setTab(which){
+  S.tab = which;
+  $("mainRace").hidden = which !== "race";
+  $("mainModel").hidden = which !== "model";
+  $("tabRace").setAttribute("aria-selected", which === "race");
+  $("tabModel").setAttribute("aria-selected", which === "model");
+  if (which === "race" && S.track) drawTrack();
+}
+
+async function loadRace(slug){
+  setPlaying(false);
+  S.slug = slug; S.track = null; S.sel = null; S.lapDrv = null;
+  $("map").innerHTML = "";
+  $("mapnote").textContent = "CIRCUIT TRACE — LOADING";
+  const base = DATA + slug + "/";
+  const j = async f => (await fetch(base+f)).json();
   const [meta, replay, models] = await Promise.all([j("meta.json"), j("replay.json"), j("models.json")]);
   S.meta = meta; S.replay = replay; S.models = models;
 
@@ -284,12 +450,27 @@ async function boot(){
   for (let i=0;i<n;i++) if (replay.lap[i]===1 && replay.lap_end_ms[i]!=null) lap1.push(replay.lap_end_ms[i]);
   S.t = lap1.length ? Math.max(...lap1) : 0;
 
-  header(); buildRows(); renderModels();
-  $("boot").remove(); $("app").hidden = false;
-  render();
+  // P(pit) is keyed by driver CODE and lap in the bundle, because the model is fitted on
+  // the corpus where a driver index would mean nothing. Index it once here.
+  S.pitByDriverLap = new Map();
+  const pp = models.pit_probability;
+  if (pp) for (let i=0;i<pp.lap.length;i++) S.pitByDriverLap.set(pp.driver[i]+"|"+pp.lap[i], pp.p_pit[i]);
 
-  j("track.json").then(tr => { S.track = tr; drawTrack(); render(); })
-                 .catch(()=>{ $("mapnote").textContent = "CIRCUIT TRACE UNAVAILABLE"; });
+  buildDriverPicker();
+  header(); buildRows(); renderModels(); renderStrategy();
+  render(); drawLapChart();
+
+  // The track trace is the largest file in the bundle and is fetched last. Switching race
+  // while one is in flight used to leave the previous circuit on screen: the old promise
+  // resolved after the new race had loaded and wrote its own trace into S.track. Capture
+  // the slug this fetch belongs to and drop the response if it is no longer the race on
+  // screen.
+  const want = slug;
+  j("track.json").then(tr => {
+      if (S.slug !== want) return;
+      S.track = tr; drawTrack(); render();
+    })
+    .catch(()=>{ if (S.slug === want) $("mapnote").textContent = "CIRCUIT TRACE UNAVAILABLE"; });
 }
 
 function header(){
@@ -307,14 +488,15 @@ function buildRows(){
   const wrap = $("rows"); wrap.innerHTML = "";
   S.meta.drivers.forEach((d,i)=>{
     const r = document.createElement("div");
-    r.className = "row"; r.dataset.d = i; r.tabIndex = 0;
+    r.className = "row hasP"; r.dataset.d = i; r.tabIndex = 0;
     r.innerHTML =
       '<span class="pos"></span>'+
       '<span class="bar" style="background:'+d.colour+'"></span>'+
       '<span class="code">'+d.code+'</span>'+
       '<span class="gap"></span>'+
       '<span class="lt"></span>'+
-      '<span class="ty"></span>';
+      '<span class="ty"></span>'+
+      '<span class="pp" title="Modelled probability this car pits at the end of this lap"></span>';
     r.addEventListener("click", ()=>{ S.sel = (S.sel===i?null:i); render(); });
     r.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault(); S.sel=(S.sel===i?null:i); render();} });
     wrap.appendChild(r);
@@ -368,11 +550,13 @@ function render(){
     const row = wrap.querySelector('.row[data-d="'+di+'"]');
     if (row.style.order !== String(slot)) row.style.order = String(slot);
     const f = cur[di];
-    const pos = row.children[0], gap = row.children[3], lt = row.children[4], ty = row.children[5];
+    const pos = row.children[0], gap = row.children[3], lt = row.children[4],
+          ty = row.children[5], pp = row.children[6];
     row.classList.toggle("sel", S.sel===di);
     if (f < 0){
       row.classList.add("out");
-      pos.textContent = "—"; gap.textContent = "—"; lt.textContent = "—"; ty.textContent = "";
+      pos.textContent = "—"; gap.textContent = "—"; lt.textContent = "—";
+      ty.textContent = ""; pp.textContent = ""; pp.className = "pp";
       return;
     }
     row.classList.remove("out");
@@ -386,11 +570,25 @@ function render(){
     const comp = R.compounds[R.compound[f]] || "UNKNOWN";
     ty.innerHTML = '<span class="tyC t-'+comp+'">'+comp.charAt(0)+'</span>'+R.tyre_age[f] +
                    (S.anomSet.has(f) ? '<span class="anomdot" title="flagged by the anomaly model"></span>' : '');
+
+    // Probability this car pits at the end of the NEXT lap: the model predicts a lap from
+    // its starting state, so the number that is actionable now is the one attached to the
+    // lap about to be run, not the one just completed.
+    const code = S.meta.drivers[di].code;
+    const q = S.pitByDriverLap ? S.pitByDriverLap.get(code+"|"+(R.lap[f]+1)) : undefined;
+    if (q == null){ pp.textContent = "—"; pp.className = "pp"; }
+    else {
+      pp.textContent = (q*100).toFixed(0)+"%";
+      pp.className = "pp" + (q >= 0.20 ? " vhot" : (q >= 0.08 ? " hot" : ""));
+      pp.title = "Modelled probability this car pits at the end of lap " + (R.lap[f]+1) +
+                 ". Fitted without this race.";
+    }
   });
 
   wrap.style.display = "flex"; wrap.style.flexDirection = "column";
   drawCars(cur);
   focusCard(cur);
+  drawLapChart();
 }
 
 /* ---------------- map ---------------- */
@@ -413,7 +611,13 @@ function drawTrack(){
       '<polyline points="'+pts+'" fill="none" stroke="#39414D" stroke-width="1" stroke-dasharray="7 9" opacity=".55"/>'+
       '<g id="cars"></g>'+
     '</g>';
-  $("mapnote").textContent = "BARCELONA — CENTRELINE FROM THE FASTEST LAP'S POSITION TRACE";
+  // Was hardcoded to BARCELONA from when this dashboard only ever showed one race. With
+  // five selectable it has to come from the bundle, or the map confidently mislabels
+  // itself on four of them.
+  const circ = S.meta.circuit || {};
+  const where = (circ.location || circ.country || S.meta.session?.event || "CIRCUIT");
+  $("mapnote").textContent = String(where).toUpperCase() +
+    " — CENTRELINE FROM THE FASTEST LAP'S POSITION TRACE";
 }
 function drawCars(cur){
   if (!S.track) return;
@@ -555,6 +759,216 @@ function renderModels(){
 }
 
 /* ---------------- transport ---------------- */
+// ---------------------------------------------------------------- lap-time chart
+function buildDriverPicker(){
+  const sel = $("lapDrv"); sel.innerHTML = "";
+  // Ordered by finishing position, so the picker opens on somebody worth looking at.
+  const order = S.meta.drivers.map((d,i)=>({i,d}))
+    .sort((a,b)=>(a.d.finish_position||99)-(b.d.finish_position||99));
+  order.forEach(({i,d})=>{
+    const o = document.createElement("option");
+    o.value = String(i); o.textContent = d.code + "  " + (d.team||"");
+    sel.appendChild(o);
+  });
+  S.lapDrv = order[0].i;
+  sel.value = String(S.lapDrv);
+  sel.onchange = () => { S.lapDrv = +sel.value; drawLapChart(); };
+}
+
+function drawLapChart(){
+  const svg = $("lapSvg"), note = $("lapNote");
+  if (S.lapDrv == null || !S.replay){ svg.innerHTML = ""; return; }
+  const R = S.replay, di = S.lapDrv, frames = S.byDriver[di];
+  const pts = [];
+  for (const f of frames){
+    const t = R.lap_time_ms[f];
+    if (t == null) continue;
+    // Every reason this lap is not a clean measure of pace. A lap-time chart that plots
+    // these as ordinary points invites the reader to see degradation where there was a
+    // pit stop, which is the single most common way this chart misleads.
+    const reasons = [];
+    if (R.is_pit_in[f])      reasons.push("pit in");
+    if (R.is_pit_out[f])     reasons.push("out lap");
+    if (R.is_neutralised[f]) reasons.push("safety car / VSC");
+    if (S.anomSet.has(f) && !reasons.length) reasons.push("anomaly flag");
+    pts.push({lap:R.lap[f], ms:t, f, reasons});
+  }
+  if (!pts.length){ svg.innerHTML = ""; note.textContent = "no timed laps"; return; }
+
+  const clean = pts.filter(p=>!p.reasons.length);
+  const base = clean.length ? clean.map(p=>p.ms).sort((a,b)=>a-b) : pts.map(p=>p.ms).sort((a,b)=>a-b);
+  const med = base[Math.floor(base.length/2)];
+  // Clip the axis to the clean range so one 40-second pit lap does not flatten the whole
+  // trace into a line. Outliers are drawn pinned to the top edge with a marker instead.
+  const lo = Math.min(...base) - 400, hi = base[Math.floor(base.length*0.95)] + 900;
+  const W = svg.clientWidth || 420, H = svg.clientHeight || 190;
+  const P = {l:38, r:8, t:10, b:20};
+  const maxLap = Math.max(...pts.map(p=>p.lap));
+  const X = l => P.l + (l-1)/Math.max(maxLap-1,1) * (W-P.l-P.r);
+  const Y = v => P.t + (1 - (Math.min(Math.max(v,lo),hi)-lo)/(hi-lo)) * (H-P.t-P.b);
+
+  let g = '<rect width="'+W+'" height="'+H+'" fill="none"/>';
+  for (let k=0;k<=3;k++){
+    const v = lo + (hi-lo)*k/3, y = Y(v);
+    g += '<line x1="'+P.l+'" y1="'+y.toFixed(1)+'" x2="'+(W-P.r)+'" y2="'+y.toFixed(1)+
+         '" stroke="#1B2029" stroke-width="1"/>'+
+         '<text x="4" y="'+(y+3).toFixed(1)+'" fill="#5A6472" font-size="8.5" font-family="ui-monospace,monospace">'+
+         fmtLap(v)+'</text>';
+  }
+  g += '<line x1="'+P.l+'" y1="'+Y(med).toFixed(1)+'" x2="'+(W-P.r)+'" y2="'+Y(med).toFixed(1)+
+       '" stroke="#39B37A" stroke-width="1" stroke-dasharray="4 4" opacity=".75"/>';
+
+  const line = pts.filter(p=>!p.reasons.length)
+    .map((p,i)=>(i?"L":"M")+X(p.lap).toFixed(1)+" "+Y(p.ms).toFixed(1)).join(" ");
+  g += '<path d="'+line+'" fill="none" stroke="'+S.meta.drivers[di].colour+'" stroke-width="1.6"/>';
+
+  for (const p of pts){
+    const x = X(p.lap).toFixed(1), clipped = p.ms > hi;
+    const y = clipped ? Y(hi).toFixed(1) : Y(p.ms).toFixed(1);
+    if (p.reasons.length){
+      g += '<line x1="'+x+'" y1="'+P.t+'" x2="'+x+'" y2="'+(H-P.b)+'" stroke="#C99A3A" '+
+           'stroke-width="1" opacity=".30"/>'+
+           '<circle cx="'+x+'" cy="'+y+'" r="3.1" fill="#C99A3A"><title>Lap '+p.lap+' — '+
+           fmtLap(p.ms)+'  ('+p.reasons.join(", ")+')</title></circle>';
+      if (clipped) g += '<path d="M'+(+x-3)+' '+(+y+5)+' l3 -4 l3 4 z" fill="#C99A3A"/>';
+    } else {
+      g += '<circle cx="'+x+'" cy="'+y+'" r="1.9" fill="'+S.meta.drivers[di].colour+
+           '"><title>Lap '+p.lap+' — '+fmtLap(p.ms)+'</title></circle>';
+    }
+  }
+  const curLap = currentLapOf(di);
+  if (curLap) g += '<line x1="'+X(curLap).toFixed(1)+'" y1="'+P.t+'" x2="'+X(curLap).toFixed(1)+
+                   '" y2="'+(H-P.b)+'" stroke="#E7ECF3" stroke-width="1" opacity=".55"/>';
+  svg.setAttribute("viewBox","0 0 "+W+" "+H);
+  svg.innerHTML = g;
+
+  const flagged = pts.filter(p=>p.reasons.length).length;
+  note.innerHTML = S.meta.drivers[di].code + " — " + clean.length + " clean laps, " +
+    "<b>" + flagged + " marked</b> (pit, neutralisation or anomaly). Dashed line is the " +
+    "median clean lap; marked laps are excluded from it. Laps above the axis are pinned " +
+    "to the top edge rather than rescaling the chart.";
+}
+
+function currentLapOf(di){
+  const frames = S.byDriver[di];
+  let lap = null;
+  for (const f of frames){
+    const e = S.replay.lap_end_ms[f];
+    if (e != null && e <= S.t) lap = S.replay.lap[f];
+  }
+  return lap;
+}
+
+// ---------------------------------------------------------------- strategy panel
+function renderStrategy(){
+  const st = S.models && S.models.strategy;
+  if (!st){ $("stRec").textContent = "—"; return; }
+  const loss = st.pit_loss_s, opt = st.optimal_stint_laps, o = st.observed_stop_laps;
+  $("stLoss").innerHTML = (loss==null?"—":loss.toFixed(1)) + '<small> s</small>';
+  $("stOpt").innerHTML  = (opt==null?"—":opt.toFixed(0)) + '<small> laps</small>';
+  $("stObs").innerHTML  = (o && o.median!=null)
+      ? 'lap ' + o.median.toFixed(0) + '<small> &nbsp;(' + o.p25.toFixed(0) + '–' + o.p75.toFixed(0) + ')</small>'
+      : "—";
+  const per = (st.by_compound||[]).filter(c=>c.optimal_stint_laps!=null)
+      .map(c=>c.compound.toLowerCase()+" "+c.optimal_stint_laps.toFixed(0))
+      .join(", ");
+  let verdict;
+  if (opt == null || !o || o.median == null) verdict = "Not enough of this circuit in the corpus to invert.";
+  else {
+    const d = Math.abs(opt - o.median);
+    const lapWord = n => n.toFixed(0) + (Math.round(n) === 1 ? " lap" : " laps");
+    verdict = d <= 4
+      ? "<b>The window and the stops agree to within " + lapWord(d) + ".</b> That is worth "
+        + "something: the stint length is derived from pit loss and measured degradation, not fitted to what teams did."
+      : "<b>The window sits " + lapWord(d) + " from where teams actually stopped.</b> "
+        + "The formula has no traffic, no undercut and no safety car in it, and it does not "
+        + "know about a mandated stint limit — so a gap this size is a question about the race, not a bug.";
+  }
+  $("stRec").innerHTML = "&radic;(2 &times; pit loss / degradation) gives " +
+    (opt==null?"no stint length":"<b>"+opt.toFixed(0)+" laps</b>") +
+    (per ? " (" + per + ")" : "") + ". " + verdict +
+    " <span style=\'color:#5A6472\'>" + (st.caveat||"") + "</span>";
+}
+
+// ---------------------------------------------------------------- model tab
+function renderModelTab(c){
+  const pit = c.pitstop, deg = c.degradation, co = c.corpus;
+  $("mxCorpus").textContent = co.laps.toLocaleString() + " laps from " + co.races +
+    " races at " + co.circuits + " circuits";
+
+  const t = pit.test, fl = t.prevalence;
+  $("mxPit").innerHTML =
+    "<tr><th>metric</th><th>model</th><th>baseline</th></tr>" +
+    row("average precision", t.average_precision.toFixed(4), fl.toFixed(4) + " (flag nobody)") +
+    row("&nbsp;", "", "tyre age alone " + pit.baselines.tyre_age_start.toFixed(4)) +
+    row("&nbsp;", "", "two-compound rule " + pit.baselines.must_still_change.toFixed(4)) +
+    row("ROC-AUC", t.roc_auc.toFixed(4), "0.5000") +
+    row("calibration error", t.ece.toFixed(4), "—") +
+    row("stops in the season", t.n_stops + " in " + t.n.toLocaleString() + " laps", (fl*100).toFixed(2) + "%");
+  $("mxPitNote").innerHTML =
+    "Fitted on " + pit.n_train_stops + " stops across the " + co.train_season + " season and scored " +
+    "once on " + co.test_season + ". <b>" + (t.average_precision/fl).toFixed(1) + "&times; the floor</b>, " +
+    "and ahead of both single-feature baselines. Within-season it reaches " +
+    t.oof_ap_train_season.toFixed(4) + " out of fold, so <b>transferring to a new season costs about " +
+    Math.round((1 - t.average_precision/t.oof_ap_train_season)*100) + "%</b> — that number belongs next to the first one.";
+
+  const imp = pit.importance.slice(0,8), mx = Math.max(...imp.map(r=>r.drop_in_ap));
+  $("mxImp").innerHTML = "<tr><th>feature</th><th>drop in AP</th><th></th></tr>" +
+    imp.map(r=>"<tr><td>"+r.feature+"</td><td>"+r.drop_in_ap.toFixed(4)+"</td><td>"+
+      '<span class="bar" style="width:'+Math.max(2,(r.drop_in_ap/mx)*84).toFixed(0)+'px"></span></td></tr>').join("");
+
+  $("mxComp").innerHTML = "<tr><th>compound</th><th>s / lap</th><th>95% interval</th><th>stints</th></tr>" +
+    deg.compound.map(r=>"<tr><td>"+r.compound+"</td><td>"+r.median_slope_s_per_lap.toFixed(4)+"</td><td>["+
+      r.ci_lo.toFixed(4)+", "+r.ci_hi.toFixed(4)+"]</td><td>"+r.n_stints+"</td></tr>").join("");
+  const pw = deg.pairwise;
+  $("mxCompNote").innerHTML =
+    pw.map(r=>"<span class='"+(r.separated?"":"")+"'>"+r.a+" &minus; "+r.b+" = "+
+      r.difference.toFixed(4)+" ["+r.ci_lo.toFixed(4)+", "+r.ci_hi.toFixed(4)+"] &mdash; <b>"+
+      (r.separated?"separated":"NOT separated")+"</b></span>").join("<br>") +
+    "<br><br>The interval on each compound on its own cannot answer which is more durable. " +
+    "Bootstrapping the <b>difference</b> can, and it says the soft separates from both while " +
+    "<b>medium and hard do not separate from each other</b>. An earlier run on 12 fewer races " +
+    "had them the other way round, inside the same interval.";
+
+  const cl = {};
+  deg.clusters.forEach(r => { (cl[r.cluster] = cl[r.cluster] || []).push(r); });
+  $("mxClusters").innerHTML = Object.keys(cl).sort((a,b)=>
+      mean(cl[a].map(r=>r.mean_slope)) - mean(cl[b].map(r=>r.mean_slope)))
+    .map(k=>{
+      const g = cl[k], m = mean(g.map(r=>r.mean_slope));
+      return '<div style="margin-bottom:9px"><div style="font-family:ui-monospace,monospace;'+
+        'font-size:10px;color:#8C97A6">'+m.toFixed(4)+' s/lap &middot; '+g.length+' circuits</div>'+
+        '<div class="cl">'+g.map(r=>"<span>"+r.circuit+"</span>").join("")+'</div></div>';
+    }).join("");
+
+  const tr = deg.durability_vs_pace;
+  $("mxTrade").innerHTML = "<tr><th>compound</th><th>pace cost</th><th>s / lap</th><th>stints</th></tr>" +
+    tr.map(r=>"<tr><td>"+r.compound+"</td><td>"+r.pace_penalty_s.toFixed(3)+"</td><td>"+
+      r.slope_s_per_lap.toFixed(4)+"</td><td>"+r.n_stints+"</td></tr>").join("");
+  $("mxTradeNote").innerHTML =
+    "Pace is compared at tyre age " + deg.reference_tyre_age + " after removing the lap-number " +
+    "effect, within a race and then pooled. Comparing raw stint medians instead reported the " +
+    "<b>hard compound as the fastest</b>, which is an artefact: hards run long stints late on a " +
+    "light car and softs run short ones on heavy fuel.";
+
+  $("mxCaveats").innerHTML =
+    "<b>A slope is not only degradation.</b> It is the pace trend inside a stint after a " +
+    "lap-number correction, and that correction absorbs fuel burn and track evolution together " +
+    "because both move with lap number. Anything else that drifted monotonically through the " +
+    "stint is still in there.<br><br>" +
+    "<b>Teams choose when to fit a compound.</b> None of this is a controlled experiment. Softs " +
+    "go on in specific situations and those situations are not random, so the pace column is an " +
+    "observational comparison.<br><br>" +
+    "<b>The lap-number effect is fitted per race</b> and runs from " +
+    Math.min(...Object.values(deg.lap_number_effect_per_race)).toFixed(3) + " to " +
+    Math.max(...Object.values(deg.lap_number_effect_per_race)).toFixed(3) + " s/lap. A single " +
+    "constant across races returned negative degradation at Monaco, Jeddah and Qatar — tyres " +
+    "apparently getting faster as they aged.";
+}
+
+function row(k,a,b){ return "<tr><td>"+k+"</td><td>"+a+"</td><td>"+b+"</td></tr>"; }
+function mean(a){ return a.reduce((x,y)=>x+y,0)/a.length; }
+
 function tick(ts){
   if (!S.playing){ S.last=null; return; }
   if (S.last==null) S.last = ts;
