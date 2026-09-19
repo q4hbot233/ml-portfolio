@@ -45,5 +45,18 @@ mount({
   },
 }, document.getElementById("root"));
 </script>
+<style>
+#zback{
+  position:fixed; left:12px; bottom:12px; z-index:99999;
+  font-family:"Roboto Mono",ui-monospace,Menlo,monospace; font-size:11px; letter-spacing:.09em;
+  text-transform:uppercase; text-decoration:none;
+  background:#1B1B18; color:#EDEDE6; padding:9px 13px; border:1px solid #1B1B18;
+  box-shadow:0 2px 10px rgba(0,0,0,.28); opacity:.93;
+}
+#zback:hover{background:#E0417F; border-color:#E0417F; opacity:1}
+#zback:focus-visible{outline:2px solid #E0417F; outline-offset:2px}
+@media print{#zback{display:none}}
+</style>
+<a id="zback" href="../../">← Contents</a>
 </body>
 </html>
