@@ -560,13 +560,16 @@ def main() -> None:
 
     st.title("Who pays for the model's mistakes?")
     st.markdown(
-        "A credit-default classifier on 30,000 Taiwanese card accounts, pushed past the ROC "
-        "curve to the decision it implies. Every project on this dataset ends at an AUC in "
-        "the high 0.70s — but a probability is not a decision. Somebody has to draw a line "
-        "and say *these clients get flagged and those do not*, and the moment that line "
-        "exists it hands a bill to somebody. Move the line below and watch the bill move: "
-        "what the cut costs, who absorbs the errors, and whether the gaps between groups "
-        "are bigger than random relabelling would produce.\n\n"
+        "**Most projects on this dataset finish where this one starts.** They fit a few "
+        "models, report an AUC in the high 0.70s, draw a feature-importance chart and stop. "
+        "But a fitted model is not a decision — it is a column of probabilities. Somebody "
+        "still has to draw a line and say *these clients get flagged and those do not*, and "
+        "the moment that line exists it hands a bill to somebody.\n\n"
+        "So this page is about the part that comes after the model: **how you pick that "
+        "line, why you pick it there, and what the assumption behind it turns out to "
+        "control.** The answer to the last one was not what I expected — the assumption does "
+        "not only move the line, it reaches back and changes which model you should have "
+        "trained.\n\n"
         "Everything here is computed live from the model's 6,000 held-out test scores, "
         "shipped with this page. **The full analysis — model selection, calibration, "
         "interpretability, the mitigation attempts — lives in a private repository.**"
@@ -574,6 +577,27 @@ def main() -> None:
 
     st.divider()
     st.subheader("1 · Draw the line")
+    st.markdown(
+        "**There is no threshold in the data.** A classifier hands you a probability per "
+        "client; turning that into an action needs one number the data does not contain — "
+        "how much worse a missed default is than a false alarm. Call it `r`. Fix `r` and the "
+        "threshold follows: the rule minimising `r × FN + FP` is the cheapest line you can "
+        "draw. Refuse to fix it and you have not avoided the assumption, you have made it "
+        "silently — cutting at 0.5, which is what `predict()` hands you, *is* the choice "
+        "`r = 1`.\n\n"
+        "Three candidate lines, and they are different objects:\n\n"
+        "- **0.5** — free, and optimal only if a missed default and a false alarm cost the "
+        "same.\n"
+        "- **1/(1+r)** — Bayes-optimal for a *perfectly calibrated* score. Needs no data "
+        "beyond `r`, and is wrong exactly to the extent the score is miscalibrated. This is "
+        "why calibration was checked before any cost rule was applied.\n"
+        "- **the empirical minimum** — sweep every distinct cut on validation and take the "
+        "cheapest. Uses the data, and pays for it in sampling noise.\n\n"
+        "This project uses the third, chosen on validation and frozen before the test split "
+        "was opened. Turn on *snap* below and the three land within about a percent of each "
+        "other in cost — which is the finding, and the reason the third decimal place is not "
+        "worth arguing about."
+    )
 
     c1, c2 = st.columns([3, 2])
     with c1:
@@ -877,6 +901,69 @@ def main() -> None:
             "than average precision moves the answer by less than its own interval. "
             "**The gain is in the model family, not the metric** — \"optimise the business "
             "number directly\" would not have got here on its own."
+        )
+
+    rs = ref.get("selection_vs_cost_ratio")
+    if rs:
+        st.markdown("##### The part I did not see coming: `r` chooses the model too")
+        st.markdown(
+            "Everything above treats `r = 10` as fixed. But `r` is the input to the "
+            "selection criterion, not just to the threshold — so it decides *which part of "
+            "the curve is being graded*. If the two families are not equally good "
+            "everywhere on that curve, then changing the assumption should change the "
+            "winner. Running the whole nested comparison again at each `r` says whether it "
+            "does."
+        )
+        sweep = pd.DataFrame(rs["ratios"])
+        show = pd.DataFrame({
+            "r": sweep["cost_ratio"].map(lambda v: f"{v:g}"),
+            "logistic": sweep["logistic_mean_cost"].map(lambda v: f"{v:,.0f}"),
+            "LightGBM": sweep["lgbm_mean_cost"].map(lambda v: f"{v:,.0f}"),
+            "difference": sweep["difference"].map(lambda v: f"{v:+,.1f}"),
+            "95% interval": [f"[{lo:+,.1f}, {hi:+,.1f}]"
+                             for lo, hi in zip(sweep["ci_lo"], sweep["ci_hi"])],
+            "the rule picks": sweep["selected"],
+        }).set_index("r")
+        # Mark the row nearest the slider so the assumption at the top of the page and the
+        # model choice at the bottom are visibly the same number.
+        nearest = (sweep["cost_ratio"] - cost_ratio).abs().idxmin()
+        mark = f"{sweep.loc[nearest, 'cost_ratio']:g}"
+        st.table(show.style.apply(
+            lambda row: ["background-color: rgba(47,93,158,0.10)"] * len(row)
+                        if row.name == mark else [""] * len(row), axis=1))
+        st.caption(
+            f"Highlighted: the row nearest the `r` you set at the top of this page "
+            f"(r = {cost_ratio:g}). Costs per fold of 4,800 held-out clients; the same "
+            f"nested design and the same pre-registered rule at every `r`. The test split "
+            f"is not read here."
+        )
+        picks = sweep.set_index("cost_ratio")["selected"]
+        c1, c2 = st.columns(2)
+        c1.markdown(
+            f"**At r = 1 the rule keeps the logistic regression.** The interval is "
+            f"[{sweep.iloc[0]['ci_lo']:+.1f}, {sweep.iloc[0]['ci_hi']:+.1f}] — it crosses "
+            f"zero, LightGBM is ahead on only "
+            f"{int(sweep.iloc[0]['lgbm_cheaper_on_n_folds'])} of "
+            f"{int(sweep.iloc[0]['n_folds'])} folds, and the rule refuses to switch. "
+            f"**Everywhere from r = 2 up it switches.** One assumption, made by me and not "
+            f"by the data, decides which model ships."
+        )
+        best = sweep.loc[sweep['difference'].idxmin()]
+        c2.markdown(
+            f"**And the advantage has a shape.** It peaks at r = {best['cost_ratio']:g} "
+            f"({best['difference']:+,.0f}) and falls away on both sides — at r = 1 you flag "
+            f"almost nobody and at r = 50 almost everybody, and a rule that intervenes "
+            f"everywhere or nowhere cannot express a better model. **Which model you use "
+            f"matters most exactly where the decision is hardest**, and not at all where it "
+            f"is already made."
+        )
+        st.markdown(
+            "This is the thing I would put first if I had to keep one sentence from the "
+            "project: **the number I could not measure did not just set the operating "
+            "point, it selected the model.** Everything downstream of it — the threshold, "
+            "the confusion matrix, who absorbs the errors in section 2 — inherits an "
+            "assumption that never appears in the data, and a reader who believes "
+            "`r = 1` is entitled to a different model, not just a different cut."
         )
 
     if sw:

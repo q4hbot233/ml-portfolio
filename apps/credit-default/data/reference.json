@@ -670,5 +670,105 @@
   "bootstrap_sd_of_expected_cost": 88.25792247583216,
   "reading": "The nested comparison implied roughly 180 units on 6,000 rows. The frozen cuts delivered 8. Threshold transfer explains part of it and the rest is inside one standard deviation of this split."
  },
+ "selection_vs_cost_ratio": {
+  "_written_utc": "2026-09-19T18:00:44+00:00",
+  "_name": "selection_vs_cost_ratio",
+  "_note": "does the cost assumption change which model the selection rule picks; pooled train + valid only, test split never read",
+  "_environment_matches_requirements": true,
+  "design": {
+   "outer": "5-fold x 2 repeats, stratified",
+   "inner": "3-fold, per family, on outer-training rows only, scored on cost",
+   "rule": "switch from logistic only if the paired interval is clear of zero",
+   "n_rows": 24000,
+   "n_bootstrap": 4000
+  },
+  "selection_changes_with_r": true,
+  "ratios": [
+   {
+    "cost_ratio": 1.0,
+    "selected": "logistic",
+    "logistic_mean_cost": 852.5,
+    "lgbm_mean_cost": 849.0,
+    "difference": -3.5,
+    "ci_lo": -7.2,
+    "ci_hi": 0.6,
+    "separated_from_zero": false,
+    "lgbm_cheaper_on_n_folds": 7,
+    "n_folds": 10,
+    "relative_difference": -0.0041055718,
+    "reason": "no family is separated from logistic on expected cost by this design, so the simpler incumbent is kept"
+   },
+   {
+    "cost_ratio": 2.0,
+    "selected": "lgbm",
+    "logistic_mean_cost": 1439.8,
+    "lgbm_mean_cost": 1420.3,
+    "difference": -19.5,
+    "ci_lo": -25.5,
+    "ci_hi": -12.9,
+    "separated_from_zero": true,
+    "lgbm_cheaper_on_n_folds": 9,
+    "n_folds": 10,
+    "relative_difference": -0.0135435477,
+    "reason": "lgbm is cheaper than logistic at the operating point by 19.5 units, 95% interval [-25.5, -12.9], on 9 of 10 folds"
+   },
+   {
+    "cost_ratio": 5.0,
+    "selected": "lgbm",
+    "logistic_mean_cost": 2645.1,
+    "lgbm_mean_cost": 2600.2,
+    "difference": -44.9,
+    "ci_lo": -75.905,
+    "ci_hi": -12.1,
+    "separated_from_zero": true,
+    "lgbm_cheaper_on_n_folds": 9,
+    "n_folds": 10,
+    "relative_difference": -0.0169747836,
+    "reason": "lgbm is cheaper than logistic at the operating point by 44.9 units, 95% interval [-75.9, -12.1], on 9 of 10 folds"
+   },
+   {
+    "cost_ratio": 10.0,
+    "selected": "lgbm",
+    "logistic_mean_cost": 3421.6,
+    "lgbm_mean_cost": 3276.6,
+    "difference": -145.0,
+    "ci_lo": -183.4,
+    "ci_hi": -103.5,
+    "separated_from_zero": true,
+    "lgbm_cheaper_on_n_folds": 10,
+    "n_folds": 10,
+    "relative_difference": -0.0423778349,
+    "reason": "lgbm is cheaper than logistic at the operating point by 145.0 units, 95% interval [-183.4, -103.5], on 10 of 10 folds"
+   },
+   {
+    "cost_ratio": 20.0,
+    "selected": "lgbm",
+    "logistic_mean_cost": 3697.8,
+    "lgbm_mean_cost": 3601.6,
+    "difference": -96.2,
+    "ci_lo": -132.0,
+    "ci_hi": -61.1975,
+    "separated_from_zero": true,
+    "lgbm_cheaper_on_n_folds": 10,
+    "n_folds": 10,
+    "relative_difference": -0.0260154687,
+    "reason": "lgbm is cheaper than logistic at the operating point by 96.2 units, 95% interval [-132.0, -61.2], on 10 of 10 folds"
+   },
+   {
+    "cost_ratio": 50.0,
+    "selected": "lgbm",
+    "logistic_mean_cost": 3719.6,
+    "lgbm_mean_cost": 3691.3,
+    "difference": -28.3,
+    "ci_lo": -46.9,
+    "ci_hi": -11.3975,
+    "separated_from_zero": true,
+    "lgbm_cheaper_on_n_folds": 8,
+    "n_folds": 10,
+    "relative_difference": -0.007608345,
+    "reason": "lgbm is cheaper than logistic at the operating point by 28.3 units, 95% interval [-46.9, -11.4], on 8 of 10 folds"
+   }
+  ]
+ },
  "attribution": "Yeh, I-C. (2009). Default of Credit Card Clients [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C55S3H. Licensed CC BY 4.0."
 }

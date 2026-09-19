@@ -65,6 +65,10 @@ def main() -> int:
             raise SystemExit(f"selection audit ran without {sorted(load_bearing & set(missing))}")
     swap = json.loads((REPO / "reports/audit/swap_comparison.json").read_text())
     swap.pop("_environment", None)
+    # The sweep that shows r reaching back into the model choice. Small enough to ship
+    # whole; it is six rows and the page highlights the one matching the slider.
+    r_sweep = json.loads((REPO / "reports/audit/selection_vs_cost_ratio.json").read_text())
+    r_sweep.pop("_environment", None)
     selection_audit = {"design": audit["design"], "summary": audit["summary"],
                        "selected_family": audit["selected_family"],
                        "selection_reason": audit["selection_reason"],
@@ -204,6 +208,7 @@ def main() -> int:
         # cheapest cut on test -- the difference between those two columns is the part the
         # nested comparison could not see, because that design gives each fold its own cut.
         "swap": swap,
+        "selection_vs_cost_ratio": r_sweep,
         "attribution": ("Yeh, I-C. (2009). Default of Credit Card Clients [Dataset]. "
                         "UCI Machine Learning Repository. https://doi.org/10.24432/C55S3H. "
                         "Licensed CC BY 4.0."),
