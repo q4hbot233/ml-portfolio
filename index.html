@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Things I Made and Then Argued With</title>
-<meta name="description" content="Eight machine learning and quantitative research projects, each with a demo that runs in your browser.">
+<meta name="description" content="Six machine learning and data science projects, each with a demo that runs in your browser.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
@@ -110,16 +110,16 @@ h1{
 <div class="wrap">
 
   <header class="hero">
-    <p class="eyebrow"><span class="dot"></span>Qixi (Jason) Huang<span>Machine learning &amp; quantitative research</span></p>
+    <p class="eyebrow"><span class="dot"></span>Qixi (Jason) Huang<span>Machine learning &amp; data science</span></p>
     <h1>Things I made and then argued with</h1>
     <p class="deck">
-      Eight projects. In most of them the interesting part is not the model — it is the moment it
+      Six projects. In most of them the interesting part is not the model — it is the moment it
       turned out to be wrong, or right for a reason I hadn't noticed, or beaten by something
       embarrassingly simple. <em>Each one opens on the argument, not the accuracy.</em>
     </p>
     <p class="meta">
-      <span><b>8</b> projects</span>
-      <span><b>8</b> demos you can drive</span>
+      <span><b>6</b> projects</span>
+      <span><b>6</b> demos you can drive</span>
       <span>Everything runs in your browser</span>
     </p>
   </header>
@@ -171,31 +171,7 @@ h1{
         </div>
       </a>
 
-      <a class="card" href="apps/pairs-trading/" style="--hue:#2E9B93">
-        <img class="thumb" src="assets/patterns/pairs-trading.svg" alt="" width="640" height="400" loading="lazy">
-        <div class="body">
-          <p class="kicker">Quant · statistical arbitrage</p>
-          <h3>Dies once you pay for it</h3>
-          <p>Two funds track roughly the same thing, their prices wander apart, and if the gap is
-             stationary it's a forecast. The textbook version works — which is exactly what makes the
-             part where it doesn't worth publishing.</p>
-          <span class="finding">Gross Sharpe −0.3560, net −0.5188. It was already losing before a single basis point was charged.</span>
-          <span class="go">Re-price the backtest <span class="arr">→</span></span>
-        </div>
-      </a>
 
-      <a class="card" href="apps/walk-forward/" style="--hue:#C9784E">
-        <img class="thumb" src="assets/patterns/walk-forward.svg" alt="" width="640" height="400" loading="lazy">
-        <div class="body">
-          <p class="kicker">Quant · walk-forward</p>
-          <h3>Only works if trading is free</h3>
-          <p>Does a cross-sectional forecast of next-month industry returns survive being traded
-             honestly — the model never seeing a day that hadn't happened yet when the portfolio was
-             decided? The answer was neither of the two I expected.</p>
-          <span class="finding">Signal is real: permutation p = 0.001, rank IC 0.0578 at t = 5.82. Break-even 35.8 bp against 5.9× turnover.</span>
-          <span class="go">Drag the cost <span class="arr">→</span></span>
-        </div>
-      </a>
 
       <a class="card" href="apps/f1-telemetry/" style="--hue:#C0533A">
         <img class="thumb" src="assets/patterns/f1-telemetry.svg" alt="" width="640" height="400" loading="lazy">
@@ -242,7 +218,7 @@ h1{
   <footer class="foot">
     <div>
       <h4>How these run</h4>
-      <p>Seven of the eight boot a Python interpreter inside your browser, so the models are
+      <p>Five of the six boot a Python interpreter inside your browser, so the models are
          genuinely fitting and scoring on your machine rather than replaying a recording. The first
          visit spends a few seconds fetching that interpreter. Race Control skips it and draws
          straight from an exported bundle.</p>

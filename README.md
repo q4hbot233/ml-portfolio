@@ -8,8 +8,6 @@ Streamlit on Pyodide/WebAssembly. Nothing is uploaded and no server is involved.
 | Demo | What it asks |
 |---|---|
 | [Who pays for the model's mistakes?](apps/credit-default/) | Credit default prediction taken past the ROC curve, to the decision and who absorbs its errors |
-| [A strategy that dies once you pay for it](apps/pairs-trading/) | Cointegration pairs trading that works exactly as theory says, and still loses after costs |
-| [The backtest that only works if trading is free](apps/walk-forward/) | A real cross-sectional signal too small to survive its own turnover |
 | [Is it the car or the driver?](apps/f1-telemetry/) | Diagnosing a suspected car fault from qualifying telemetry, against two reference frames |
 | [Who does the recommender fail?](apps/movielens/) | Why RMSE hides almost everything that matters about a recommender |
 | [A pipeline you can actually trust](apps/cloud-classification/) | An easy classification task, built properly — the engineering is the point |
