@@ -159,15 +159,7 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
       <span class="sub">folds grouped by circuit</span></div>
     <div class="q" id="q"></div>
     <div class="rollup" id="rollup"></div>
-    <p class="note">The tempting next line is "so the car is easier, 0.250 against 0.141" — and it
-      is wrong. Those are a 10-class score and a 22-class score with different chance levels, so
-      neither they nor their lifts are on one scale; by lift the <em>driver</em> model looks better,
-      which is just as meaningless. And team is a function of driver, so the two questions are not
-      independent. What works instead is to score <b>one model's own predictions at two
-      resolutions</b>: map each predicted driver to their garage, and ask how often the driver model
-      got the garage right — then, of those, how often it got the driver too. Its no-signal baseline
-      is measured rather than assumed to be 0.5, because a coin flip is only the right baseline
-      where every garage holds two drivers, and AlphaTauri ran four.</p>
+    <p class="note" id="rollupnote"></p>
   </section>
 
   <section id="s2">
@@ -258,7 +250,12 @@ const el = (n, a = {}, t) => { const e = document.createElementNS(SVG, n);
 const f3 = v => v.toFixed(3);
 let D = null, TEAM = null, MODE = "cluster";
 
-fetch("data/showcase.json").then(r => {
+// cache:"no-cache" forces a revalidation rather than serving whatever is in the browser.
+// The page and its payload are versioned together and have to stay together: a returning
+// visitor holding a cached JSON against freshly deployed markup gets exactly the mismatch
+// tools/check_pages.py exists to prevent, only in their browser instead of in the repo.
+// Unchanged files still cost one 304 rather than a download.
+fetch("data/showcase.json", {cache: "no-cache"}).then(r => {
   if (!r.ok) throw new Error("HTTP " + r.status);
   return r.json();
 }).then(d => { D = d; boot(); }).catch(e => {
@@ -303,7 +300,21 @@ function drawQ(){
 }
 
 function drawRollup(){
-  const r = D.identify.driver;
+  const r = D.identify.driver, t = D.identify.team;
+  // written from the payload: these two accuracies are the ones the paragraph argues about,
+  // and a sentence quoting them from memory is a sentence that goes stale on the next run
+  document.getElementById("rollupnote").innerHTML =
+    `The tempting next line is "so the car is easier, ${f3(t.accuracy)} against
+     ${f3(r.accuracy)}" — and it is wrong. Those are a ${t.n_classes}-class score and a
+     ${r.n_classes}-class score with different chance levels, so neither they nor their lifts
+     are on one scale; by lift the <em>driver</em> model looks better
+     (${(r.accuracy / r.chance).toFixed(1)}× against ${(t.accuracy / t.chance).toFixed(1)}×),
+     which is just as meaningless. And team is a function of driver, so the two questions are
+     not independent. What works instead is to score <b>one model's own predictions at two
+     resolutions</b>: map each predicted driver to their garage, and ask how often the driver
+     model got the garage right — then, of those, how often it got the driver too. Its
+     no-signal baseline is measured rather than assumed to be 0.5, because a coin flip is only
+     the right baseline where every garage holds two drivers, and AlphaTauri ran four.`;
   document.getElementById("rollup").innerHTML = `
     <div class="rk">The driver model, scored at the garage</div>
     <div class="rgrid">
@@ -513,8 +524,9 @@ function drawMap(){
   document.getElementById("mapcap").innerHTML =
     `Every driver is the average of how they take a corner, standardised <b>within</b> each
      corner first. Thin lines join teammates. <b>${ds.length} of ${D.dataset.drivers}</b> drivers
-     are here: a profile needs 300 corner traversals to be an average of anything, which leaves
-     out the two AlphaTauri stand-ins and gives that garage two drivers like every other.`;
+     are here: a profile needs ${D.cluster_diagnostic.min_traversals} corner traversals to be an
+     average of anything, which leaves out the ${D.dataset.drivers - ds.length} AlphaTauri
+     stand-ins and gives that garage two drivers like every other.`;
   const ev = D.cluster_diagnostic.explained_variance;
   s.appendChild(el("text", {x:W-4, y:H-8, fill:"#4A5262", "font-family":"var(--mono)",
     "font-size":"9.5", "text-anchor":"end"},
@@ -526,8 +538,8 @@ function drawDiag(){
   document.getElementById("diag").innerHTML = `
     <div class="row"><span>teammate pairs together</span><b>${c.teammates_together} of ${c.n_pairs}</b></div>
     <div class="row"><span>expected by chance</span><b>${c.expected_by_chance.toFixed(2)}</b></div>
-    <div class="row"><span>p (2,000 shuffles)</span><b style="color:var(--warm)">${c.p_value.toFixed(3)}</b></div>
-    <div class="row"><span>clusters</span><b>4</b></div>
+    <div class="row"><span>p (${c.n_permutations.toLocaleString()} shuffles)</span><b style="color:var(--warm)">${c.p_value.toFixed(3)}</b></div>
+    <div class="row"><span>clusters</span><b>${c.n_clusters}</b></div>
     <p class="cap" style="margin-top:12px">Not significant — and that is the result being looked
       for here. A car signature would put teammates together.</p>`;
 }

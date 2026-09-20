@@ -321,7 +321,12 @@ const SITUATION_LABEL = {
 };
 let D = null, FEAT = "mean_sentiment", EX = [], EXI = 0, EXORDER = [];
 
-fetch("data/radio.json").then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+// cache:"no-cache" forces a revalidation rather than serving whatever is in the browser.
+// The page and its payload are versioned together and have to stay together: a returning
+// visitor holding a cached JSON against freshly deployed markup gets exactly the mismatch
+// tools/check_pages.py exists to prevent, only in their browser instead of in the repo.
+// Unchanged files still cost one 304 rather than a download.
+fetch("data/radio.json", {cache: "no-cache"}).then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
   .then(d => { D = d; boot(); })
   .catch(e => { const b = document.getElementById("err"); b.style.display = "block";
                 b.textContent = "Could not load data/radio.json — " + e.message; });
