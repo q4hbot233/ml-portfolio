@@ -324,29 +324,85 @@ def main() -> None:
     st.divider()
     st.subheader("3 · Training, and what a model has to beat")
     base = ref["baselines"]
-    b1, b2, b3 = st.columns(3)
-    b1.metric("Predict the majority class", f"{base['majority']['average_precision']['point']:.4f}",
-              "average precision — the prevalence floor", delta_color="off")
-    b1.caption(f"ROC-AUC {base['majority']['roc_auc']['point']:.2f}. Accuracy "
-               f"{bal['majority_accuracy']:.2%} and useless.")
-    lg_ap = base["logistic"]["average_precision"]
-    b2.metric("Logistic regression", f"{lg_ap['point']:.4f}",
-              f"[{lg_ap['ci_lo']:.3f}, {lg_ap['ci_hi']:.3f}]", delta_color="off")
-    b2.caption("Standardised inputs, no rebalancing, no tuning.")
-    if "lgbm" in base:
-        tr_ap = base["lgbm"]["average_precision"]
-        b3.metric("LightGBM", f"{tr_ap['point']:.4f}",
-                  f"[{tr_ap['ci_lo']:.3f}, {tr_ap['ci_hi']:.3f}]", delta_color="off")
-        b3.caption("Same features, default leaf size.")
+    spec = ref["model_spec"]
     st.markdown(
-        f"Two families, both on the {ft['total']} features above: a logistic regression with "
-        f"standardised inputs, and LightGBM. The floor is not zero — it is the prevalence, "
-        f"**{base['majority']['average_precision']['point']:.4f}** — because average "
-        f"precision for a random ranker is the base rate. A model reporting 0.30 on this "
-        f"data is 230× the floor and still catching two frauds per three alerts.\n\n"
-        f"Each family is then run against six imbalance treatments, giving twelve "
-        f"configurations. Section 4 is what that bought."
+        f"Three fits on the {ft['total']} features above, **all scored on the validation "
+        f"split** — the test split is not opened until section 5. Every number in this "
+        f"section is **average precision**: the area under the precision–recall curve, which "
+        f"for a model that ranks at random equals the base rate rather than 0.5."
     )
+    b1, b2, b3 = st.columns(3)
+    b1.metric("Majority class · average precision",
+              f"{base['majority']['average_precision']['point']:.4f}",
+              "= the validation prevalence", delta_color="off")
+    b1.caption(f"ROC-AUC {base['majority']['roc_auc']['point']:.2f}. It is right "
+               f"{1 - base['majority']['average_precision']['point']:.2%} of the time and "
+               f"catches nothing.")
+    lg = base["logistic"]
+    b2.metric("Logistic regression · average precision", f"{lg['average_precision']['point']:.4f}",
+              f"95% interval [{lg['average_precision']['ci_lo']:.3f}, "
+              f"{lg['average_precision']['ci_hi']:.3f}]", delta_color="off")
+    b2.caption(f"ROC-AUC {lg['roc_auc']['point']:.3f}. C={spec['logistic']['C']}, "
+               f"standardised inputs, no rebalancing.")
+    tr = base["lgbm"]
+    b3.metric("LightGBM · average precision", f"{tr['average_precision']['point']:.4f}",
+              f"95% interval [{tr['average_precision']['ci_lo']:.3f}, "
+              f"{tr['average_precision']['ci_hi']:.3f}]", delta_color="off")
+    b3.caption(f"ROC-AUC {tr['roc_auc']['point']:.3f}. "
+               f"{spec['lgbm']['n_estimators']} trees, lr {spec['lgbm']['learning_rate']}, "
+               f"min_child_samples {spec['lgbm']['min_child_samples']}.")
+
+    st.markdown(
+        f"The floor is **{base['majority']['average_precision']['point']:.4f}**, not zero, "
+        f"and the linear model reaches **{lg['average_precision']['point']:.4f}** — nearly "
+        f"600× it. The tree, on the same features, reaches only "
+        f"**{tr['average_precision']['point']:.4f}**, and that gap is the thread the rest of "
+        f"the page pulls on."
+    )
+
+    sweep = ref.get("min_child_sweep")
+    st.error(
+        f"**No hyperparameter search was run for any number on this page.** "
+        f"`pipelines.tune()`, a logistic grid and a LightGBM grid all exist in the repository "
+        f"and the analysis never calls them; every fit above uses the repo defaults printed "
+        f"in the captions. That was a defensible choice for a page arguing about evaluation "
+        f"rather than about squeezing a score — right up to the point where **one of those "
+        f"untuned defaults became the mechanism in the argument below**.",
+        icon=":material/build:")
+
+    if sweep:
+        rows = pd.DataFrame(sweep["rows"])
+        shipped, best = sweep["shipped_default"], sweep["best"]
+        fig, ax = plt.subplots(figsize=(7.2, 2.8))
+        ax.plot(rows["min_child_samples"], rows["average_precision"], "-o", color=BLUE, lw=1.8)
+        ax.scatter([shipped["min_child_samples"]], [shipped["average_precision"]], s=90,
+                   color=RED, zorder=4, label="the shipped default")
+        ax.set_xscale("log")
+        ax.set_xticks(sweep["grid"], [str(g) for g in sweep["grid"]])
+        ax.set_xlabel("min_child_samples — minimum rows LightGBM will allow in a leaf",
+                      fontsize=9, color=MUTED)
+        ax.set_ylabel("average precision (validation)", fontsize=9, color=MUTED)
+        ax.set_ylim(0, 1)
+        ax.legend(fontsize=8.5, labelcolor=MUTED)
+        fig.tight_layout()
+        st.pyplot(fig, use_container_width=True)
+        st.markdown(
+            f"**So I swept it.** Leaving the treatment alone and moving that one number from "
+            f"{shipped['min_child_samples']} to {best['min_child_samples']} takes average "
+            f"precision from **{shipped['average_precision']:.4f}** to "
+            f"**{best['average_precision']:.4f}** — "
+            f"{best['average_precision'] - shipped['average_precision']:+.3f}, and most of "
+            f"the way to the {ref['treatments'][1]['average_precision']:.3f} that rebalancing "
+            f"reaches. Section 4 still stands on what rebalancing does to the *queue* versus "
+            f"the *ranking metric*, but the sentence \"rebalancing is doing something real "
+            f"on the tree\" has to be read next to this: **so is changing one default that "
+            f"was never examined.**\n\n"
+            f"Note also that the curve is not monotone — {shipped['min_child_samples']} "
+            f"scores below both {best['min_child_samples']} and 100. With "
+            f"{ref['noise_floor']['n_positives_valid']} validation frauds these estimates are "
+            f"unstable, so \"the splits cannot form\" is a cleaner story than the evidence "
+            f"supports."
+        )
 
     st.divider()
     st.subheader("4 · Class imbalance: which treatment is actually the most powerful")
@@ -384,12 +440,19 @@ def main() -> None:
 
     hh = ref["best_tree_minus_untouched_logistic_queue"]
     c1, c2 = st.columns(2)
+    sw = ref.get("min_child_sweep")
+    alt = (f" But section 3 showed the same gain is available by moving `min_child_samples` "
+           f"from {sw['shipped_default']['min_child_samples']} to "
+           f"{sw['best']['min_child_samples']} and touching no rows at all "
+           f"({sw['shipped_default']['average_precision']:.3f} → "
+           f"{sw['best']['average_precision']:.3f}). **Rebalancing is not doing something "
+           f"only rebalancing can do — it is one of two ways round an untuned default.**"
+           if sw else "")
     c1.markdown(
-        "**On the tree, rebalancing is doing something real.** Average precision 0.32 → "
-        "0.85. The mechanism is mechanical rather than statistical: LightGBM needs a minimum "
-        "number of rows in a leaf, and at 0.19% prevalence the splits that would isolate "
-        "fraud **cannot form**. The tree was not underfitting — it was prevented from "
-        "fitting by a hyperparameter that is sensible at any normal prevalence."
+        "**On the tree, rebalancing moves the ranking metric a long way.** Average precision "
+        "0.32 → 0.85. The usual explanation is mechanical: LightGBM needs a minimum number "
+        "of rows in a leaf, and at 0.19% prevalence the splits that would isolate fraud "
+        "cannot form." + alt
     )
     c2.markdown(
         "**On the linear model it moves the ranking metric and leaves the queue alone.** "

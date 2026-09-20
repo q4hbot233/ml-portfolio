@@ -1164,6 +1164,105 @@
    "excluded_reason": "Time is seconds since the first row in this file; using it lets the model fit where fraud bursts sit in these particular 48 hours."
   }
  },
+ "min_child_sweep": {
+  "_written_utc": "2026-09-20T17:20:18+00:00",
+  "_name": "min_child_sweep",
+  "_smoke_mode": false,
+  "grid": [
+   1,
+   2,
+   5,
+   10,
+   20,
+   50,
+   100
+  ],
+  "budget": 100,
+  "scored_on": "validation",
+  "shipped_default": {
+   "min_child_samples": 50,
+   "average_precision": 0.316508098742476,
+   "roc_auc": 0.8117465693792401,
+   "precision_at_100": 0.36,
+   "seconds": 3.5
+  },
+  "best": {
+   "min_child_samples": 20,
+   "average_precision": 0.8119928351935554,
+   "roc_auc": 0.9880510089273157,
+   "precision_at_100": 0.46,
+   "seconds": 4.0
+  },
+  "rows": [
+   {
+    "min_child_samples": 1,
+    "average_precision": 0.5056107004539803,
+    "roc_auc": 0.688687490372831,
+    "precision_at_100": 0.32,
+    "seconds": 2.8
+   },
+   {
+    "min_child_samples": 2,
+    "average_precision": 0.5489753695434011,
+    "roc_auc": 0.930104659884675,
+    "precision_at_100": 0.42,
+    "seconds": 2.9
+   },
+   {
+    "min_child_samples": 5,
+    "average_precision": 0.47743653428834165,
+    "roc_auc": 0.808044504309623,
+    "precision_at_100": 0.34,
+    "seconds": 3.0
+   },
+   {
+    "min_child_samples": 10,
+    "average_precision": 0.79610563209622,
+    "roc_auc": 0.9613197090753229,
+    "precision_at_100": 0.45,
+    "seconds": 4.2
+   },
+   {
+    "min_child_samples": 20,
+    "average_precision": 0.8119928351935554,
+    "roc_auc": 0.9880510089273157,
+    "precision_at_100": 0.46,
+    "seconds": 4.0
+   },
+   {
+    "min_child_samples": 50,
+    "average_precision": 0.316508098742476,
+    "roc_auc": 0.8117465693792401,
+    "precision_at_100": 0.36,
+    "seconds": 3.5
+   },
+   {
+    "min_child_samples": 100,
+    "average_precision": 0.6967966715511308,
+    "roc_auc": 0.8826515065263835,
+    "precision_at_100": 0.43,
+    "seconds": 4.0
+   }
+  ],
+  "note": "The shipped analysis ran no hyperparameter search. min_child_samples=50 is the repo default, and it is the same constraint the rebalancing argument turns on, so it had to be challenged directly."
+ },
+ "model_spec": {
+  "tuned": false,
+  "note": "No hyperparameter search was run for the shipped numbers. pipelines.tune() and the grids exist and are never called by the analysis; every fit uses the repo defaults below.",
+  "logistic": {
+   "C": 1.0,
+   "max_iter": 3000,
+   "solver": "lbfgs",
+   "preprocessing": "StandardScaler on all 31 features"
+  },
+  "lgbm": {
+   "n_estimators": 400,
+   "learning_rate": 0.05,
+   "num_leaves": 31,
+   "min_child_samples": 50
+  },
+  "scored_on": "validation"
+ },
  "budgets": [
   20,
   50,
