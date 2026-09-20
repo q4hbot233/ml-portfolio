@@ -29,19 +29,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 APPS = ROOT / "apps"
 
-#: Literal numbers permitted in static prose, with the reason each is not a data claim.
+#: Literal numbers permitted in static prose, each with the reason it is not a data claim.
+#: Only entries CLAIM can actually match belong here — an allowlist full of numbers the regex
+#: never sees reads as a thorough check and is doing nothing. Every bare integer was in this
+#: list at one point and every one of them was inert.
 ALLOWED = {
-    "2024": "the season under study",
-    "2023": "the season under study",
-    "124M": "the model card's training-set size, a fact about the model not the data",
-    "125M": "the model's parameter count",
-    "47": "the count of F1 lexicon terms, a property of the code not a result",
-    "15": "how many of those terms are neutralised",
-    "22": "the number of drivers in a season",
-    "10": "out of ten, the rating scale",
-    "180": "the character cap on a quoted clip",
-    "64": "how many clips are quoted",
-    "0.5": "the coin-flip baseline named as a hypothetical, not a measured value",
+    "0.5": "the coin-flip baseline, named as a hypothetical rather than measured",
 }
 
 #: JavaScript members that can trail a data path. `D.per_race.filter(...)` reads the field
@@ -62,6 +55,11 @@ def strip_js(path: str) -> str:
     return ".".join(parts)
 
 
+#: What counts as a data claim in prose. Deliberately four narrow shapes rather than "any
+#: number": bare integers are mostly section labels, seasons and scale bounds, and flagging
+#: them would bury the real cases in noise. So this does NOT catch a stale bare integer —
+#: "24 races" would survive a change to 25. The fields a page reads are checked separately
+#: and exactly, and that is where the load is carried.
 CLAIM = re.compile(
     r"(?<![\w.\-])("
     r"[+−-]?\d+\.\d+"                    # a decimal: almost always a statistic
