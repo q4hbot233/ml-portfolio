@@ -521,9 +521,11 @@ function drawValidityComparison(){
        color:var(--faint);padding-bottom:6px">
        <span></span><span style="text-align:right;color:#5B8FA6">transformer</span>
        <span style="text-align:right">lexicon</span></div>${rows}
-     <p style="margin:11px 0 0">Both come back <b>partial</b> — the retirement check fails on
-       either, on 32 clips in 2,791. The transformer's effects are the larger on both checks
-       that have data behind them, which is the whole reason it carries the numbers here.</p>`;
+     <p style="margin:11px 0 0">Both come back <b>${D.validity.verdict}</b> — the retirement
+       check fails on either, on ${mine[0].n_true} clips in
+       ${D.corpus.clips.toLocaleString()}. The transformer's effects are the larger on both
+       checks that have data behind them, which is the whole reason it carries the numbers
+       here.</p>`;
 }
 
 function buildPicker(){
