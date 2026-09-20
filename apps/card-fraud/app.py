@@ -322,90 +322,109 @@ def main() -> None:
         icon=":material/trending_down:")
 
     st.divider()
-    st.subheader("3 · Training, and what a model has to beat")
-    base = ref["baselines"]
-    spec = ref["model_spec"]
+    st.subheader("3 · Training and tuning, and what a model has to beat")
+    base, spec = ref["baselines"], ref["model_spec"]
+    rt = ref.get("retuned")
     st.markdown(
-        f"Three fits on the {ft['total']} features above, **all scored on the validation "
-        f"split** — the test split is not opened until section 5. Every number in this "
-        f"section is **average precision**: the area under the precision–recall curve, which "
-        f"for a model that ranks at random equals the base rate rather than 0.5."
-    )
-    b1, b2, b3 = st.columns(3)
-    b1.metric("Majority class · average precision",
-              f"{base['majority']['average_precision']['point']:.4f}",
-              "= the validation prevalence", delta_color="off")
-    b1.caption(f"ROC-AUC {base['majority']['roc_auc']['point']:.2f}. It is right "
-               f"{1 - base['majority']['average_precision']['point']:.2%} of the time and "
-               f"catches nothing.")
-    lg = base["logistic"]
-    b2.metric("Logistic regression · average precision", f"{lg['average_precision']['point']:.4f}",
-              f"95% interval [{lg['average_precision']['ci_lo']:.3f}, "
-              f"{lg['average_precision']['ci_hi']:.3f}]", delta_color="off")
-    b2.caption(f"ROC-AUC {lg['roc_auc']['point']:.3f}. C={spec['logistic']['C']}, "
-               f"standardised inputs, no rebalancing.")
-    tr = base["lgbm"]
-    b3.metric("LightGBM · average precision", f"{tr['average_precision']['point']:.4f}",
-              f"95% interval [{tr['average_precision']['ci_lo']:.3f}, "
-              f"{tr['average_precision']['ci_hi']:.3f}]", delta_color="off")
-    b3.caption(f"ROC-AUC {tr['roc_auc']['point']:.3f}. "
-               f"{spec['lgbm']['n_estimators']} trees, lr {spec['lgbm']['learning_rate']}, "
-               f"min_child_samples {spec['lgbm']['min_child_samples']}.")
-
-    st.markdown(
-        f"The floor is **{base['majority']['average_precision']['point']:.4f}**, not zero, "
-        f"and the linear model reaches **{lg['average_precision']['point']:.4f}** — nearly "
-        f"600× it. The tree, on the same features, reaches only "
-        f"**{tr['average_precision']['point']:.4f}**, and that gap is the thread the rest of "
-        f"the page pulls on."
+        f"Two families on the {ft['total']} features above, **everything in this section "
+        f"scored on the validation split** — the test split is not opened until section 5. "
+        f"Every figure is **average precision**: the area under the precision–recall curve, "
+        f"whose floor for a model that ranks at random is the base rate rather than 0.5. "
+        f"That floor is **{base['majority']['average_precision']['point']:.4f}** here; "
+        f"predicting \"not fraud\" for everything is right "
+        f"{1 - base['majority']['average_precision']['point']:.2%} of the time and catches "
+        f"nothing."
     )
 
-    sweep = ref.get("min_child_sweep")
-    st.error(
-        f"**No hyperparameter search was run for any number on this page.** "
-        f"`pipelines.tune()`, a logistic grid and a LightGBM grid all exist in the repository "
-        f"and the analysis never calls them; every fit above uses the repo defaults printed "
-        f"in the captions. That was a defensible choice for a page arguing about evaluation "
-        f"rather than about squeezing a score — right up to the point where **one of those "
-        f"untuned defaults became the mechanism in the argument below**.",
-        icon=":material/build:")
+    if rt:
+        cvv = {r["model"]: r for r in rt["cv_vs_validation"]}
+        st.markdown("**Both families were tuned by grid search — twice, because how you fold "
+                    "the data turns out to decide what it picks.**")
+        tbl = pd.DataFrame([{
+            "family": m,
+            "grid": f"{rt['search'][m]['n_configurations']} configs × "
+                    f"{rt['search'][m]['cv_folds']} folds",
+            "shuffled CV picks": ", ".join(f"{k}={v}" for k, v in
+                                           cvv[m]["shuffled_cv_params"].items()),
+            "its CV score": cvv[m]["shuffled_cv_score"],
+            "…on validation": cvv[m]["shuffled_winner_on_validation"],
+            "chronological CV picks": ", ".join(f"{k}={v}" for k, v in
+                                                cvv[m]["chronological_cv_params"].items()),
+            "its CV score": cvv[m]["chronological_cv_score"],
+            "…on validation ": cvv[m]["chronological_winner_on_validation"],
+        } for m in ("logistic", "lgbm")])
+        st.dataframe(tbl.style.format({c: "{:.4f}" for c in tbl.columns
+                                       if "score" in c or "validation" in c}),
+                     use_container_width=True, hide_index=True)
 
-    if sweep:
-        rows = pd.DataFrame(sweep["rows"])
-        shipped, best = sweep["shipped_default"], sweep["best"]
-        fig, ax = plt.subplots(figsize=(7.2, 2.8))
-        ax.plot(rows["min_child_samples"], rows["average_precision"], "-o", color=BLUE, lw=1.8)
-        ax.scatter([shipped["min_child_samples"]], [shipped["average_precision"]], s=90,
-                   color=RED, zorder=4, label="the shipped default")
-        ax.set_xscale("log")
-        ax.set_xticks(sweep["grid"], [str(g) for g in sweep["grid"]])
-        ax.set_xlabel("min_child_samples — minimum rows LightGBM will allow in a leaf",
-                      fontsize=9, color=MUTED)
-        ax.set_ylabel("average precision (validation)", fontsize=9, color=MUTED)
-        ax.set_ylim(0, 1)
-        ax.legend(fontsize=8.5, labelcolor=MUTED)
-        fig.tight_layout()
-        st.pyplot(fig, use_container_width=True)
+        lg, tr = cvv["logistic"], cvv["lgbm"]
+        st.error(
+            f"**The search is contaminated by the same leak the whole page is about.** "
+            f"`GridSearchCV` folds with `StratifiedKFold`, which *shuffles* — and on this "
+            f"file shuffling puts several frauds from one compromised card on both sides of "
+            f"a fold. For the tree that inflates the CV score to "
+            f"**{tr['shuffled_cv_score']:.4f}** where the same configuration scores "
+            f"**{tr['shuffled_winner_on_validation']:.4f}** on a later split: a "
+            f"**{tr['shuffled_cv_score'] / tr['shuffled_winner_on_validation']:.1f}×** "
+            f"overstatement. A shuffled search does not merely report an optimistic number — "
+            f"**it selects the configuration that exploits the leak best.** The linear model "
+            f"barely notices ({lg['shuffled_cv_score']:.3f} against "
+            f"{lg['shuffled_winner_on_validation']:.3f}), which is why one family can hide "
+            f"this from you.",
+            icon=":material/science:")
+
         st.markdown(
-            f"**So I swept it.** Leaving the treatment alone and moving that one number from "
-            f"{shipped['min_child_samples']} to {best['min_child_samples']} takes average "
-            f"precision from **{shipped['average_precision']:.4f}** to "
-            f"**{best['average_precision']:.4f}** — "
-            f"{best['average_precision'] - shipped['average_precision']:+.3f}, and most of "
-            f"the way to the {ref['treatments'][1]['average_precision']:.3f} that rebalancing "
-            f"reaches. Section 4 still stands on what rebalancing does to the *queue* versus "
-            f"the *ranking metric*, but the sentence \"rebalancing is doing something real "
-            f"on the tree\" has to be read next to this: **so is changing one default that "
-            f"was never examined.**\n\n"
-            f"Note also that the curve is not monotone — {shipped['min_child_samples']} "
-            f"scores below both {best['min_child_samples']} and 100. With "
-            f"{ref['noise_floor']['n_positives_valid']} validation frauds these estimates are "
-            f"unstable, so \"the splits cannot form\" is a cleaner story than the evidence "
-            f"supports."
+            f"So the shipped tuning uses **expanding-window folds in time order**: every fold "
+            f"is scored on transactions later than the ones it was fitted on, which is what "
+            f"deployment looks like. It picks `C={rt['search']['logistic']['best_params']['C']}` "
+            f"for the logistic regression and "
+            f"`num_leaves={rt['search']['lgbm']['best_params']['num_leaves']}, "
+            f"min_child_samples={rt['search']['lgbm']['best_params']['min_child_samples']}, "
+            f"n_estimators={rt['search']['lgbm']['best_params']['n_estimators']}` for the tree."
         )
+
+        c1, c2 = st.columns(2)
+        c1.metric("Tuned logistic regression · average precision",
+                  f"{lg['chronological_winner_on_validation']:.4f}",
+                  "validation, chronologically tuned", delta_color="off")
+        c2.metric("Tuned LightGBM · average precision",
+                  f"{tr['chronological_winner_on_validation']:.4f}",
+                  "validation, chronologically tuned", delta_color="off")
+
+        sweep = ref.get("min_child_sweep")
+        if sweep:
+            best_sw = sweep["best"]
+            st.warning(
+                f"**And tuning still does not fix the tree.** Sweeping `min_child_samples` "
+                f"directly against the validation split finds "
+                f"**{best_sw['min_child_samples']}**, worth "
+                f"**{best_sw['average_precision']:.3f}** — but *neither* grid search picks it. "
+                f"Both land on "
+                f"{cvv['lgbm']['chronological_cv_params']['min_child_samples']} and both leave "
+                f"the tree at about {tr['chronological_winner_on_validation']:.2f}, because "
+                f"cross-validation inside the training period cannot see how the tree will "
+                f"behave in the later one. The value that works was found by scoring against "
+                f"the split about to be reported on — which is tuning on your own held-out "
+                f"data, and not a procedure anyone should ship.\n\n"
+                f"That matters for section 4: rebalancing takes this tree to 0.85 **and a "
+                f"disciplined hyperparameter search does not.**",
+                icon=":material/warning:")
+
+    st.caption(
+        f"For reference, the original pre-registered run used no search at all: "
+        f"logistic C={spec['logistic']['C']}, LightGBM "
+        f"{spec['lgbm']['n_estimators']} trees / lr {spec['lgbm']['learning_rate']} / "
+        f"num_leaves {spec['lgbm']['num_leaves']} / min_child_samples "
+        f"{spec['lgbm']['min_child_samples']}, scoring "
+        f"{base['logistic']['average_precision']['point']:.4f} and "
+        f"{base['lgbm']['average_precision']['point']:.4f}. The tuned numbers above replace "
+        f"them as the fair comparison; sections 5 to 7 still report the pre-registered model, "
+        f"because that is the one whose test split was opened once."
+    )
 
     st.divider()
     st.subheader("4 · Class imbalance: which treatment is actually the most powerful")
+    rtu = ref.get("retuned")
     shapes = pd.DataFrame(ref["treatment_shapes"])
     smote = shapes.loc[shapes["treatment"] == "smote"].iloc[0]
     under = shapes.loc[shapes["treatment"] == "undersample"].iloc[0]
@@ -424,8 +443,13 @@ def main() -> None:
         f"to plain SMOTE, which is why those rows match to four decimals below.\n"
         f"- **class_weight** and **scale_pos_weight** touch no rows at all."
     )
-    st.pyplot(figure_treatments(ref["treatments"], ref["headline_budget"]),
+    treat_rows = rtu["treatments"] if rtu else ref["treatments"]
+    st.pyplot(figure_treatments(treat_rows, ref["headline_budget"]),
               use_container_width=True)
+    if rtu:
+        st.caption("Treatments applied to the chronologically tuned models from section 3, "
+                   "scored on validation. The pre-registered run's version of this chart "
+                   "used untuned models and is what sections 5 to 7 still refer to.")
 
     nf = ref["noise_floor"]
     st.markdown(
@@ -440,19 +464,26 @@ def main() -> None:
 
     hh = ref["best_tree_minus_untouched_logistic_queue"]
     c1, c2 = st.columns(2)
-    sw = ref.get("min_child_sweep")
-    alt = (f" But section 3 showed the same gain is available by moving `min_child_samples` "
-           f"from {sw['shipped_default']['min_child_samples']} to "
-           f"{sw['best']['min_child_samples']} and touching no rows at all "
-           f"({sw['shipped_default']['average_precision']:.3f} → "
-           f"{sw['best']['average_precision']:.3f}). **Rebalancing is not doing something "
-           f"only rebalancing can do — it is one of two ways round an untuned default.**"
-           if sw else "")
+    if rtu:
+        rtt = {(r["model"], r["treatment"]): r for r in rtu["treatments"]}
+        tree_none = rtt[("lgbm", "none")]["average_precision"]
+        tree_best = max(v["average_precision"] for (m, t), v in rtt.items()
+                        if m == "lgbm" and t != "none")
+        alt = (f" And the obvious alternative — just lower the constraint — **is not "
+               f"something a disciplined search finds**: section 3 shows both a shuffled and "
+               f"a chronological grid search landing on the same value and leaving the tree "
+               f"at {tree_none:.2f}. The setting that works was only locatable by scoring "
+               f"against the validation split itself. So rebalancing is not one of two "
+               f"equivalent routes round an untuned default — **it is the one a procedure "
+               f"you could actually ship arrives at.**")
+    else:
+        tree_none, tree_best, alt = 0.32, 0.85, ""
     c1.markdown(
-        "**On the tree, rebalancing moves the ranking metric a long way.** Average precision "
-        "0.32 → 0.85. The usual explanation is mechanical: LightGBM needs a minimum number "
-        "of rows in a leaf, and at 0.19% prevalence the splits that would isolate fraud "
-        "cannot form." + alt
+        f"**On the tuned tree, rebalancing still moves the ranking metric a long way.** "
+        f"Average precision {tree_none:.2f} → {tree_best:.2f}, on models that have now had a "
+        f"proper hyperparameter search. The usual explanation is mechanical: LightGBM needs a "
+        f"minimum number of rows in a leaf, and at 0.19% prevalence the splits that would "
+        f"isolate fraud cannot form." + alt
     )
     c2.markdown(
         "**On the linear model it moves the ranking metric and leaves the queue alone.** "
@@ -488,16 +519,36 @@ def main() -> None:
     st.divider()
     st.subheader("5 · Choosing one, by a rule written down first")
     sel = ref["selection"]
+    rtu2 = ref.get("retuned")
     st.markdown(
         f"Twelve configurations and one test split. The rule was fixed before the test split "
         f"was opened:\n\n> *{sel['rule']}*\n\n"
-        f"**{len(sel['tied_at_top'])} configurations tied at the top** — every logistic "
-        f"variant, all at 0.490 on validation precision@100. The tie-break sent it to the "
-        f"one that does least to the data, so the shipped model is "
-        f"**{sel['selected'][0]} with `{sel['selected'][1]}`**: no weighting, no resampling, "
-        f"nothing synthesised.\n\n"
-        f"That five configurations tie exactly is not a coincidence, it is the noise floor "
-        f"from section 4 showing up in the selection: at {nf['budget']} alerts and "
+        f"On the pre-registered run, **{len(sel['tied_at_top'])} configurations tied at the "
+        f"top** — every logistic variant, all at 0.490 on validation precision@100. The "
+        f"tie-break sent it to the one that does least to the data, so the model behind "
+        f"sections 6 and 7 is **{sel['selected'][0]} with `{sel['selected'][1]}`**: no "
+        f"weighting, no resampling, nothing synthesised."
+    )
+    if rtu2:
+        rs = rtu2["selection"]
+        same = list(rs["selected"]) == list(sel["selected"])
+        st.info(
+            f"**Re-running the same rule on the tuned models changes the tie and not the "
+            f"winner.** {len(rs['tied_at_top'])} configurations now tie at "
+            f"{rs['selected_precision_at_budget']:.3f}"
+            + (" — including two LightGBM variants that could not reach the top before — "
+               if any(m == "lgbm" for m, _ in rs["tied_at_top"]) else " — ")
+            + f"and the tie-break still selects **{rs['selected'][0]} / "
+            f"`{rs['selected'][1]}`**."
+            + ("" if same else " That is a different model from the pre-registered one.")
+            + f"\n\nThe test split is **not** re-opened for the tuned models. The "
+            f"pre-registered run used it once, under a rule fixed in advance; scoring a "
+            f"second set of models on it would spend that discipline for a number nobody "
+            f"needs, since the selection did not move.",
+            icon=":material/rule:")
+    st.markdown(
+        f"That so many configurations tie exactly is not a coincidence — it is the noise "
+        f"floor from section 4 reappearing in the selection: at {nf['budget']} alerts and "
         f"{nf['n_positives_valid']} validation frauds there are only so many distinct values "
         f"precision@{nf['budget']} can take."
     )

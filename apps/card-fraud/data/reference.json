@@ -1246,6 +1246,291 @@
   ],
   "note": "The shipped analysis ran no hyperparameter search. min_child_samples=50 is the repo default, and it is the same constraint the rebalancing argument turns on, so it had to be challenged directly."
  },
+ "retuned": {
+  "_written_utc": "2026-09-20T17:48:35+00:00",
+  "_name": "retuned",
+  "_smoke_mode": false,
+  "scored_on": "validation",
+  "budget": 100,
+  "search": {
+   "logistic": {
+    "best_params": {
+     "C": 0.01
+    },
+    "cv_best_score": 0.7078926250817602,
+    "cv_folds": 5,
+    "cv_scoring": "average_precision",
+    "n_configurations": 4
+   },
+   "lgbm": {
+    "best_params": {
+     "learning_rate": 0.05,
+     "min_child_samples": 50,
+     "n_estimators": 200,
+     "num_leaves": 15
+    },
+    "cv_best_score": 0.7097203325927023,
+    "cv_folds": 5,
+    "cv_scoring": "average_precision",
+    "n_configurations": 16
+   }
+  },
+  "specs": {
+   "logistic": {
+    "family": "logistic",
+    "params": {
+     "C": 0.01
+    },
+    "features": [
+     "V1",
+     "V2",
+     "V3",
+     "V4",
+     "V5",
+     "V6",
+     "V7",
+     "V8",
+     "V9",
+     "V10",
+     "V11",
+     "V12",
+     "V13",
+     "V14",
+     "V15",
+     "V16",
+     "V17",
+     "V18",
+     "V19",
+     "V20",
+     "V21",
+     "V22",
+     "V23",
+     "V24",
+     "V25",
+     "V26",
+     "V27",
+     "V28",
+     "Amount",
+     "hour_of_cycle",
+     "log_amount"
+    ],
+    "cv_scoring": "average_precision",
+    "cv_best_score": 0.7078926250817602,
+    "cv_folds": 5
+   },
+   "lgbm": {
+    "family": "lgbm",
+    "params": {
+     "n_estimators": 200,
+     "learning_rate": 0.05,
+     "num_leaves": 15,
+     "min_child_samples": 50
+    },
+    "features": [
+     "V1",
+     "V2",
+     "V3",
+     "V4",
+     "V5",
+     "V6",
+     "V7",
+     "V8",
+     "V9",
+     "V10",
+     "V11",
+     "V12",
+     "V13",
+     "V14",
+     "V15",
+     "V16",
+     "V17",
+     "V18",
+     "V19",
+     "V20",
+     "V21",
+     "V22",
+     "V23",
+     "V24",
+     "V25",
+     "V26",
+     "V27",
+     "V28",
+     "Amount",
+     "hour_of_cycle",
+     "log_amount"
+    ],
+    "cv_scoring": "average_precision",
+    "cv_best_score": 0.7097203325927023,
+    "cv_folds": 5
+   }
+  },
+  "cv_vs_validation": [
+   {
+    "model": "logistic",
+    "shuffled_cv_score": 0.7665417343995999,
+    "shuffled_cv_params": {
+     "C": 1.0
+    },
+    "shuffled_winner_on_validation": 0.7796895129691298,
+    "chronological_cv_score": 0.7078926250817602,
+    "chronological_cv_params": {
+     "C": 0.01
+    },
+    "chronological_winner_on_validation": 0.7892152336270538
+   },
+   {
+    "model": "lgbm",
+    "shuffled_cv_score": 0.7982321558984437,
+    "shuffled_cv_params": {
+     "learning_rate": 0.05,
+     "min_child_samples": 50,
+     "n_estimators": 200,
+     "num_leaves": 31
+    },
+    "shuffled_winner_on_validation": 0.26408265932401553,
+    "chronological_cv_score": 0.7097203325927023,
+    "chronological_cv_params": {
+     "learning_rate": 0.05,
+     "min_child_samples": 50,
+     "n_estimators": 200,
+     "num_leaves": 15
+    },
+    "chronological_winner_on_validation": 0.2818523209262424
+   }
+  ],
+  "treatments": [
+   {
+    "model": "logistic",
+    "treatment": "none",
+    "average_precision": 0.7892152336270538,
+    "roc_auc": 0.9855316206460082,
+    "precision_at_100": 0.49,
+    "recall_at_100": 0.875,
+    "alerts_per_fraud": 2.0408163265306123
+   },
+   {
+    "model": "logistic",
+    "treatment": "class_weight",
+    "average_precision": 0.8366158944300065,
+    "roc_auc": 0.9819884038656014,
+    "precision_at_100": 0.49,
+    "recall_at_100": 0.875,
+    "alerts_per_fraud": 2.0408163265306123
+   },
+   {
+    "model": "logistic",
+    "treatment": "scale_pos_weight",
+    "average_precision": 0.8427215441743008,
+    "roc_auc": 0.9821039298941179,
+    "precision_at_100": 0.49,
+    "recall_at_100": 0.875,
+    "alerts_per_fraud": 2.0408163265306123
+   },
+   {
+    "model": "logistic",
+    "treatment": "undersample",
+    "average_precision": 0.656208532091663,
+    "roc_auc": 0.9784456056577617,
+    "precision_at_100": 0.46,
+    "recall_at_100": 0.8214285714285714,
+    "alerts_per_fraud": 2.1739130434782608
+   },
+   {
+    "model": "logistic",
+    "treatment": "smote",
+    "average_precision": 0.8135614037986708,
+    "roc_auc": 0.9806627845456312,
+    "precision_at_100": 0.48,
+    "recall_at_100": 0.8571428571428571,
+    "alerts_per_fraud": 2.0833333333333335
+   },
+   {
+    "model": "logistic",
+    "treatment": "smote_tomek",
+    "average_precision": 0.8135614037986708,
+    "roc_auc": 0.9806627845456312,
+    "precision_at_100": 0.48,
+    "recall_at_100": 0.8571428571428571,
+    "alerts_per_fraud": 2.0833333333333335
+   },
+   {
+    "model": "lgbm",
+    "treatment": "none",
+    "average_precision": 0.2818523209262424,
+    "roc_auc": 0.8408850800645606,
+    "precision_at_100": 0.27,
+    "recall_at_100": 0.48214285714285715,
+    "alerts_per_fraud": 3.7037037037037037
+   },
+   {
+    "model": "lgbm",
+    "treatment": "class_weight",
+    "average_precision": 0.848923303976158,
+    "roc_auc": 0.9915665999182947,
+    "precision_at_100": 0.48,
+    "recall_at_100": 0.8571428571428571,
+    "alerts_per_fraud": 2.0833333333333335
+   },
+   {
+    "model": "lgbm",
+    "treatment": "scale_pos_weight",
+    "average_precision": 0.848923303976158,
+    "roc_auc": 0.9915665999182947,
+    "precision_at_100": 0.48,
+    "recall_at_100": 0.8571428571428571,
+    "alerts_per_fraud": 2.0833333333333335
+   },
+   {
+    "model": "lgbm",
+    "treatment": "undersample",
+    "average_precision": 0.8445867478123565,
+    "roc_auc": 0.9863386285553554,
+    "precision_at_100": 0.48,
+    "recall_at_100": 0.8571428571428571,
+    "alerts_per_fraud": 2.0833333333333335
+   },
+   {
+    "model": "lgbm",
+    "treatment": "smote",
+    "average_precision": 0.8364949365698251,
+    "roc_auc": 0.9919282466162593,
+    "precision_at_100": 0.48,
+    "recall_at_100": 0.8571428571428571,
+    "alerts_per_fraud": 2.0833333333333335
+   },
+   {
+    "model": "lgbm",
+    "treatment": "smote_tomek",
+    "average_precision": 0.8364949365698251,
+    "roc_auc": 0.9919282466162593,
+    "precision_at_100": 0.48,
+    "recall_at_100": 0.8571428571428571,
+    "alerts_per_fraud": 2.0833333333333335
+   }
+  ],
+  "selection": {
+   "rule": "best precision@100 on validation; ties to the fewest interventions",
+   "tied_at_top": [
+    [
+     "logistic",
+     "none"
+    ],
+    [
+     "logistic",
+     "class_weight"
+    ],
+    [
+     "logistic",
+     "scale_pos_weight"
+    ]
+   ],
+   "selected": [
+    "logistic",
+    "none"
+   ],
+   "selected_precision_at_budget": 0.49
+  }
+ },
  "model_spec": {
   "tuned": false,
   "note": "No hyperparameter search was run for the shipped numbers. pipelines.tune() and the grids exist and are never called by the analysis; every fit uses the repo defaults below.",
