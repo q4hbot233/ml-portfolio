@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The race you heard</title>
+<meta name="description" content="Every team radio clip F1 broadcast in 2024, transcribed and scored, against how readers rated each race.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap">
+<style>
+:root{
+  --void:#08090B; --panel:#101216; --panel-2:#161920; --edge:#1F232B; --edge-2:#2B313B;
+  --text:#F2F3F5; --dim:#99A0AC; --faint:#626A78;
+  --accent:#C9822F; --hot:#D9534F; --cool:#5B8FA6; --good:#57A773;
+  --sans:"Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Roboto Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;padding-inline:24px;background:var(--void);color:var(--text);
+  font-family:var(--sans);font-size:15px;line-height:1.62;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1060px;margin-inline:auto;padding-block:0 110px}
+a{color:inherit}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+
+.hero{padding-block:72px 36px;max-width:770px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--faint);margin:0 0 20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.eyebrow .dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+h1{font-size:clamp(34px,5.6vw,56px);line-height:1.05;letter-spacing:-.032em;font-weight:700;
+  margin:0;text-wrap:balance}
+.deck{font-size:18px;line-height:1.56;color:var(--dim);max-width:60ch;margin:22px 0 0}
+.deck em{font-style:normal;color:var(--text)}
+.facts{margin-top:26px;display:flex;gap:24px;flex-wrap:wrap;font-family:var(--mono);
+  font-size:11.5px;letter-spacing:.06em;color:var(--faint)}
+.facts b{color:var(--text);font-weight:500}
+.warn{margin-top:26px;border-left:2px solid var(--accent);padding:2px 0 2px 16px;
+  color:var(--dim);font-size:14.5px;max-width:64ch}
+.warn b{color:var(--text)}
+
+section{margin-top:56px}
+.shead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+  padding-bottom:13px;border-bottom:1px solid var(--edge);margin-bottom:24px}
+.shead .n{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--accent)}
+.shead h2{font-size:22px;font-weight:600;letter-spacing:-.018em;margin:0}
+.shead .sub{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.07em;
+  margin-left:auto}
+p.note{color:var(--dim);max-width:74ch;margin:16px 0 0;font-size:14.5px}
+p.note b{color:var(--text);font-weight:600}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:11px;padding:16px 18px 14px}
+.card h4{margin:0 0 4px;font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--faint);font-weight:500}
+.card .cap{color:var(--dim);font-size:13px;line-height:1.5;margin:9px 0 0}
+.card .cap b{color:var(--text);font-weight:600}
+svg{width:100%;display:block;overflow:visible}
+
+/* validity */
+.vrow{display:grid;grid-template-columns:1fr;gap:10px}
+.vc{background:var(--panel);border:1px solid var(--edge);border-radius:11px;padding:14px 17px;
+  display:grid;grid-template-columns:1fr 280px 96px;gap:16px;align-items:center}
+.vc .vt{font-size:14.5px}
+.vc .vt small{display:block;color:var(--faint);font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.05em;margin-top:3px}
+.vc .vv{font-family:var(--mono);font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
+  padding:4px 9px;border-radius:4px;text-align:center}
+.tag.pass{background:rgba(87,167,115,.16);color:var(--good);border:1px solid rgba(87,167,115,.4)}
+.tag.fail{background:rgba(217,83,79,.14);color:var(--hot);border:1px solid rgba(217,83,79,.4)}
+
+/* scatter controls */
+.picker{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
+.picker button{font-family:var(--mono);font-size:11px;letter-spacing:.07em;cursor:pointer;
+  background:var(--panel);color:var(--dim);border:1px solid var(--edge-2);border-radius:20px;
+  padding:7px 14px;transition:.13s}
+.picker button:hover{color:var(--text);border-color:var(--faint)}
+.picker button[aria-pressed=true]{background:var(--panel-2);color:var(--text);border-color:var(--text)}
+.two{display:grid;grid-template-columns:1fr 296px;gap:16px;align-items:start}
+.stat{background:var(--panel);border:1px solid var(--edge);border-radius:11px;padding:16px 18px}
+.stat .big{font-family:var(--mono);font-size:30px;font-weight:700;line-height:1.08;
+  font-variant-numeric:tabular-nums}
+.stat .ci{font-family:var(--mono);font-size:12.5px;color:var(--dim);margin-top:5px}
+.stat .d{color:var(--dim);font-size:13.5px;line-height:1.5;margin-top:11px}
+.stat .d b{color:var(--text)}
+
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--faint);font-weight:500;text-align:right;padding:0 0 9px;border-bottom:1px solid var(--edge)}
+th:first-child{text-align:left}
+td{padding:8px 0;border-bottom:1px solid var(--edge);text-align:right;
+  font-family:var(--mono);font-variant-numeric:tabular-nums}
+td:first-child{text-align:left;font-family:var(--sans)}
+tr:last-child td{border-bottom:0}
+.up{color:var(--good)} .down{color:var(--hot)}
+
+footer{margin-top:60px;padding-top:26px;border-top:1px solid var(--edge);color:var(--dim);
+  font-size:14px;max-width:76ch}
+footer h3{color:var(--text);font-size:14px;margin:0 0 10px;font-weight:600}
+footer ul{margin:0 0 20px;padding-left:19px} footer li{margin-bottom:7px}
+footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
+#err{display:none;background:#2A1A14;border:1px solid var(--accent);border-radius:10px;
+  padding:16px 18px;color:#F0DCC0;font-family:var(--mono);font-size:12.5px;margin-top:30px}
+@media (max-width:880px){.two{grid-template-columns:1fr}.vc{grid-template-columns:1fr}
+  .vc .vv{text-align:left}.hero{padding-block:52px 28px}}
+
+#zback{position:fixed;left:12px;bottom:12px;z-index:99999;font-family:var(--mono);font-size:11px;
+  letter-spacing:.09em;text-transform:uppercase;text-decoration:none;background:#1B1B18;
+  color:#EDEDE6;padding:9px 13px;border:1px solid #1B1B18;box-shadow:0 2px 10px rgba(0,0,0,.28);opacity:.93}
+#zback:hover{background:var(--accent);border-color:var(--accent);opacity:1}
+@media print{#zback{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow"><span class="dot"></span> Team radio · 2024 season</p>
+    <h1>Did the drivers have the race you did?</h1>
+    <p class="deck">Readers rate every grand prix out of ten. Team radio is the only channel
+      where you hear what it was like from inside the car. This scores every clip F1 broadcast
+      in 2024 and puts the two side by side — <em>after</em> checking the score measures anything
+      at all.</p>
+    <p class="facts" id="facts"></p>
+    <p class="warn" id="warn"></p>
+  </header>
+
+  <section>
+    <div class="shead"><span class="n">01</span><h2>What you are actually listening to</h2>
+      <span class="sub">a broadcast selection</span></div>
+    <div class="card">
+      <h4>Clips aired per grand prix</h4>
+      <svg id="volsvg" viewBox="0 0 980 230" role="img"></svg>
+      <p class="cap" id="volcap"></p>
+    </div>
+    <p class="note">A grand prix produces continuous two-way traffic on twenty channels for
+      ninety minutes. What reaches the public feed is the handful of clips F1 chose to
+      broadcast. So <b>this is not what drivers said — it is what was aired of what they
+      said</b>, selected in real time by people whose job is to make a race watchable.
+      For this particular question that is less damaging than it looks: the readers doing
+      the rating heard this selection and not the unaired remainder.</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="n">02</span><h2>Does the score measure anything?</h2>
+      <span class="sub">run before anything is correlated</span></div>
+    <div class="vrow" id="validity"></div>
+    <p class="note">A sentiment lexicon built for social media, run over speech-to-text of
+      compressed race audio, has no right to be believed just because it returns a number.
+      These are not the project's hypotheses — they are the conditions it has to pass to be
+      allowed to test one. Each compares the score against something recorded independently
+      of what anybody said: <b>the lap chart</b>. Intervals resample whole races.</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="n">03</span><h2>The two audiences</h2>
+      <span class="sub" id="nsub"></span></div>
+    <div class="picker" id="picker"></div>
+    <div class="two">
+      <div class="card">
+        <h4 id="scattitle">Radio against the fan rating</h4>
+        <svg id="scatsvg" viewBox="0 0 640 430" role="img"></svg>
+        <p class="cap" id="scatcap"></p>
+      </div>
+      <div class="stat" id="stat"></div>
+    </div>
+    <p class="note" id="residnote"></p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="n">04</span><h2>What nearly happened instead</h2>
+      <span class="sub">the same statistic, recomputed as the season goes on</span></div>
+    <div class="card">
+      <h4>Each correlation, computed from the first k races</h4>
+      <svg id="curvesvg" viewBox="0 0 980 420" role="img"></svg>
+      <p class="cap" id="curvecap"></p>
+    </div>
+    <p class="note">Read left to right, this is what a reader of this project would have
+      believed if the season had stopped at each point. A statistic that moves across most of
+      its range as the sample grows is not a finding that needs careful interpretation — and
+      the first version of section 03 was written around the early number.</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="n">05</span><h2>Where the two disagree most</h2>
+      <span class="sub">both sides as z-scores</span></div>
+    <div class="card">
+      <table id="gaps"></table>
+      <p class="cap">A rating out of ten and a lexicon score between &minus;1 and 1 cannot be
+        subtracted as they stand, so both are standardised across the 24 races first.
+        Positive means the fans enjoyed it more than the radio sounded.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead"><span class="n">06</span><h2>Do teams sound different?</h2>
+      <span class="sub">thousands of messages, not 24 races</span></div>
+    <div class="card">
+      <h4>Mean sentiment per team, raw and with the speaker's own afternoon taken out</h4>
+      <svg id="teamsvg" viewBox="0 0 900 380" role="img"></svg>
+      <p class="cap" id="teamcap"></p>
+    </div>
+    <p class="note">This is the part of the project with real power behind it — a team's rows
+      are hundreds of messages, not 24 races. It is also the part where the obvious
+      alternative explanation is strongest: <b>a team that had a good season sounds happier
+      for reasons that have nothing to do with how it communicates</b>. The adjusted column
+      regresses each message on where that driver was running, whether they were up or down
+      on their grid slot, whether their car was about to stop, and how far into the race it
+      was — then takes what is left.</p>
+  </section>
+
+  <div id="err"></div>
+
+  <footer>
+    <h3>What this does not show</h3>
+    <ul>
+      <li><b>A clip is a channel, not a speaker.</b> Most contain the race engineer as well as
+        the driver. Diarising five seconds of clipped radio is not reliable and a wrong split
+        would be worse than none, so the unit is an aired exchange on a driver's channel.</li>
+      <li><b>24 races.</b> A correlation from 24 points has an interval wide enough to hold
+        most of the answers you might have guessed. Nothing in section 03 settles anything.</li>
+      <li><b>The transcripts contain real errors.</b> This is in-helmet audio over engine noise
+        through a compressed broadcast feed.</li>
+      <li>Ratings are RaceFans readers — an engaged, self-selected audience, not the viewing
+        public.</li>
+    </ul>
+    <p class="lk">Radio via the F1 live-timing feed · transcription with
+      <a href="https://github.com/SYSTRAN/faster-whisper">faster-whisper</a> ·
+      ratings from <a href="https://www.racefans.net/2025/01/02/ranked-all-30-formula-1-races-of-last-season-rated-by-our-readers/">RaceFans</a>,
+      used with attribution · neither the audio nor the transcripts are redistributed</p>
+  </footer>
+</div>
+<a id="zback" href="../../">← Contents</a>
+
+<script>
+const SVG = "http://www.w3.org/2000/svg";
+const el = (n, a = {}, t) => { const e = document.createElementNS(SVG, n);
+  for (const k in a) e.setAttribute(k, a[k]); if (t != null) e.textContent = t; return e; };
+const FEATURES = [
+  {k:"mean_sentiment",  n:"mean sentiment",       d:"average score of every aired clip"},
+  {k:"mean_resid",      n:"adjusted sentiment",   d:"with each speaker's own afternoon taken out"},
+  {k:"share_negative",  n:"share negative",       d:"clips scoring below −0.05"},
+  {k:"n_clips",         n:"clips aired",          d:"how much radio the broadcast used"},
+  {k:"share_around_exit", n:"retirement radio",   d:"share of clips within two laps of a car stopping"},
+  {k:"mean_words",      n:"words per clip",       d:"how long the aired messages were"},
+];
+const SITUATION_LABEL = {
+  places_so_far: "how many places they were up or down on their grid slot",
+  position: "where they were running",
+  around_exit: "whether their car was about to stop",
+  finished: "whether they finished at all",
+  race_fraction: "how far into the race it was",
+};
+let D = null, FEAT = "mean_sentiment";
+
+fetch("data/radio.json").then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+  .then(d => { D = d; boot(); })
+  .catch(e => { const b = document.getElementById("err"); b.style.display = "block";
+                b.textContent = "Could not load data/radio.json — " + e.message; });
+
+function short(ev){ return ev.replace(/ Grand Prix$/, "").replace("United States","USA")
+  .replace("Emilia Romagna","Imola").replace("Mexico City","Mexico").replace("São Paulo","Brazil")
+  .replace("Saudi Arabian","Saudi").replace("Azerbaijan","Baku"); }
+
+function boot(){
+  const c = D.corpus;
+  document.getElementById("facts").innerHTML =
+    `<span><b>${c.clips.toLocaleString()}</b> aired clips</span>` +
+    `<span><b>${c.races}</b> grands prix</span><span><b>${c.drivers}</b> drivers</span>` +
+    `<span><b>${c.teams}</b> teams</span>` +
+    `<span><b>${c.empty_transcripts}</b> with no speech found</span>`;
+  document.getElementById("warn").innerHTML =
+    `<b>The sample is ${D.per_race.length} races.</b> Every correlation below is computed from ` +
+    `that many points and reported with the interval that follows from it. The team ` +
+    `comparisons in section 05 have thousands of messages behind them and are the part of ` +
+    `this that is actually powered.`;
+  document.getElementById("nsub").textContent = `n = ${D.per_race.length} races`;
+  drawVolume(); drawValidity(); buildPicker(); drawScatter(); drawCurves(); drawGaps(); drawTeams();
+  document.getElementById("residnote").innerHTML =
+    `<b>Adjusted sentiment</b> regresses every message on five things about the speaker's own ` +
+    `afternoon — ${D.residual.variables.map(v => SITUATION_LABEL[v] || v).join("; ")} — and ` +
+    `keeps the residual. Those five ` +
+    `explain R² = <b>${D.residual.r2.toFixed(3)}</b> of message sentiment across ` +
+    `${D.residual.n.toLocaleString()} messages. What is left is not "the race talking": it is ` +
+    `everything those five do not capture, transcription noise included. It narrows the obvious ` +
+    `alternative explanation for the raw mean; it does not remove it.`;
+}
+
+function drawVolume(){
+  const s = document.getElementById("volsvg"); s.innerHTML = "";
+  const rows = [...D.per_race].sort((a,b) => b.n_clips - a.n_clips);
+  const W = 980, H = 230, L = 34, R = 10, T = 12, B = 62;
+  const max = Math.max(...rows.map(r => r.n_clips));
+  const bw = (W - L - R) / rows.length;
+  for (let i = 0; i <= 3; i++){
+    const v = max * i / 3, y = T + (1 - v/max) * (H - T - B);
+    s.appendChild(el("line", {x1:L, y1:y, x2:W-R, y2:y, stroke:"#1F232B"}));
+    s.appendChild(el("text", {x:L-8, y:y+4, fill:"#626A78", "font-family":"var(--mono)",
+      "font-size":"10", "text-anchor":"end"}, v.toFixed(0)));
+  }
+  rows.forEach((r, i) => {
+    const h = r.n_clips / max * (H - T - B);
+    s.appendChild(el("rect", {x:L + i*bw + 2, y:T + (H-T-B) - h, width:bw-4, height:h, rx:2,
+      fill:"#C9822F", opacity:(0.35 + 0.65 * (r.rating - 3) / 6.2).toFixed(2)}));
+    const t = el("text", {x:L + i*bw + bw/2, y:H - B + 14, fill:"#626A78",
+      "font-family":"var(--mono)", "font-size":"9.5", "text-anchor":"end",
+      transform:`rotate(-52 ${L + i*bw + bw/2} ${H - B + 14})`}, short(r.event));
+    s.appendChild(t);
+  });
+  const rho = D.correlations.find(c => c.feature === "n_clips");
+  document.getElementById("volcap").innerHTML =
+    `Bars are shaded by the fan rating — darker is a better-rated race. Spearman between clips
+     aired and rating is <b>${rho.rho.toFixed(2)}</b> [${rho.lo.toFixed(2)}, ${rho.hi.toFixed(2)}].
+     Read that as the broadcast and the audience agreeing about which races were eventful,
+     not as a finding about drivers.`;
+}
+
+function drawValidity(){
+  const box = document.getElementById("validity");
+  box.innerHTML = D.validity.checks.map(c => {
+    const lo = c.lo, hi = c.hi, m = Math.max(Math.abs(lo), Math.abs(hi), 0.05) * 1.25;
+    const px = v => 140 + v / m * 130;
+    return `<div class="vc">
+      <div class="vt">${c.check}<small>${c.note} · n = ${c.n_true} vs ${c.n_false} ·
+        expected ${c.expected_sign < 0 ? "negative" : "positive"}</small></div>
+      <svg viewBox="0 0 280 42" style="width:280px">
+        <line x1="${px(0)}" y1="6" x2="${px(0)}" y2="36" stroke="#2B313B"/>
+        <line x1="${px(lo)}" y1="21" x2="${px(hi)}" y2="21" stroke="${c.passes ? '#57A773' : '#D9534F'}" stroke-width="2.5"/>
+        <circle cx="${px(c.difference)}" cy="21" r="4.5" fill="${c.passes ? '#57A773' : '#D9534F'}"/>
+        <text x="${px(0)}" y="40" fill="#626A78" font-family="var(--mono)" font-size="8.5" text-anchor="middle">0</text>
+      </svg>
+      <div class="vv">${c.difference >= 0 ? "+" : ""}${c.difference.toFixed(3)}<br>
+        <span style="color:var(--faint)">[${c.lo.toFixed(2)}, ${c.hi.toFixed(2)}]</span></div>
+      <div class="tag ${c.passes ? "pass" : "fail"}">${c.passes ? "pass" : "fail"}</div>
+    </div>`;
+  }).join("") + (() => {
+    const v = D.validity.verdict;
+    const colour = v === "usable" ? "var(--good)" : v === "partial" ? "var(--accent)" : "var(--hot)";
+    const gloss = {
+      usable: "every check moves the way it has to, so the score is allowed downstream.",
+      partial: "some checks land and some do not. Read the n on each row before reading the " +
+               "interval: most drivers finish most races, so the retirement and late-race " +
+               "cells are a few dozen clips in a season of thousands, and a wide interval " +
+               "there is a statement about how rarely cars stop.",
+      failed: "the score does not move the way it must. Nothing below it should be believed.",
+    }[v] || "";
+    return `<p class="cap" style="margin-top:4px;padding-left:2px">Verdict:
+      <b style="color:${colour}">${v}</b> — ${gloss}</p>`;
+  })();
+}
+
+function buildPicker(){
+  const p = document.getElementById("picker");
+  p.innerHTML = FEATURES.map(f =>
+    `<button data-k="${f.k}" aria-pressed="${f.k === FEAT}">${f.n}</button>`).join("");
+  p.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+    FEAT = b.dataset.k;
+    p.querySelectorAll("button").forEach(x =>
+      x.setAttribute("aria-pressed", String(x.dataset.k === FEAT)));
+    drawScatter();
+  }));
+}
+
+function drawScatter(){
+  const s = document.getElementById("scatsvg"); s.innerHTML = "";
+  const f = FEATURES.find(x => x.k === FEAT);
+  const rows = D.per_race.filter(r => r[FEAT] != null);
+  const W = 640, H = 430, L = 58, R = 24, T = 18, B = 54;
+  const xs = rows.map(r => r[FEAT]), ys = rows.map(r => r.rating);
+  const xlo = Math.min(...xs), xhi = Math.max(...xs);
+  const ylo = Math.min(...ys) - .3, yhi = Math.max(...ys) + .3;
+  const X = v => L + (v - xlo) / (xhi - xlo || 1) * (W - L - R);
+  const Y = v => T + (1 - (v - ylo) / (yhi - ylo)) * (H - T - B);
+  for (let g = Math.ceil(ylo); g <= yhi; g++){
+    s.appendChild(el("line", {x1:L, y1:Y(g), x2:W-R, y2:Y(g), stroke:"#1F232B"}));
+    s.appendChild(el("text", {x:L-9, y:Y(g)+4, fill:"#626A78", "font-family":"var(--mono)",
+      "font-size":"10", "text-anchor":"end"}, g));
+  }
+  for (let i = 0; i <= 4; i++){
+    const v = xlo + (xhi - xlo) * i / 4;
+    s.appendChild(el("text", {x:X(v), y:H-B+18, fill:"#626A78", "font-family":"var(--mono)",
+      "font-size":"10", "text-anchor":"middle"},
+      Math.abs(v) >= 100 ? v.toFixed(0) : v.toFixed(2)));
+  }
+  s.appendChild(el("text", {x:(L+W-R)/2, y:H-B+38, fill:"#4A5262", "font-family":"var(--mono)",
+    "font-size":"10", "text-anchor":"middle"}, f.n));
+  s.appendChild(el("text", {x:L-9, y:T-2, fill:"#4A5262", "font-family":"var(--mono)",
+    "font-size":"10", "text-anchor":"end"}, "rating"));
+  rows.forEach(r => {
+    s.appendChild(el("circle", {cx:X(r[FEAT]), cy:Y(r.rating), r:5.5, fill:"#C9822F",
+      opacity:".9", stroke:"#08090B", "stroke-width":"1"}));
+    s.appendChild(el("text", {x:X(r[FEAT])+9, y:Y(r.rating)+3.5, fill:"#99A0AC",
+      "font-family":"var(--mono)", "font-size":"9.5"}, short(r.event)));
+  });
+  const c = D.correlations.find(x => x.feature === FEAT);
+  document.getElementById("scattitle").textContent = f.n + " against the fan rating";
+  document.getElementById("scatcap").textContent = f.d + ". One point per grand prix.";
+  const wide = c.hi - c.lo;
+  document.getElementById("stat").innerHTML = `
+    <div class="big" style="color:${c.crosses_zero ? "var(--dim)" : "var(--accent)"}">
+      ρ ${c.rho >= 0 ? "+" : ""}${c.rho.toFixed(2)}</div>
+    <div class="ci">95% interval [${c.lo.toFixed(2)}, ${c.hi.toFixed(2)}]</div>
+    <div class="d">${c.crosses_zero
+      ? `The interval <b>contains zero</b>, and is ${wide.toFixed(2)} wide — it also contains
+         most of the answers you might have guessed before looking. With ${c.n_races} races
+         that is what this design can say.`
+      : `The interval <b>excludes zero</b>. It is still ${wide.toFixed(2)} wide on
+         ${c.n_races} races, so read the sign, not the size.`}</div>`;
+}
+
+function drawCurves(){
+  const s = document.getElementById("curvesvg"); s.innerHTML = "";
+  const cs = D.sample_size_curves || {};
+  const keys = Object.keys(cs);
+  const LBL = {mean_sentiment:"mean sentiment of the aired radio", n_clips:"clips aired"};
+  const W = 980, H = 420, L = 54, R = 20, gap = 34;
+  const panelH = (H - gap * (keys.length - 1) - 34) / keys.length;
+  keys.forEach((key, pi) => {
+    const rows = cs[key], top = pi * (panelH + gap) + 22;
+    const ks = rows.map(r => r.k);
+    const X = k => L + (k - ks[0]) / (ks[ks.length-1] - ks[0]) * (W - L - R);
+    const Y = v => top + (1 - (v + 1) / 2) * panelH;
+    s.appendChild(el("text", {x:L, y:top - 7, fill:"#99A0AC", "font-family":"var(--sans)",
+      "font-size":"12.5"}, `${LBL[key] || key} — ends at ${rows[rows.length-1].rho >= 0 ? "+" : ""}${rows[rows.length-1].rho.toFixed(2)}`));
+    [1, 0.5, 0, -0.5, -1].forEach(v => {
+      s.appendChild(el("line", {x1:L, y1:Y(v), x2:W-R, y2:Y(v),
+        stroke: v === 0 ? "#2B313B" : "#1A1D23"}));
+      s.appendChild(el("text", {x:L-8, y:Y(v)+4, fill:"#4A5262", "font-family":"var(--mono)",
+        "font-size":"9.5", "text-anchor":"end"}, v.toFixed(1)));
+    });
+    const band = rows.map(r => `${X(r.k)},${Y(r.hi)}`).concat(
+      rows.slice().reverse().map(r => `${X(r.k)},${Y(r.lo)}`)).join(" ");
+    s.appendChild(el("polygon", {points:band, fill:"#C9822F", opacity:".14"}));
+    s.appendChild(el("polyline", {points:rows.map(r => `${X(r.k)},${Y(r.rho)}`).join(" "),
+      fill:"none", stroke:"#C9822F", "stroke-width":2.2, "stroke-linejoin":"round"}));
+    rows.forEach(r => { if (r.excludes_zero)
+      s.appendChild(el("circle", {cx:X(r.k), cy:Y(r.rho), r:5, fill:"#D9534F"})); });
+    const last = rows[rows.length-1];
+    s.appendChild(el("circle", {cx:X(last.k), cy:Y(last.rho), r:5, fill:"#F2F3F5"}));
+    if (pi === keys.length - 1) ks.forEach(k => { if (k % 2 === 0)
+      s.appendChild(el("text", {x:X(k), y:top + panelH + 16, fill:"#626A78",
+        "font-family":"var(--mono)", "font-size":"10", "text-anchor":"middle"}, k)); });
+  });
+  s.appendChild(el("text", {x:(L+W-R)/2, y:H-2, fill:"#4A5262", "font-family":"var(--mono)",
+    "font-size":"10", "text-anchor":"middle"}, "computed from the first k races of the season"));
+  const nc = cs.n_clips || [];
+  const best = nc.reduce((a, r) => r.rho > a.rho ? r : a, nc[0] || {rho:0, k:0});
+  document.getElementById("curvecap").innerHTML =
+    `<b style="color:var(--hot)">Red</b> marks a sample size where the interval excluded zero;
+     white is the full season. With <b>${best.k} races</b> built, the number of clips F1 aired
+     correlated with the rating at <b>ρ ${best.rho >= 0 ? "+" : ""}${best.rho.toFixed(2)}</b> and
+     the interval excluded zero. By twenty-four it was
+     <b>${nc.length ? (nc[nc.length-1].rho >= 0 ? "+" : "") + nc[nc.length-1].rho.toFixed(2) : "—"}</b>.`;
+}
+
+function drawGaps(){
+  const g = D.disagreements;
+  const show = g.slice(0, 4).concat(g.slice(-4));
+  document.getElementById("gaps").innerHTML =
+    `<thead><tr><th>Grand Prix</th><th>rating</th><th>sentiment</th><th>z rating</th>
+      <th>z sentiment</th><th>fans − radio</th></tr></thead><tbody>` +
+    show.map(r => `<tr>
+      <td>${short(r.event)}</td><td>${r.rating.toFixed(1)}</td>
+      <td>${r.mean_sentiment >= 0 ? "+" : ""}${r.mean_sentiment.toFixed(3)}</td>
+      <td>${r.z_rating >= 0 ? "+" : ""}${r.z_rating.toFixed(2)}</td>
+      <td>${r.z_mean_sentiment >= 0 ? "+" : ""}${r.z_mean_sentiment.toFixed(2)}</td>
+      <td class="${r.fans_minus_radio > 0 ? "up" : "down"}">
+        ${r.fans_minus_radio >= 0 ? "+" : ""}${r.fans_minus_radio.toFixed(2)}</td></tr>`).join("") +
+    `</tbody>`;
+}
+
+function drawTeams(){
+  const s = document.getElementById("teamsvg"); s.innerHTML = "";
+  const t = [...D.teams].sort((a,b) => b.mean - a.mean);
+  const W = 900, rowH = 34, L = 168, R = 92, T = 26;
+  const H = T + t.length * rowH + 30;
+  s.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const all = t.flatMap(r => [r.lo, r.hi, r.resid_lo, r.resid_hi]);
+  const lo = Math.min(...all) - .02, hi = Math.max(...all) + .02;
+  const X = v => L + (v - lo) / (hi - lo) * (W - L - R);
+  const mean = t.reduce((a, r) => a + r.mean, 0) / t.length;
+  s.appendChild(el("line", {x1:X(mean), y1:T-8, x2:X(mean), y2:T + t.length*rowH,
+    stroke:"#2B313B", "stroke-dasharray":"3 3"}));
+  s.appendChild(el("text", {x:X(mean), y:T-13, fill:"#626A78", "font-family":"var(--mono)",
+    "font-size":"9.5", "text-anchor":"middle"}, "field mean"));
+  s.appendChild(el("text", {x:L, y:T-13, fill:"#626A78", "font-family":"var(--mono)",
+    "font-size":"9.5"}, "● raw    ○ with the speaker's own afternoon taken out"));
+  t.forEach((r, i) => {
+    const y = T + i * rowH + 12;
+    s.appendChild(el("text", {x:0, y:y+4, fill:"#E8ECF2", "font-family":"var(--sans)",
+      "font-size":"12.5"}, r.team));
+    s.appendChild(el("text", {x:L-12, y:y+4, fill:"#4A5262", "font-family":"var(--mono)",
+      "font-size":"9.5", "text-anchor":"end"}, r.n_messages));
+    s.appendChild(el("line", {x1:X(r.lo), y1:y-5, x2:X(r.hi), y2:y-5, stroke:"#C9822F",
+      "stroke-width":2.2, opacity:".85"}));
+    s.appendChild(el("circle", {cx:X(r.mean), cy:y-5, r:4.2, fill:"#C9822F"}));
+    s.appendChild(el("line", {x1:X(r.resid_lo), y1:y+8, x2:X(r.resid_hi), y2:y+8,
+      stroke:"#5B8FA6", "stroke-width":2.2, opacity:".8"}));
+    s.appendChild(el("circle", {cx:X(r.resid_mean), cy:y+8, r:4.2, fill:"#08090B",
+      stroke:"#5B8FA6", "stroke-width":2}));
+    s.appendChild(el("text", {x:W-R+10, y:y+4, fill:"#99A0AC", "font-family":"var(--mono)",
+      "font-size":"10.5"}, `${r.mean >= 0 ? "+" : ""}${r.mean.toFixed(3)}`));
+  });
+  const sepRaw = t.filter(r => r.lo > mean || r.hi < mean).length;
+  const rmean = t.reduce((a, r) => a + r.resid_mean, 0) / t.length;
+  const sepAdj = t.filter(r => r.resid_lo > rmean || r.resid_hi < rmean).length;
+  document.getElementById("teamcap").innerHTML =
+    `<b>${sepRaw} of ${t.length}</b> teams sit clear of the field mean on raw sentiment;
+     <b>${sepAdj} of ${t.length}</b> still do once their own results are accounted for.
+     Intervals resample whole races, so one loud weekend cannot carry a team.`;
+}
+</script>
+</body>
+</html>
