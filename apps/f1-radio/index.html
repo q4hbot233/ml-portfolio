@@ -54,6 +54,20 @@ p.note b{color:var(--text);font-weight:600}
 .card .cap b{color:var(--text);font-weight:600}
 svg{width:100%;display:block;overflow:visible}
 
+/* worked example of the adjustment */
+.work{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.work .q{font-size:17px;line-height:1.45;margin:0 0 10px}
+.sum{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11.5px}
+.sum td{padding:4px 0;border-bottom:1px solid var(--edge);font-variant-numeric:tabular-nums}
+.sum td:first-child{font-family:var(--sans);font-size:12.5px;color:var(--dim)}
+.sum td:not(:first-child){text-align:right;white-space:nowrap}
+.sum tr.tot td{border-top:1px solid var(--edge-2);border-bottom:0;padding-top:7px;
+  color:var(--text);font-weight:700}
+.sum tr.res td{color:var(--accent);font-weight:700;border-bottom:0}
+.sum .hd td{color:var(--faint);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  border-bottom:1px solid var(--edge-2);padding-bottom:6px}
+@media (max-width:860px){.work{grid-template-columns:1fr}}
+
 /* example clip */
 .clip{background:var(--panel);border:1px solid var(--edge);border-radius:11px;padding:20px 22px 18px}
 .clip .ctop{display:flex;align-items:center;gap:12px;margin-bottom:14px}
@@ -81,6 +95,17 @@ svg{width:100%;display:block;overflow:visible}
   color:var(--dim);line-height:1.5}
 .disagree b{color:var(--text)}
 .counter{font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.09em}
+
+/* where the data comes from */
+.src{display:grid;grid-template-columns:130px 1fr;gap:10px 18px;font-size:13.5px;
+  align-items:baseline}
+.src dt{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--faint)}
+.src dd{margin:0;color:var(--dim);line-height:1.55}
+.src dd b{color:var(--text);font-weight:600}
+.src code{font-family:var(--mono);font-size:11.5px;color:var(--warm);word-break:break-all;
+  background:var(--panel-2);padding:2px 5px;border-radius:3px;display:inline-block;
+  line-height:1.5}
 
 /* validity */
 .vrow{display:grid;grid-template-columns:1fr;gap:10px}
@@ -151,6 +176,42 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
     <p class="facts" id="facts"></p>
     <p class="warn" id="warn"></p>
   </header>
+
+  <section>
+    <div class="shead"><span class="n">00</span><h2>Where every number here comes from</h2>
+      <span class="sub">three sources, all public</span></div>
+    <div class="card">
+      <dl class="src">
+        <dt>Radio index</dt>
+        <dd>Formula 1's own live-timing host publishes a manifest per session listing every
+          clip it broadcast. Fetched directly:<br>
+          <code>https://livetiming.formula1.com/static/2024/2024-05-26_Monaco_Grand_Prix/2024-05-26_Race/TeamRadio.json</code>
+          <br>The session path in the middle comes from
+          <a href="https://github.com/theOehrly/Fast-F1">FastF1</a>, which also supplies the
+          lap chart, grid slots, finishing positions and the race-control messages used to
+          anchor each clip to a lap.</dd>
+
+        <dt>Audio</dt>
+        <dd>Each manifest entry names an mp3 under the same path:<br>
+          <code>…/2024-05-26_Race/TeamRadio/CHALEC01_16_20240526_150000.mp3</code>
+          <br>Downloaded into a git-ignored cache and transcribed locally with
+          <a href="https://github.com/SYSTRAN/faster-whisper">faster-whisper</a>
+          <code>base.en</code>. <b>The audio is never redistributed and neither is the full
+          transcript set</b> — the 64 clips in section 02 are quoted, capped at 180 characters.</dd>
+
+        <dt>Ratings</dt>
+        <dd>Keith Collantine, <a href="https://www.racefans.net/2025/01/02/ranked-all-30-formula-1-races-of-last-season-rated-by-our-readers/">"Ranked:
+          All 30 Formula 1 races of last season rated by our readers"</a>, RaceFans,
+          2 January 2025. Transcribed by hand from the published article into one CSV with a
+          provenance header — the site is not scraped. The six sprint races it also rates are
+          dropped: a 100 km sprint is a different event.</dd>
+
+        <dt>Not used</dt>
+        <dd>No paid API, no scraping, nothing behind a login. Every figure on this page is
+          recomputable from those three inputs and the code.</dd>
+      </dl>
+    </div>
+  </section>
 
   <section>
     <div class="shead"><span class="n">01</span><h2>What you are actually listening to</h2>
@@ -225,6 +286,18 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
       <div class="stat" id="stat"></div>
     </div>
     <p class="note" id="residnote"></p>
+
+    <div class="card" style="margin-top:16px">
+      <h4>"Adjusted" on one real message</h4>
+      <div class="work">
+        <div>
+          <p class="q" id="wkquote"></p>
+          <p class="ctx" id="wkctx" style="margin-bottom:0"></p>
+          <p class="cap" id="wkgloss"></p>
+        </div>
+        <table class="sum" id="wktable"></table>
+      </div>
+    </div>
   </section>
 
   <section>
@@ -349,7 +422,7 @@ function boot(){
     `this that is actually powered.`;
   document.getElementById("nsub").textContent = `n = ${D.per_race.length} races`;
   drawVolume(); setupExamples(); drawValidity(); drawValidityComparison(); buildPicker(); drawScatter();
-  drawCurves(); drawGaps(); drawTeams(); drawScorerTeams();
+  drawCurves(); drawWorkedExample(); drawGaps(); drawTeams(); drawScorerTeams();
   document.getElementById("residnote").innerHTML =
     `<b>Adjusted sentiment</b> regresses every message on five things about the speaker's own ` +
     `afternoon — ${D.residual.variables.map(v => SITUATION_LABEL[v] || v).join("; ")} — and ` +
@@ -637,6 +710,35 @@ function drawCurves(){
      <b>${nc.length ? (nc[nc.length-1].rho >= 0 ? "+" : "") + nc[nc.length-1].rho.toFixed(2) : "—"}</b>.`;
 }
 
+function drawWorkedExample(){
+  const ex = (D.residual || {}).example;
+  if (!ex){ document.getElementById("wkquote").closest(".card").hidden = true; return; }
+  const sign = v => `${v >= 0 ? "+" : "\u2212"}${Math.abs(v).toFixed(3)}`;
+  document.getElementById("wkquote").innerHTML = `<q>${ex.text.replace(/</g, "&lt;")}</q>`;
+  document.getElementById("wkctx").innerHTML =
+    `<span><b>${ex.driver}</b> · ${ex.team}</span><span>${short(ex.event)}</span>` +
+    `<span>lap <b>${ex.lap}</b></span><span>running <b>P${ex.position}</b></span>`;
+  const rows = ex.terms.map(t => `<tr><td>${SITUATION_LABEL[t.variable] || t.variable}</td>
+      <td>${t.value.toFixed(2)}</td><td>× ${sign(t.coefficient)}</td>
+      <td>${sign(t.contribution)}</td></tr>`).join("");
+  document.getElementById("wktable").innerHTML =
+    `<tr class="hd"><td></td><td>value</td><td>coef</td><td>adds</td></tr>${rows}
+     <tr><td>baseline</td><td></td><td></td><td>${sign(ex.intercept)}</td></tr>
+     <tr class="tot"><td>what the situation alone predicts</td><td></td><td></td>
+       <td>${sign(ex.predicted)}</td></tr>
+     <tr class="tot"><td>what the message actually scored</td><td></td><td></td>
+       <td>${sign(ex.actual)}</td></tr>
+     <tr class="res"><td>adjusted = actual &minus; predicted</td><td></td><td></td>
+       <td>${sign(ex.residual)}</td></tr>`;
+  document.getElementById("wkgloss").innerHTML =
+    `Knowing only that this driver was running P${ex.position} on lap ${ex.lap}, up
+     ${ex.terms[0].value} on their grid slot, with the race nearly over, the fit expects
+     <b>${sign(ex.predicted)}</b>. The message scored <b>${sign(ex.actual)}</b>. The
+     <b>${sign(ex.residual)}</b> left over is what "adjusted" means: the part of the mood the
+     speaker's own afternoon does not account for. Every clip gets this treatment and section
+     07 averages the leftovers per team.`;
+}
+
 function drawGaps(){
   const g = D.disagreements;
   // written from the payload, not typed into the page: this caption named the wrong scorer
@@ -702,60 +804,97 @@ function drawScorerTeams(){
 function drawTeams(){
   const s = document.getElementById("teamsvg"); s.innerHTML = "";
   let t = [...D.teams].sort((a,b) => b.mean - a.mean);
-  const W = 900, rowH = 34, L = 168, R = 92, T = 26;
-  const H = T + t.length * rowH + 30;
-  s.setAttribute("viewBox", `0 0 ${W} ${H}`);
-  // The residuals come out of an OLS fit with an intercept, so they are centred on zero
-  // while the raw means are centred on about +0.10. Drawn on one axis as they stand, every
-  // adjusted marker sits left of its raw one by that offset — an artefact of the two
-  // centrings, which reads as "the adjustment made everyone gloomier". Shifting the adjusted
-  // series onto the raw centre removes the artefact and leaves the only thing that carries
-  // meaning here: how far a team MOVES between the two.
+  // The residuals come out of an OLS fit with an intercept, so they are centred on zero while
+  // the raw means are centred on about +0.10. On one axis as they stand, every adjusted marker
+  // sits left of its raw one by that offset — an artefact that reads as "the adjustment made
+  // everyone gloomier". Shifted onto the raw centre, the only thing left to read is how far a
+  // team MOVES, which is the quantity that means something.
   const rawMean = t.reduce((a, r) => a + r.mean, 0) / t.length;
   const residMean = t.reduce((a, r) => a + r.resid_mean, 0) / t.length;
   const shift = rawMean - residMean;
   t = t.map(r => ({...r, resid_mean: r.resid_mean + shift,
                          resid_lo: r.resid_lo + shift, resid_hi: r.resid_hi + shift}));
+
+  const W = 900, L = 190, R = 96, T = 52, rowH = 34, AX = 34;
+  const H = T + t.length * rowH + AX + 10;
+  s.setAttribute("viewBox", `0 0 ${W} ${H}`);
   const all = t.flatMap(r => [r.lo, r.hi, r.resid_lo, r.resid_hi]);
-  const lo = Math.min(...all) - .02, hi = Math.max(...all) + .02;
+  const lo = Math.min(...all) - .015, hi = Math.max(...all) + .015;
   const X = v => L + (v - lo) / (hi - lo) * (W - L - R);
-  const mean = t.reduce((a, r) => a + r.mean, 0) / t.length;
-  s.appendChild(el("line", {x1:X(mean), y1:T-8, x2:X(mean), y2:T + t.length*rowH,
+  const yOf = i => T + i * rowH + rowH / 2;
+
+  /* ---- column headers ---- */
+  const head = (x, txt, anchor) => s.appendChild(el("text", {x, y:T-26, fill:"#626A78",
+    "font-family":"var(--mono)", "font-size":"9", "letter-spacing":".13em",
+    "text-anchor":anchor||"start"}, txt));
+  head(0, "TEAM"); head(L-14, "CLIPS", "end"); head(W-R+12, "RAW MEAN");
+
+  /* ---- legend ---- */
+  s.appendChild(el("circle", {cx:L+4, cy:T-30, r:4, fill:"#C9822F"}));
+  s.appendChild(el("text", {x:L+13, y:T-26, fill:"#99A0AC", "font-family":"var(--mono)",
+    "font-size":"9.5"}, "raw"));
+  s.appendChild(el("circle", {cx:L+58, cy:T-30, r:4, fill:"var(--panel)", stroke:"#5B8FA6",
+    "stroke-width":2}));
+  s.appendChild(el("text", {x:L+67, y:T-26, fill:"#99A0AC", "font-family":"var(--mono)",
+    "font-size":"9.5"}, "adjusted — the speaker's own race taken out"));
+
+  /* ---- x axis ---- */
+  const yAx = T + t.length * rowH + 8;
+  s.appendChild(el("line", {x1:L, y1:yAx, x2:W-R, y2:yAx, stroke:"#2B313B"}));
+  const step = (hi - lo) > 0.3 ? 0.1 : 0.05;
+  for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) {
+    const vv = Math.abs(v) < 1e-9 ? 0 : v;
+    s.appendChild(el("line", {x1:X(vv), y1:yAx, x2:X(vv), y2:yAx+5, stroke:"#2B313B"}));
+    s.appendChild(el("text", {x:X(vv), y:yAx+17, fill:"#626A78", "font-family":"var(--mono)",
+      "font-size":"9.5", "text-anchor":"middle"},
+      (vv >= 0 ? "+" : "\u2212") + Math.abs(vv).toFixed(2)));
+  }
+  s.appendChild(el("text", {x:(L + W - R)/2, y:yAx+31, fill:"#4A5262",
+    "font-family":"var(--mono)", "font-size":"9.5", "text-anchor":"middle"},
+    "mean sentiment per clip  \u2212 1 = worst  \u2026  + 1 = best"));
+
+  /* ---- field mean ---- */
+  s.appendChild(el("line", {x1:X(rawMean), y1:T-10, x2:X(rawMean), y2:yAx,
     stroke:"#2B313B", "stroke-dasharray":"3 3"}));
-  s.appendChild(el("text", {x:X(mean), y:T-13, fill:"#626A78", "font-family":"var(--mono)",
-    "font-size":"9.5", "text-anchor":"middle"}, "field mean"));
-  s.appendChild(el("text", {x:L, y:T-13, fill:"#626A78", "font-family":"var(--mono)",
-    "font-size":"9.5"}, "● raw    ○ with the speaker's own afternoon taken out"));
+  s.appendChild(el("text", {x:X(rawMean), y:T-13, fill:"#626A78", "font-family":"var(--mono)",
+    "font-size":"9.5", "text-anchor":"middle"}, `field mean ${rawMean.toFixed(2)}`));
+
+  /* ---- rows ---- */
   t.forEach((r, i) => {
-    const y = T + i * rowH + 12;
+    const y = yOf(i);
+    if (i % 2 === 0) s.appendChild(el("rect", {x:0, y:y-rowH/2, width:W, height:rowH,
+      fill:"#FFFFFF", opacity:".018"}));
     s.appendChild(el("text", {x:0, y:y+4, fill:"#E8ECF2", "font-family":"var(--sans)",
       "font-size":"12.5"}, r.team));
-    s.appendChild(el("text", {x:L-12, y:y+4, fill:"#4A5262", "font-family":"var(--mono)",
-      "font-size":"9.5", "text-anchor":"end"}, r.n_messages));
-    s.appendChild(el("line", {x1:X(r.lo), y1:y-5, x2:X(r.hi), y2:y-5, stroke:"#C9822F",
+    s.appendChild(el("text", {x:L-14, y:y+4, fill:"#4A5262", "font-family":"var(--mono)",
+      "font-size":"10.5", "text-anchor":"end"}, r.n_messages));
+    s.appendChild(el("line", {x1:X(r.lo), y1:y-6, x2:X(r.hi), y2:y-6, stroke:"#C9822F",
       "stroke-width":2.2, opacity:".85"}));
-    s.appendChild(el("circle", {cx:X(r.mean), cy:y-5, r:4.2, fill:"#C9822F"}));
-    s.appendChild(el("line", {x1:X(r.resid_lo), y1:y+8, x2:X(r.resid_hi), y2:y+8,
+    s.appendChild(el("circle", {cx:X(r.mean), cy:y-6, r:4.2, fill:"#C9822F"}));
+    s.appendChild(el("line", {x1:X(r.resid_lo), y1:y+7, x2:X(r.resid_hi), y2:y+7,
       stroke:"#5B8FA6", "stroke-width":2.2, opacity:".8"}));
-    s.appendChild(el("circle", {cx:X(r.resid_mean), cy:y+8, r:4.2, fill:"#08090B",
+    s.appendChild(el("circle", {cx:X(r.resid_mean), cy:y+7, r:4.2, fill:"var(--panel)",
       stroke:"#5B8FA6", "stroke-width":2}));
-    s.appendChild(el("text", {x:W-R+10, y:y+4, fill:"#99A0AC", "font-family":"var(--mono)",
+    s.appendChild(el("text", {x:W-R+12, y:y+4, fill:"#99A0AC", "font-family":"var(--mono)",
       "font-size":"10.5"}, `${r.mean >= 0 ? "+" : ""}${r.mean.toFixed(3)}`));
   });
+
+  const mean = rawMean;
   const sepRaw = t.filter(r => r.lo > mean || r.hi < mean).length;
-  const rmean = t.reduce((a, r) => a + r.resid_mean, 0) / t.length;
-  const sepAdj = t.filter(r => r.resid_lo > rmean || r.resid_hi < rmean).length;
-  const moved = t.filter(r => Math.abs(r.mean - r.resid_mean) > 0.05).length;
+  const sepAdj = t.filter(r => r.resid_lo > mean || r.resid_hi < mean).length;
+  const moved = t.filter(r => Math.abs(r.mean - r.resid_mean) > 0.03).length;
   document.getElementById("teamcap").innerHTML =
-    `<b>${sepRaw} of ${t.length}</b> teams sit clear of the field mean on raw sentiment;
-     <b>${sepAdj} of ${t.length}</b> still do once their own results are accounted for.
-     Intervals resample whole races, so one loud weekend cannot carry a team.
-     <br><br>The adjusted series is centred on the raw one so the two rows can be read against
-     the same line — residuals from a fit with an intercept sit around zero, and drawn as they
-     come out every adjusted marker would fall left of its raw one by the same amount, which
-     is an artefact and not a result. <b>The horizontal distance between a team's two markers
-     is the readable quantity</b>: it is how much of that team's position was its own results
-     rather than how it talks. ${moved} of ${t.length} move by more than 0.05.`;
+    `Each team gets two rows: <b style="color:#C9822F">raw</b> above,
+     <b style="color:#5B8FA6">adjusted</b> below, with the 95% interval as the bar. The number
+     on the right is the raw mean, the same value as the filled dot. <b>${sepRaw} of ${t.length}</b>
+     teams sit clear of the field mean on raw sentiment and <b>${sepAdj} of ${t.length}</b> on
+     adjusted. Intervals resample whole races, so one loud weekend cannot carry a team.
+     <br><br><b>The horizontal gap between a team's two markers is the readable quantity</b> —
+     how much of its position was its own results rather than how it talks; ${moved} of
+     ${t.length} shift by more than 0.03. The adjusted row is centred on the raw one so both
+     can be read against the same line: residuals from a fit with an intercept sit around
+     zero, and drawn untouched every adjusted marker would fall left by the same amount, which
+     is an artefact and not a result.`;
 }
 </script>
 </body>
