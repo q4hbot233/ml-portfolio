@@ -11,8 +11,6 @@ Streamlit on Pyodide/WebAssembly. Nothing is uploaded and no server is involved.
 | [The variable that was left out](apps/hmda-denial/) | Mortgage denial where the label is a human decision and the deciding variable is absent by regulation |
 | [Who pays for the model's mistakes?](apps/credit-default/) | Credit default prediction taken past the ROC curve, to the decision and who absorbs its errors |
 | [Is it the car or the driver?](apps/f1-telemetry/) | Diagnosing a suspected car fault from qualifying telemetry, against two reference frames |
-| [Who does the recommender fail?](apps/movielens/) | Why RMSE hides almost everything that matters about a recommender |
-| [A pipeline you can actually trust](apps/cloud-classification/) | An easy classification task, built properly — the engineering is the point |
 
 ## What this repository contains
 
