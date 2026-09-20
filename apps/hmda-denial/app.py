@@ -1,9 +1,10 @@
 """The label is a decision, and the variable that explains it was left out -- public demo.
 
-The page exists to make two bounds tangible. The first is a slider: the standard analysis
-drops every application that was withdrawn or closed incomplete, and the slider asks what
-those applications would have become. The second is an E-value: how strong the variable
-HMDA does not collect would have to be.
+A standard supervised project on HMDA: what a row is, what was engineered, two families
+scored against a floor, and a rule you can move a threshold on. The finding it is built
+around is not a score -- it is that the lenders themselves name the variable the regulation
+does not collect, on a third of the denials, and more often for the group with the larger
+gap.
 
 Nothing here is causal, nothing is a legal finding, and no lender is named.
 """
@@ -48,31 +49,6 @@ def load_scored() -> pd.DataFrame:
 # THE BOUND THAT THE CONVENTION HIDES
 # =====================================================================================
 
-def denial_rate_under_assumption(counts: dict, share_denied: float) -> float:
-    """Denial rate if ``share_denied`` of the never-decided applications had been denied.
-
-    ``share_denied = 0`` and ``= 1`` are the Manski worst cases. Everything between is an
-    assumption, which is the point: the standard analysis makes one implicitly by dropping
-    those applications, and never says which.
-    """
-    denied = counts.get("denied", 0)
-    originated = counts.get("originated", 0)
-    undecided = counts.get("withdrawn", 0) + counts.get("incomplete", 0)
-    total = denied + originated + undecided
-    if total == 0:
-        return float("nan")
-    return (denied + share_denied * undecided) / total
-
-
-def e_value(rr: float) -> float:
-    """VanderWeele & Ding (2017). The minimum strength an unmeasured confounder would need
-    with BOTH the grouping and the outcome to explain an association away entirely."""
-    rr = float(rr)
-    if rr < 1:
-        rr = 1.0 / rr
-    if rr <= 1:
-        return 1.0
-    return rr + np.sqrt(rr * (rr - 1.0))
 
 
 def group_rates(df: pd.DataFrame, threshold: float, codes: dict) -> pd.DataFrame:
@@ -157,78 +133,8 @@ def figure_models(models: list, denial_rate: float):
     return fig
 
 
-def figure_sweep(counts_by_race: dict, share: float, groups: list):
-    fig, ax = plt.subplots(figsize=(7.6, 3.4))
-    xs = np.linspace(0, 1, 101)
-    for g, colour in zip(groups, (BLUE, RED, SAND, GREY)):
-        ys = [denial_rate_under_assumption(counts_by_race[g], x) for x in xs]
-        ax.plot(xs, ys, lw=2.0, color=colour, label=g)
-        ax.plot([share], [denial_rate_under_assumption(counts_by_race[g], share)],
-                "o", ms=6, color=colour)
-    ax.axvline(share, color=INK, lw=1.2)
-    ax.set(xlabel="share of never-decided applications assumed to have been denials",
-           ylabel="denial rate", xlim=(0, 1), ylim=(0, None))
-    ax.legend(fontsize=8.5, labelcolor=MUTED, loc="upper left")
-    ax.set_title("Every point on this chart is an assumption. The convention picks one silently.",
-                 loc="left", color=INK, fontsize=10)
-    fig.tight_layout()
-    return fig
 
 
-def figure_gap_sweep(counts_by_race: dict, share: float, focal: str, reference: str):
-    fig, ax = plt.subplots(figsize=(7.6, 2.9))
-    xs = np.linspace(0, 1, 101)
-    ys = [denial_rate_under_assumption(counts_by_race[focal], x)
-          - denial_rate_under_assumption(counts_by_race[reference], x) for x in xs]
-    ax.plot(xs, ys, lw=2.2, color=SAND)
-    here = (denial_rate_under_assumption(counts_by_race[focal], share)
-            - denial_rate_under_assumption(counts_by_race[reference], share))
-    ax.plot([share], [here], "o", ms=7, color=INK)
-    ax.axhline(0, color=RED, lw=1.2, ls=(0, (4, 3)))
-    ax.annotate(f"{here:+.3f}", xy=(share, here), xytext=(8, 6),
-                textcoords="offset points", fontsize=10, color=INK, fontweight="semibold")
-    ax.set(xlabel="share of never-decided applications assumed to have been denials",
-           ylabel=f"{focal} minus {reference}", xlim=(0, 1))
-    ax.set_title("The gap, as a function of an assumption nobody states", loc="left",
-                 color=INK, fontsize=10)
-    fig.tight_layout()
-    return fig
-
-
-def figure_strata(rows: list):
-    s = pd.DataFrame(rows)
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.4, 3.3))
-    x = s["mean_predicted"]
-    ax1.plot(x, s["rate_focal"], marker="o", ms=4, lw=1.8, color=RED, label="black")
-    ax1.plot(x, s["rate_reference"], marker="o", ms=4, lw=1.8, color=BLUE, label="white")
-    ax1.plot([0, 1], [0, 1], ls=(0, (3, 3)), lw=1, color=GRID)
-    ax1.set(xlabel="mean predicted denial probability", ylabel="observed denial rate",
-            xlim=(0, 1), ylim=(0, 1))
-    ax1.legend(fontsize=8.5, labelcolor=MUTED)
-    ax1.set_title("Both groups, against what the policy expected", loc="left",
-                  color=INK, fontsize=10)
-    ax2.bar(range(len(s)), s["difference"], color=SAND)
-    ax2.axhline(0, color=GRID, lw=1)
-    ax2.set_xticks(range(len(s)), [f"{v:.2f}" for v in x], fontsize=7.5, rotation=45)
-    ax2.set(xlabel="stratum, by predicted risk", ylabel="black minus white")
-    ax2.set_title("The residual vanishes at both ends", loc="left", color=INK, fontsize=10)
-    fig.tight_layout()
-    return fig
-
-
-def figure_evalue(raw_rr: float, res_rr: float):
-    fig, ax = plt.subplots(figsize=(7.2, 2.7))
-    vals = [e_value(raw_rr), e_value(res_rr)]
-    ax.barh([0, 1], vals, color=[GREY, BLUE], height=0.5)
-    for i, (v, rr) in enumerate(zip(vals, [raw_rr, res_rr])):
-        ax.text(v + 0.06, i, f"E-value {v:.2f}   (risk ratio {rr:.2f})",
-                va="center", fontsize=9.5, color=INK)
-    ax.axvline(1.0, color=RED, lw=1.2, ls=(0, (4, 3)))
-    ax.set_yticks([0, 1], ["raw gap", "after conditioning on\nwhat HMDA records"])
-    ax.set_xlim(0, max(vals) * 1.8)
-    ax.set(xlabel="strength an unmeasured variable would need with BOTH race and denial")
-    fig.tight_layout()
-    return fig
 
 
 # =====================================================================================
@@ -254,14 +160,14 @@ def main() -> None:
         f"**disclosure** file, so the label is a decision a human made, not an event that "
         f"happened — a model that predicts denial well has learned the lender's policy, "
         f"including whatever is wrong with it.\n\n"
-        f"Then two holes, neither fixable with a better model, both answerable with a bound."
+        f"Then the hole that no better model closes: the single variable the lenders cite "
+        f"most often for denying somebody is one Regulation C does not collect."
     )
     st.warning(
         "Nothing on this page is causal, nothing is a legal finding, and no lender is named "
         "or examined. It describes rates in one state in one year.",
         icon=":material/gavel:")
 
-    # ---------------------------------------------------------------- hole 1
     st.divider()
     st.subheader("1 · The data, and what a row of it is")
     eda = ref["eda"]
@@ -370,71 +276,7 @@ def main() -> None:
     )
 
     st.divider()
-    st.subheader("4 · The applications that never reached a decision")
-    drop = ref["dropped_by_the_convention"]
-    st.markdown(
-        f"An application can end in eight ways. The analysis everybody writes uses two: "
-        f"originated and denied. It drops **withdrawn** and **file closed for "
-        f"incompleteness** — {drop['withdrawn']:,} + {drop['incomplete']:,} = "
-        f"**{drop['share_of_decided_applications']:.1%} of everything that reached an "
-        f"outcome**.\n\n"
-        f"Those are not missing at random. A loan officer who tells an applicant informally "
-        f"that the file will not fly produces a *withdrawal*, not a denial. And the rate at "
-        f"which applications land there differs by group."
-    )
-    counts = ref["outcome_counts_by_race"]
-    groups = [g for g in ("white", "black", "asian", "not_provided") if g in counts]
-    shares = pd.DataFrame([{
-        "race": g,
-        "n": sum(counts[g].values()),
-        "originated": counts[g].get("originated", 0) / sum(counts[g].values()),
-        "denied": counts[g].get("denied", 0) / sum(counts[g].values()),
-        "never decided": (counts[g].get("withdrawn", 0) + counts[g].get("incomplete", 0))
-                         / sum(counts[g].values()),
-    } for g in groups]).set_index("race")
-    st.dataframe(shares.style.format({"n": "{:,.0f}", "originated": "{:.1%}",
-                                      "denied": "{:.1%}", "never decided": "{:.1%}"}),
-                 use_container_width=True)
-
-    st.markdown("##### So what would they have become?")
-    st.markdown(
-        "Nobody knows. The file contains nothing that would say. **But the answer can be "
-        "swept**, and that is more honest than dropping them and not mentioning it — which "
-        "is what dropping them does."
-    )
-    share = st.slider(
-        "Assume this share of never-decided applications would have been DENIED",
-        min_value=0.0, max_value=1.0, value=0.0, step=0.01, format="%.2f",
-        help="0 and 1 are the Manski worst cases: nothing is assumed beyond arithmetic. "
-             "Everything in between is an assumption you are making on purpose.")
-
-    st.pyplot(figure_sweep(counts, share, groups), use_container_width=True)
-    st.pyplot(figure_gap_sweep(counts, share, "black", "white"), use_container_width=True)
-
-    gap_here = (denial_rate_under_assumption(counts["black"], share)
-                - denial_rate_under_assumption(counts["white"], share))
-    observed = ref["manski"]["black_minus_white"]["observed_gap_among_decided"]
-    lo = ref["manski"]["black_minus_white"]["gap_lower"]
-    hi = ref["manski"]["black_minus_white"]["gap_upper"]
-    a, b, c = st.columns(3)
-    a.metric("Gap under your assumption", f"{gap_here:+.3f}")
-    b.metric("Gap the convention reports", f"{observed:+.3f}",
-             "computed among decided applications only", delta_color="off")
-    c.metric("Worst-case bounds", f"[{lo:+.2f}, {hi:+.2f}]",
-             "sign not determined", delta_color="off")
-    st.info(
-        f"**The bounds are deliberately extreme** — they assume every dropped application in "
-        f"one group would have gone one way and every one in the other the opposite way. "
-        f"Nobody believes that and the truth is nowhere near either end. What the width shows "
-        f"is that the convention is doing work nobody states: \"the denial gap is "
-        f"{observed:.3f}\" really means \"{observed:.3f} among applications that survived a "
-        f"filter I did not model, which the two groups pass at rates differing by 4.6 "
-        f"points.\"",
-        icon=":material/straighten:")
-
-    # ---------------------------------------------------------------- hole 2
-    st.divider()
-    st.subheader("5 · The variable the regulation does not collect")
+    st.subheader("4 · The variable the regulation does not collect")
     sr = ref["stated_reasons"]
     st.markdown(
         f"HMDA records the lender's own stated primary reason for each denial. It is the "
@@ -461,46 +303,7 @@ def main() -> None:
     )
 
     st.divider()
-    st.subheader("6 · Where the residual lives, and how big the hole is")
-    models = pd.DataFrame(ref["models"])
-    best = models.loc[models["average_precision"].idxmax()]
-    st.markdown(
-        f"A model of the *decision* reaches average precision **{best['average_precision']:.3f}** "
-        f"against a floor of 0.294. That is a statement about how legible the policy is, not "
-        f"about how good the model is — underwriting follows rules, and rules are "
-        f"predictable.\n\n"
-        f"Stratifying on its predicted denial probability compares applications the lenders' "
-        f"own revealed policy treats as alike."
-    )
-    st.pyplot(figure_strata(ref["valid_strata_rows"]), use_container_width=True)
-    vs = ref["valid_strata"]
-    st.markdown(
-        f"Conditioning on everything HMDA records removes about "
-        f"{1 - vs['share_of_raw_gap_remaining']:.0%} of the raw gap and leaves "
-        f"**{vs['stratified_difference']:.3f}**. And the residual is near zero in the lowest "
-        f"stratum and near zero in the highest, largest in the middle — in the top stratum "
-        f"both groups are denied about 99.5% of the time and there is no room for a gap. "
-        f"**The disparity lives where the decision was genuinely marginal**, which is the "
-        f"only place a decision can express a preference."
-    )
-
-    ev = ref["e_values"]
-    st.pyplot(figure_evalue(ev["raw_risk_ratio"], ev["residual_risk_ratio"]),
-              use_container_width=True)
-    st.info(
-        f"**An unmeasured variable would need a risk ratio of about "
-        f"{ev['residual']:.1f} with both race and denial**, on top of every recorded "
-        f"underwriting input, to account for the residual entirely.\n\n"
-        f"Is credit score plausibly that strong? Almost certainly yes, and I am not going to "
-        f"pretend otherwise to make the finding louder. So the honest conclusion of the "
-        f"most-used fairness dataset in US lending is **this data cannot settle it** — and "
-        f"the useful contribution is saying exactly how large the hole is, and noting that "
-        f"the lenders themselves named the variable in it.",
-        icon=":material/flag:")
-
-    # ---------------------------------------------------------------- live
-    st.divider()
-    st.subheader("7 · The rule, at a threshold you choose")
+    st.subheader("5 · The rule, at a threshold you choose")
     st.markdown(
         "Everything above is about the lenders' decisions. This is about a rule built from "
         "them: set a cut on the model's score and watch which groups it selects. Computed "
@@ -551,9 +354,6 @@ assert precision the regulation forbade.
 year, and every number here would move. `race` is a derived HMDA field built from
 self-reported categories with a large *not provided* group — and *not provided* is itself an
 outcome of the application process rather than missing data.
-
-**Method sources.** Worst-case bounds under unknown selection: Manski (1990). E-value:
-VanderWeele & Ding (2017), *Annals of Internal Medicine* 167(4).
 
 *{ref['_derived_from']}*
 """)
