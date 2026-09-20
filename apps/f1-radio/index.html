@@ -246,9 +246,7 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
       <span class="sub">both sides as z-scores</span></div>
     <div class="card">
       <table id="gaps"></table>
-      <p class="cap">A rating out of ten and a lexicon score between &minus;1 and 1 cannot be
-        subtracted as they stand, so both are standardised across the 24 races first.
-        Positive means the fans enjoyed it more than the radio sounded.</p>
+      <p class="cap" id="gapcap"></p>
     </div>
   </section>
 
@@ -634,6 +632,15 @@ function drawCurves(){
 
 function drawGaps(){
   const g = D.disagreements;
+  // written from the payload, not typed into the page: this caption named the wrong scorer
+  // for one deploy after the primary was swapped, because it was prose and prose does not
+  // get re-run when the numbers do
+  const model = (D.scorer || {}).model || "the sentiment scorer";
+  document.getElementById("gapcap").innerHTML =
+    `A rating out of ten and a score between &minus;1 and 1 cannot be subtracted as they
+     stand, so both are standardised across the ${D.per_race.length} races first. The
+     sentiment column is <b>${model}</b> — the scorer this page uses throughout. Positive
+     means the fans enjoyed it more than the radio sounded.`;
   const show = g.slice(0, 4).concat(g.slice(-4));
   document.getElementById("gaps").innerHTML =
     `<thead><tr><th>Grand Prix</th><th>rating</th><th>sentiment</th><th>z rating</th>
