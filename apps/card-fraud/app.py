@@ -230,6 +230,75 @@ def figure_treatments(treatments: list, budget: int):
     return fig
 
 
+def figure_overfit(diag: dict):
+    """Two things that are true about the untreated tree, and no third thing pretending to
+    tie them together.
+
+    An earlier version of this page explained the untreated tree's poor validation score
+    with a mechanism — that at 0.19% prevalence the splits isolating fraud cannot form. The
+    left panel is what killed that: the score is at its highest after five trees, so the
+    splits form and then 395 more trees undo them. The right panel is why no replacement
+    mechanism is offered either. Score is not monotone in the one setting being swept, so
+    "too much capacity" does not survive contact with the evidence any better.
+    """
+    curves, frag = diag["boosting_curve"], diag["fragility"]
+    shipped = diag["shipped_min_child_samples"]
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.6, 3.6))
+
+    for tag, colour, label in (("none", RED, "untreated"),
+                               ("class_weight", BLUE, "class_weight")):
+        c = curves[tag]
+        k = [r["trees"] for r in c]
+        ax1.plot(k, [r["train"] for r in c], color=colour, lw=1.1, ls=":", alpha=0.75)
+        ax1.plot(k, [r["validation"] for r in c], color=colour, lw=2.0, marker="o",
+                 ms=3.5, label=label)
+    peak = max(curves["none"], key=lambda r: r["validation"])
+    end = curves["none"][-1]
+    # The headroom above 1.0 is deliberate: it is the only place on these axes where a
+    # label does not land on one of the four lines.
+    ax1.annotate(f"peak {peak['validation']:.2f}\nat {peak['trees']} trees",
+                 xy=(peak["trees"], peak["validation"]), xytext=(peak["trees"] + 1, 1.12),
+                 fontsize=8.5, color=RED, ha="left", va="top",
+                 arrowprops=dict(arrowstyle="->", color=RED, lw=0.9,
+                                 connectionstyle="arc3,rad=0.15"))
+    ax1.annotate(f"{end['validation']:.2f} by {end['trees']}",
+                 xy=(end["trees"], end["validation"]),
+                 xytext=(end["trees"] * 0.22, end["validation"] - 0.20), fontsize=8.5,
+                 color=RED, arrowprops=dict(arrowstyle="->", color=RED, lw=0.9))
+    ax1.set_xscale("log")
+    ax1.set_xticks([r["trees"] for r in curves["none"]],
+                   [str(r["trees"]) for r in curves["none"]], fontsize=8)
+    ax1.set_xlabel("boosting rounds (log scale)", fontsize=9, color=MUTED)
+    ax1.set_ylabel("average precision", fontsize=9, color=MUTED)
+    ax1.set_ylim(0, 1.42)
+    ax1.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
+    ax1.set_title("it is past its peak · solid validation, dotted training",
+                  loc="left", fontsize=9.5, color=INK, pad=8)
+    ax1.legend(fontsize=8.5, labelcolor=MUTED, loc="upper right", framealpha=0.95)
+
+    x = np.arange(len(frag))
+    vals = [r["validation"] for r in frag]
+    err = np.array([[r["validation"] - r["ci_lo"] for r in frag],
+                    [r["ci_hi"] - r["validation"] for r in frag]])
+    cols = [RED if r["min_child_samples"] == shipped else GREY for r in frag]
+    ax2.bar(x, vals, 0.55, color=cols)
+    ax2.errorbar(x, vals, yerr=err, fmt="none", ecolor=INK, elinewidth=1.1, capsize=3.5)
+    for xi, r in zip(x, frag):
+        ax2.text(xi, r["ci_hi"] + 0.035, f"{r['validation']:.2f}", ha="center",
+                 fontsize=8.5, color=RED if r["min_child_samples"] == shipped else MUTED)
+    ax2.set_xticks(x, [f"{r['min_child_samples']}" + ("\nshipped" if
+                       r["min_child_samples"] == shipped else "") for r in frag],
+                   fontsize=8.5)
+    ax2.set_xlabel("min_child_samples — one default, nothing else changed",
+                   fontsize=9, color=MUTED)
+    ax2.set_ylim(0, 1.42)
+    ax2.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
+    ax2.set_title("and the shipped value sits in a hole", loc="left", fontsize=9.5,
+                  color=INK, pad=8)
+    fig.tight_layout()
+    return fig
+
+
 # =====================================================================================
 # PAGE
 # =====================================================================================
@@ -406,8 +475,11 @@ def main() -> None:
                 f"behave in the later one. The value that works was found by scoring against "
                 f"the split about to be reported on — which is tuning on your own held-out "
                 f"data, and not a procedure anyone should ship.\n\n"
-                f"That matters for section 4: rebalancing takes this tree to 0.85 **and a "
-                f"disciplined hyperparameter search does not.**",
+                f"Section 4 takes this further and it does not end where this paragraph "
+                f"implies: sweeping the same setting shows {cvv['lgbm']['chronological_cv_params']['min_child_samples']} "
+                f"is not merely beatable but the *worst* of the values tried, with higher "
+                f"and lower both scoring better. Rebalancing does take this tree to 0.85. "
+                f"So does leaving the tree alone and moving one default.",
                 icon=":material/warning:")
 
     st.caption(
@@ -463,27 +535,115 @@ def main() -> None:
     )
 
     hh = ref["best_tree_minus_untouched_logistic_queue"]
+    diag = ref.get("tree_diagnosis")
+
+    if diag:
+        v = diag["verdict"]
+        st.markdown("#### Why the untreated tree scores what it scores")
+        st.markdown(
+            f"This page used to answer that with a mechanism: LightGBM needs a minimum "
+            f"number of rows in a leaf, so at 0.19% prevalence the splits that would "
+            f"isolate fraud cannot form. It is tidy, it is the story usually told about "
+            f"trees on rare classes, and **on this dataset it is false.** The untreated "
+            f"tree scores **{v['untreated_train']:.3f}** on the rows it was fitted to; a "
+            f"model that cannot form those splits cannot do that. It is also false in "
+            f"detail: take every leaf in the first {diag['purity_trees']} trees holding a "
+            f"training fraud and ask what share of its rows are frauds, and the untreated "
+            f"tree comes back at **{diag['leaf_fraud_purity']['none']:.3f}** against "
+            f"**{diag['leaf_fraud_purity']['class_weight']:.3f}** for the weighted one. Its "
+            f"fraud leaves are *tighter* than the ones the model that generalises builds, "
+            f"not coarser."
+        )
+        st.pyplot(figure_overfit(diag), use_container_width=True)
+
+        curve = diag["boosting_curve"]["none"]
+        st.markdown(
+            f"**Left — it is past its peak.** The untreated tree's validation score is at "
+            f"its highest after **{v['untreated_peak_trees']} trees**: "
+            f"**{v['untreated_peak_validation']:.3f}**, nearly twice what the finished model "
+            f"manages. Every round after that lowers training loss and lowers the validation "
+            f"score with it, to **{curve[-1]['validation']:.3f}** by {curve[-1]['trees']}. "
+            f"The blue line is the same model with `class_weight`: it climbs, flattens, and "
+            f"runs its training curve to a perfect fit without dragging validation down. So "
+            f"0.19% prevalence is not stopping the tree from learning fraud. Whatever it is "
+            f"doing, the fraud structure is there by tree {v['untreated_peak_trees']}."
+        )
+
+        frag = diag["fragility"]
+        best = v["best_neighbouring_min_child"]
+        st.warning(
+            f"**Right — and this is the part that should change what you take from the "
+            f"chart above.** Move `min_child_samples` off its default and nothing else, and "
+            f"the untreated tree scores "
+            + ", ".join(f"**{r['validation']:.2f}** at {r['min_child_samples']}"
+                        for r in frag) + f". The shipped value, "
+            f"{diag['shipped_min_child_samples']}, is the worst of the four — lower *and* "
+            f"higher both do better, so this is not a capacity story either. And it is not "
+            f"noise on {ref['noise_floor']['n_positives_valid']} validation frauds: the "
+            f"paired bootstrap for {best['min_child_samples']} against the shipped value is "
+            f"**{best['vs_shipped']:+.3f} [{best['vs_shipped_lo']:+.3f}, "
+            f"{best['vs_shipped_hi']:+.3f}]**.\n\n"
+            f"**I do not have a mechanism that predicts that ordering, and this page is no "
+            f"longer going to assert one.** What follows from it without any mechanism is "
+            f"enough: the untreated bar is not a fixed reference point. \"Rebalancing takes "
+            f"the tree from {v['untreated_validation']:.2f} to 0.85\" is partly a statement "
+            f"about rebalancing and partly a statement about where the untreated baseline "
+            f"happened to be standing.",
+            icon=":material/warning:")
+
+        gaps = pd.DataFrame(diag["treatments"])
+        gaps.columns = ["treatment", "train", "validation", "train − validation"]
+        st.dataframe(gaps.style.format({"train": "{:.3f}", "validation": "{:.3f}",
+                                        "train − validation": "{:+.3f}"}),
+                     use_container_width=True, hide_index=True)
+        st.markdown(
+            f"The one thing that *is* consistent across all six: read the last column, not "
+            f"the third. Every treatment that helps closes the gap between the two splits — "
+            f"{v['untreated_gap']:+.3f} untreated against {v['weighted_gap']:+.3f} weighted "
+            f"— and `undersample` is the one that goes *negative*, because discarding "
+            f"{int(under['rows_removed']):,} negatives leaves too little training data "
+            f"behind to overfit. Whatever these treatments are buying, they are not buying "
+            f"separability the tree did not have."
+        )
+        with st.expander("The capacity ladder, for completeness"):
+            lad = pd.DataFrame(diag["capacity_ladder"])
+            st.dataframe(lad.style.format({"train": "{:.3f}", "validation": "{:.3f}"}),
+                         use_container_width=True, hide_index=True)
+            st.caption(
+                "Untreated, no resampling. Shrinking the model does recover a good deal of "
+                "the score, which is why overfitting was my first answer — but the "
+                "min_child_samples sweep above is not monotone, so it cannot be the whole "
+                "answer, and a partial explanation stated as a complete one is the exact "
+                "failure this section is correcting.")
+        st.caption("scripts/why_the_tree_fails.py · training and validation only")
+
+    st.markdown("#### What that leaves of the comparison")
     c1, c2 = st.columns(2)
     if rtu:
         rtt = {(r["model"], r["treatment"]): r for r in rtu["treatments"]}
         tree_none = rtt[("lgbm", "none")]["average_precision"]
-        tree_best = max(v["average_precision"] for (m, t), v in rtt.items()
+        tree_best = max(x["average_precision"] for (m, t), x in rtt.items()
                         if m == "lgbm" and t != "none")
-        alt = (f" And the obvious alternative — just lower the constraint — **is not "
-               f"something a disciplined search finds**: section 3 shows both a shuffled and "
-               f"a chronological grid search landing on the same value and leaving the tree "
-               f"at {tree_none:.2f}. The setting that works was only locatable by scoring "
-               f"against the validation split itself. So rebalancing is not one of two "
-               f"equivalent routes round an untuned default — **it is the one a procedure "
-               f"you could actually ship arrives at.**")
+        cp = cvv["lgbm"]["chronological_cv_params"] if rt else {}
+        alt = (f" The search in section 3 does not rescue it either: the chronological grid "
+               f"swept `n_estimators`, `num_leaves` and `min_child_samples`, picked "
+               f"{cp['n_estimators']}×{cp['num_leaves']} at "
+               f"min_child_samples={cp['min_child_samples']}, and left the tree at "
+               f"{tree_none:.2f}. Cross-validation folds *inside* the training period, where "
+               f"the shipped configuration looks fine. So rebalancing really is what a "
+               f"shippable procedure arrives at here — **but read that as a fact about the "
+               f"procedure, not as evidence that resampling fixed something about the "
+               f"class balance.**" if rt else "")
     else:
         tree_none, tree_best, alt = 0.32, 0.85, ""
     c1.markdown(
-        f"**On the tuned tree, rebalancing still moves the ranking metric a long way.** "
-        f"Average precision {tree_none:.2f} → {tree_best:.2f}, on models that have now had a "
-        f"proper hyperparameter search. The usual explanation is mechanical: LightGBM needs a "
-        f"minimum number of rows in a leaf, and at 0.19% prevalence the splits that would "
-        f"isolate fraud cannot form." + alt
+        f"**On the tree the number moves a long way, and a default moves it just as far.** "
+        f"Average precision {tree_none:.2f} → {tree_best:.2f} from rebalancing, on tuned "
+        f"models; {v['untreated_validation']:.2f} → "
+        f"{v['best_neighbouring_min_child']['validation']:.2f} from one hyperparameter, on "
+        f"untouched ones." + alt if diag else
+        f"**On the tuned tree, rebalancing moves the ranking metric a long way.** "
+        f"Average precision {tree_none:.2f} → {tree_best:.2f}." + alt
     )
     c2.markdown(
         "**On the linear model it moves the ranking metric and leaves the queue alone.** "
@@ -496,9 +656,10 @@ def main() -> None:
         f"rebalanced tree minus the untouched logistic regression, on the queue: "
         f"**{hh['point']:+.3f} [{hh['ci_lo']:+.3f}, {hh['ci_hi']:+.3f}]**. Every piece of "
         f"rebalancing machinery applied to the tree gets back to where an untreated linear "
-        f"model was already standing. The most powerful intervention on this dataset was not "
-        f"a resampler — it was picking a model that can fit at this prevalence, and then "
-        f"choosing the split properly (section 6).",
+        f"model was already standing — a model that needed none of it, on the same rows at "
+        f"the same prevalence. The most powerful interventions on this dataset were "
+        f"choosing a family whose default configuration was not in a hole, and then "
+        f"choosing the split properly (section 6). Neither is a resampler.",
         icon=":material/flag:")
 
     with st.expander("What it costs: the scores stop being probabilities"):
@@ -510,10 +671,11 @@ def main() -> None:
             "Read `mean_predicted` against `actual_rate`. Every treatment changes the base "
             "rate the model is fitted on, so the score stops estimating P(fraud | "
             "transaction) and starts estimating it for a population that does not exist.\n\n"
-            "But note the last two rows: for the **barely-fitting tree**, rebalancing "
-            "*improves* calibration, because the untreated tree over-predicts to begin with. "
-            "So \"rebalancing wrecks calibration\" is true of one family here and false of "
-            "the other — the same lesson as everything else on this page."
+            "But note the last two rows: for the **untreated tree**, rebalancing *improves* "
+            "calibration, because that tree over-predicts to begin with, so a treatment that "
+            "shifts its scores happens to shift them towards the truth. So \"rebalancing "
+            "wrecks calibration\" is true of one family here and false of the other — the "
+            "same lesson as everything else on this page."
         )
 
     st.divider()

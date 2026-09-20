@@ -1531,6 +1531,313 @@
    "selected_precision_at_budget": 0.49
   }
  },
+ "tree_diagnosis": {
+  "_written_utc": "2026-09-20T19:41:58+00:00",
+  "_name": "tree_diagnosis",
+  "_smoke_mode": false,
+  "scored_on": "validation",
+  "treatments": [
+   {
+    "treatment": "none",
+    "train": 0.9146073110001819,
+    "validation": 0.316508098742476,
+    "gap": 0.5980992122577059
+   },
+   {
+    "treatment": "class_weight",
+    "train": 1.0,
+    "validation": 0.8529241481311811,
+    "gap": 0.14707585186881889
+   },
+   {
+    "treatment": "scale_pos_weight",
+    "train": 1.0,
+    "validation": 0.8529241481311811,
+    "gap": 0.14707585186881889
+   },
+   {
+    "treatment": "undersample",
+    "train": 0.7584814107711088,
+    "validation": 0.8244864858036978,
+    "gap": -0.06600507503258901
+   },
+   {
+    "treatment": "smote",
+    "train": 1.0,
+    "validation": 0.8582724110325041,
+    "gap": 0.14172758896749593
+   },
+   {
+    "treatment": "smote_tomek",
+    "train": 1.0,
+    "validation": 0.8582724110325041,
+    "gap": 0.14172758896749593
+   }
+  ],
+  "capacity_ladder": [
+   {
+    "n_estimators": 400,
+    "num_leaves": 31,
+    "train": 0.9146073110001819,
+    "validation": 0.316508098742476
+   },
+   {
+    "n_estimators": 100,
+    "num_leaves": 31,
+    "train": 0.8919550900384337,
+    "validation": 0.40672841031935475
+   },
+   {
+    "n_estimators": 400,
+    "num_leaves": 7,
+    "train": 0.8444983471176618,
+    "validation": 0.538383545424917
+   },
+   {
+    "n_estimators": 50,
+    "num_leaves": 7,
+    "train": 0.7581530855836757,
+    "validation": 0.6509331781116836
+   },
+   {
+    "n_estimators": 20,
+    "num_leaves": 4,
+    "train": 0.6272741949174077,
+    "validation": 0.48510429491760443
+   }
+  ],
+  "feature_sets": [
+   {
+    "features": "all",
+    "n": 31,
+    "lgbm_train": 0.9146073110001819,
+    "lgbm_validation": 0.316508098742476,
+    "logistic_train": 0.7699558129315562,
+    "logistic_validation": 0.7796895129691298
+   },
+   {
+    "features": "without_hour_of_cycle",
+    "n": 30,
+    "lgbm_train": 0.9080471742084271,
+    "lgbm_validation": 0.24653338451813045,
+    "logistic_train": 0.7719778034291772,
+    "logistic_validation": 0.7874159077216675
+   },
+   {
+    "features": "pca_components_only",
+    "n": 28,
+    "lgbm_train": 0.8265202311318575,
+    "lgbm_validation": 0.44583871503030287,
+    "logistic_train": 0.7726161078683977,
+    "logistic_validation": 0.7655514889718539
+   }
+  ],
+  "boosting_curve": {
+   "none": [
+    {
+     "trees": 5,
+     "train": 0.7196572094426327,
+     "validation": 0.5719105464600578
+    },
+    {
+     "trees": 10,
+     "train": 0.6673665864133402,
+     "validation": 0.5245200410044606
+    },
+    {
+     "trees": 20,
+     "train": 0.7689048936252247,
+     "validation": 0.505365405664342
+    },
+    {
+     "trees": 40,
+     "train": 0.8355312091669326,
+     "validation": 0.5159855649482111
+    },
+    {
+     "trees": 80,
+     "train": 0.8922422763769194,
+     "validation": 0.40425633886171974
+    },
+    {
+     "trees": 150,
+     "train": 0.9408004630972013,
+     "validation": 0.41079465071779625
+    },
+    {
+     "trees": 250,
+     "train": 0.9298416455698274,
+     "validation": 0.2904028688505493
+    },
+    {
+     "trees": 400,
+     "train": 0.9146073110001819,
+     "validation": 0.316508098742476
+    }
+   ],
+   "class_weight": [
+    {
+     "trees": 5,
+     "train": 0.44996355891216216,
+     "validation": 0.2019661097326555
+    },
+    {
+     "trees": 10,
+     "train": 0.7083998761258857,
+     "validation": 0.7644422757400922
+    },
+    {
+     "trees": 20,
+     "train": 0.728852442527877,
+     "validation": 0.7720985703993409
+    },
+    {
+     "trees": 40,
+     "train": 0.7923283855941243,
+     "validation": 0.7853054341074921
+    },
+    {
+     "trees": 80,
+     "train": 0.8586714362139404,
+     "validation": 0.8396038789548547
+    },
+    {
+     "trees": 150,
+     "train": 0.9904259987420806,
+     "validation": 0.8484586725193796
+    },
+    {
+     "trees": 250,
+     "train": 1.0,
+     "validation": 0.8510494340976203
+    },
+    {
+     "trees": 400,
+     "train": 1.0,
+     "validation": 0.8529241481311811
+    }
+   ]
+  },
+  "boosting_rounds": [
+   5,
+   10,
+   20,
+   40,
+   80,
+   150,
+   250,
+   400
+  ],
+  "leaf_fraud_purity": {
+   "none": 0.20780664487610637,
+   "class_weight": 0.05076729682814317
+  },
+  "fragility": [
+   {
+    "min_child_samples": 5,
+    "validation": 0.47743653428834165,
+    "ci_lo": 0.342402832003857,
+    "ci_hi": 0.6160073654823572,
+    "vs_shipped": 0.16092843554586567,
+    "vs_shipped_lo": 0.027985859159597563,
+    "vs_shipped_hi": 0.29750215017272386,
+    "peak": 0.6528343334377754
+   },
+   {
+    "min_child_samples": 20,
+    "validation": 0.8119928351935554,
+    "ci_lo": 0.7149957662397924,
+    "ci_hi": 0.8960353859353484,
+    "vs_shipped": 0.4954847364510794,
+    "vs_shipped_lo": 0.4048798699408826,
+    "vs_shipped_hi": 0.5836903979213797,
+    "peak": 0.8119928351935554
+   },
+   {
+    "min_child_samples": 50,
+    "validation": 0.316508098742476,
+    "ci_lo": 0.22255475530706856,
+    "ci_hi": 0.4208639320303211,
+    "vs_shipped": 0.0,
+    "vs_shipped_lo": 0.0,
+    "vs_shipped_hi": 0.0,
+    "peak": 0.5719105464600578
+   },
+   {
+    "min_child_samples": 100,
+    "validation": 0.6967966715511308,
+    "ci_lo": 0.5738245766846183,
+    "ci_hi": 0.8147533463205764,
+    "vs_shipped": 0.3802885728086548,
+    "vs_shipped_lo": 0.25271531412531106,
+    "vs_shipped_hi": 0.5006854453432112,
+    "peak": 0.7300091074123111
+   }
+  ],
+  "shipped_min_child_samples": 50,
+  "purity_trees": 20,
+  "splits_per_feature": {
+   "V1": 361,
+   "V2": 401,
+   "V3": 335,
+   "V4": 617,
+   "V5": 374,
+   "V6": 323,
+   "V7": 355,
+   "V8": 598,
+   "V9": 474,
+   "V10": 453,
+   "V11": 356,
+   "V12": 381,
+   "V13": 415,
+   "V14": 554,
+   "V15": 318,
+   "V16": 417,
+   "V17": 358,
+   "V18": 456,
+   "V19": 487,
+   "V20": 288,
+   "V21": 398,
+   "V22": 286,
+   "V23": 314,
+   "V24": 297,
+   "V25": 349,
+   "V26": 474,
+   "V27": 376,
+   "V28": 404,
+   "Amount": 330,
+   "hour_of_cycle": 451,
+   "log_amount": 0
+  },
+  "engineered_rank": {
+   "hour_of_cycle": 9,
+   "log_amount": 31
+  },
+  "verdict": {
+   "untreated_train": 0.9146073110001819,
+   "untreated_validation": 0.316508098742476,
+   "untreated_gap": 0.5980992122577059,
+   "weighted_train": 1.0,
+   "weighted_validation": 0.8529241481311811,
+   "weighted_gap": 0.14707585186881889,
+   "untreated_peak_trees": 5,
+   "untreated_peak_validation": 0.5719105464600578,
+   "untreated_leaf_purity": 0.20780664487610637,
+   "best_neighbouring_min_child": {
+    "min_child_samples": 20,
+    "validation": 0.8119928351935554,
+    "ci_lo": 0.7149957662397924,
+    "ci_hi": 0.8960353859353484,
+    "vs_shipped": 0.4954847364510794,
+    "vs_shipped_lo": 0.4048798699408826,
+    "vs_shipped_hi": 0.5836903979213797,
+    "peak": 0.8119928351935554
+   },
+   "claim_tested": "that min_child_samples stops fraud-isolating splits forming",
+   "claim_holds": false,
+   "monotone_in_min_child_samples": false
+  }
+ },
  "model_spec": {
   "tuned": false,
   "note": "No hyperparameter search was run for the shipped numbers. pipelines.tune() and the grids exist and are never called by the analysis; every fit uses the repo defaults below.",
