@@ -1,7 +1,7 @@
 {
  "_source": "card-fraud-detection-imbalance (private repo)",
  "_derived_from": "OpenML 1597 (creditcard), ULB Machine Learning Group",
- "_note": "Derived artefacts only: one score and one outcome per held-out transaction. No features are shipped.",
+ "_note": "Derived artefacts only: one score and one outcome per held-out transaction, plus aggregates. No features are shipped.",
  "citation": "Dal Pozzolo, Caelen, Johnson and Bontempi (2015). Calibrating Probability with Undersampling for Unbalanced Classification. CIDM, IEEE.",
  "dataset": {
   "source": "OpenML 1597 (creditcard), ULB Machine Learning Group",
@@ -61,6 +61,50 @@
    "n_positives": 56.0
   }
  ],
+ "baselines": {
+  "majority": {
+   "average_precision": {
+    "point": 0.0013109227960110491,
+    "ci_lo": 0.0013109227960110491,
+    "ci_hi": 0.0013109227960110491,
+    "n_boot": 2000
+   },
+   "roc_auc": {
+    "point": 0.5,
+    "ci_lo": 0.5,
+    "ci_hi": 0.5,
+    "n_boot": 2000
+   }
+  },
+  "logistic": {
+   "average_precision": {
+    "point": 0.7796895129691298,
+    "ci_lo": 0.6733716497031664,
+    "ci_hi": 0.8676981990607078,
+    "n_boot": 2000
+   },
+   "roc_auc": {
+    "point": 0.9814961625267049,
+    "ci_lo": 0.9603432839194466,
+    "ci_hi": 0.996398727204538,
+    "n_boot": 2000
+   }
+  },
+  "lgbm": {
+   "average_precision": {
+    "point": 0.316508098742476,
+    "ci_lo": 0.22255475530706856,
+    "ci_hi": 0.4208639320303211,
+    "n_boot": 2000
+   },
+   "roc_auc": {
+    "point": 0.8117465693792401,
+    "ci_lo": 0.7264746834754248,
+    "ci_hi": 0.8893647878757943,
+    "n_boot": 2000
+   }
+  }
+ },
  "treatments": [
   {
    "index": 0,
@@ -658,6 +702,467 @@
     "alerts_per_fraud": 23.8095238095
    }
   ]
+ },
+ "eda": {
+  "_written_utc": "2026-09-20T15:02:43+00:00",
+  "_name": "eda",
+  "_smoke_mode": false,
+  "split_used": "train",
+  "balance": {
+   "n_rows": 199368,
+   "n_fraud": 384,
+   "n_legit": 198984,
+   "prevalence": 0.0019260864331286866,
+   "one_in": 519,
+   "majority_accuracy": 0.9980739135668714
+  },
+  "amount": {
+   "bins": [
+    {
+     "lo": 0.0,
+     "hi": 1.0,
+     "n": 11254,
+     "n_fraud": 40,
+     "fraud_rate": 0.003554291807357384
+    },
+    {
+     "lo": 1.0,
+     "hi": 5.0,
+     "n": 34918,
+     "n_fraud": 127,
+     "fraud_rate": 0.003637092616988373
+    },
+    {
+     "lo": 5.0,
+     "hi": 10.0,
+     "n": 20390,
+     "n_fraud": 21,
+     "fraud_rate": 0.0010299166257969593
+    },
+    {
+     "lo": 10.0,
+     "hi": 25.0,
+     "n": 36207,
+     "n_fraud": 21,
+     "fraud_rate": 0.0005799983428618775
+    },
+    {
+     "lo": 25.0,
+     "hi": 50.0,
+     "n": 28750,
+     "n_fraud": 24,
+     "fraud_rate": 0.0008347826086956522
+    },
+    {
+     "lo": 50.0,
+     "hi": 100.0,
+     "n": 26970,
+     "n_fraud": 50,
+     "fraud_rate": 0.0018539117538005192
+    },
+    {
+     "lo": 100.0,
+     "hi": 250.0,
+     "n": 24622,
+     "n_fraud": 44,
+     "fraud_rate": 0.001787019738445293
+    },
+    {
+     "lo": 250.0,
+     "hi": 500.0,
+     "n": 9489,
+     "n_fraud": 32,
+     "fraud_rate": 0.0033723258509853514
+    },
+    {
+     "lo": 500.0,
+     "hi": 1000.0,
+     "n": 4579,
+     "n_fraud": 19,
+     "fraud_rate": 0.004149377593360996
+    },
+    {
+     "lo": 1000.0,
+     "hi": 5000.0,
+     "n": 2152,
+     "n_fraud": 6,
+     "fraud_rate": 0.0027881040892193307
+    },
+    {
+     "lo": 5000.0,
+     "hi": 30000.0,
+     "n": 37,
+     "n_fraud": 0,
+     "fraud_rate": 0.0
+    }
+   ],
+   "quantiles": {
+    "legit": {
+     "0.5": 23.0,
+     "0.9": 206.18,
+     "0.99": 1030.2837999999977
+    },
+    "fraud": {
+     "0.5": 11.855,
+     "0.9": 322.63899999999995,
+     "0.99": 1360.2527000000005
+    }
+   },
+   "mean": {
+    "legit": 89.71470208659993,
+    "fraud": 118.64945312499998
+   },
+   "zero_amount": {
+    "legit": 1361,
+    "fraud": 18
+   }
+  },
+  "hours": [
+   {
+    "hour": 0,
+    "n": 7240,
+    "n_fraud": 16,
+    "fraud_rate": 0.0022099447513812156
+   },
+   {
+    "hour": 1,
+    "n": 5721,
+    "n_fraud": 9,
+    "fraud_rate": 0.0015731515469323545
+   },
+   {
+    "hour": 2,
+    "n": 3117,
+    "n_fraud": 53,
+    "fraud_rate": 0.01700352903432788
+   },
+   {
+    "hour": 3,
+    "n": 4194,
+    "n_fraud": 17,
+    "fraud_rate": 0.004053409632808774
+   },
+   {
+    "hour": 4,
+    "n": 2521,
+    "n_fraud": 18,
+    "fraud_rate": 0.007140023800079333
+   },
+   {
+    "hour": 5,
+    "n": 2097,
+    "n_fraud": 17,
+    "fraud_rate": 0.008106819265617548
+   },
+   {
+    "hour": 6,
+    "n": 3465,
+    "n_fraud": 9,
+    "fraud_rate": 0.0025974025974025974
+   },
+   {
+    "hour": 7,
+    "n": 5530,
+    "n_fraud": 17,
+    "fraud_rate": 0.003074141048824593
+   },
+   {
+    "hour": 8,
+    "n": 8584,
+    "n_fraud": 18,
+    "fraud_rate": 0.002096924510717614
+   },
+   {
+    "hour": 9,
+    "n": 13368,
+    "n_fraud": 5,
+    "fraud_rate": 0.00037402752842609214
+   },
+   {
+    "hour": 10,
+    "n": 16408,
+    "n_fraud": 19,
+    "fraud_rate": 0.0011579717211116529
+   },
+   {
+    "hour": 11,
+    "n": 16799,
+    "n_fraud": 32,
+    "fraud_rate": 0.0019048752901958449
+   },
+   {
+    "hour": 12,
+    "n": 16502,
+    "n_fraud": 33,
+    "fraud_rate": 0.001999757605138771
+   },
+   {
+    "hour": 13,
+    "n": 10534,
+    "n_fraud": 14,
+    "fraud_rate": 0.0013290298082399847
+   },
+   {
+    "hour": 14,
+    "n": 7846,
+    "n_fraud": 7,
+    "fraud_rate": 0.0008921743563599286
+   },
+   {
+    "hour": 15,
+    "n": 8150,
+    "n_fraud": 14,
+    "fraud_rate": 0.0017177914110429449
+   },
+   {
+    "hour": 16,
+    "n": 7547,
+    "n_fraud": 17,
+    "fraud_rate": 0.0022525506823903537
+   },
+   {
+    "hour": 17,
+    "n": 7948,
+    "n_fraud": 11,
+    "fraud_rate": 0.0013839959738298944
+   },
+   {
+    "hour": 18,
+    "n": 7905,
+    "n_fraud": 11,
+    "fraud_rate": 0.0013915243516761542
+   },
+   {
+    "hour": 19,
+    "n": 8642,
+    "n_fraud": 12,
+    "fraud_rate": 0.001388567461235825
+   },
+   {
+    "hour": 20,
+    "n": 8311,
+    "n_fraud": 8,
+    "fraud_rate": 0.0009625797136325352
+   },
+   {
+    "hour": 21,
+    "n": 9476,
+    "n_fraud": 17,
+    "fraud_rate": 0.001794005909666526
+   },
+   {
+    "hour": 22,
+    "n": 10143,
+    "n_fraud": 3,
+    "fraud_rate": 0.0002957704821058858
+   },
+   {
+    "hour": 23,
+    "n": 7320,
+    "n_fraud": 7,
+    "fraud_rate": 0.0009562841530054645
+   }
+  ],
+  "separability": [
+   {
+    "feature": "V14",
+    "auc": 0.04845869621845643,
+    "strength": 0.9030826075630871,
+    "derived": false
+   },
+   {
+    "feature": "V12",
+    "auc": 0.05666827850061647,
+    "strength": 0.8866634429987671,
+    "derived": false
+   },
+   {
+    "feature": "V4",
+    "auc": 0.9398535576352872,
+    "strength": 0.8797071152705744,
+    "derived": false
+   },
+   {
+    "feature": "V3",
+    "auc": 0.07748451979807422,
+    "strength": 0.8450309604038515,
+    "derived": false
+   },
+   {
+    "feature": "V10",
+    "auc": 0.07886688073329179,
+    "strength": 0.8422662385334164,
+    "derived": false
+   },
+   {
+    "feature": "V11",
+    "auc": 0.9192142699496776,
+    "strength": 0.8384285398993552,
+    "derived": false
+   },
+   {
+    "feature": "V2",
+    "auc": 0.8788543064392111,
+    "strength": 0.7577086128784223,
+    "derived": false
+   },
+   {
+    "feature": "V16",
+    "auc": 0.13769891151214836,
+    "strength": 0.7246021769757033,
+    "derived": false
+   },
+   {
+    "feature": "V7",
+    "auc": 0.15052507100654658,
+    "strength": 0.6989498579869069,
+    "derived": false
+   },
+   {
+    "feature": "V9",
+    "auc": 0.1607803710557968,
+    "strength": 0.6784392578884064,
+    "derived": false
+   },
+   {
+    "feature": "V17",
+    "auc": 0.17987049995225746,
+    "strength": 0.6402590000954851,
+    "derived": false
+   },
+   {
+    "feature": "V1",
+    "auc": 0.17997290820702502,
+    "strength": 0.6400541835859499,
+    "derived": false
+   },
+   {
+    "feature": "V18",
+    "auc": 0.2251963673377424,
+    "strength": 0.5496072653245152,
+    "derived": false
+   },
+   {
+    "feature": "V6",
+    "auc": 0.22695192620177168,
+    "strength": 0.5460961475964566,
+    "derived": false
+   },
+   {
+    "feature": "V5",
+    "auc": 0.23681514332391884,
+    "strength": 0.5263697133521623,
+    "derived": false
+   },
+   {
+    "feature": "V21",
+    "auc": 0.7481985570029082,
+    "strength": 0.4963971140058163,
+    "derived": false
+   },
+   {
+    "feature": "V27",
+    "auc": 0.6896927145105469,
+    "strength": 0.37938542902109385,
+    "derived": false
+   },
+   {
+    "feature": "V19",
+    "auc": 0.6768749570736005,
+    "strength": 0.3537499141472009,
+    "derived": false
+   },
+   {
+    "feature": "V8",
+    "auc": 0.6612288995807033,
+    "strength": 0.3224577991614066,
+    "derived": false
+   },
+   {
+    "feature": "V20",
+    "auc": 0.6367411816611721,
+    "strength": 0.2734823633223442,
+    "derived": false
+   },
+   {
+    "feature": "V28",
+    "auc": 0.6263294489129779,
+    "strength": 0.25265889782595585,
+    "derived": false
+   },
+   {
+    "feature": "hour_of_cycle",
+    "auc": 0.39414220987407705,
+    "strength": 0.2117155802518459,
+    "derived": true
+   },
+   {
+    "feature": "Amount",
+    "auc": 0.4495974249709357,
+    "strength": 0.10080515005812862,
+    "derived": false
+   },
+   {
+    "feature": "log_amount",
+    "auc": 0.4495974249709357,
+    "strength": 0.10080515005812862,
+    "derived": true
+   },
+   {
+    "feature": "V24",
+    "auc": 0.44970550657758085,
+    "strength": 0.1005889868448383,
+    "derived": false
+   },
+   {
+    "feature": "V15",
+    "auc": 0.45397606821821523,
+    "strength": 0.09204786356356953,
+    "derived": false
+   },
+   {
+    "feature": "V23",
+    "auc": 0.4606297386557043,
+    "strength": 0.07874052268859144,
+    "derived": false
+   },
+   {
+    "feature": "V26",
+    "auc": 0.52806801520474,
+    "strength": 0.05613603040948001,
+    "derived": false
+   },
+   {
+    "feature": "V22",
+    "auc": 0.5246735447322397,
+    "strength": 0.04934708946447941,
+    "derived": false
+   },
+   {
+    "feature": "V25",
+    "auc": 0.5142541689909741,
+    "strength": 0.028508337981948184,
+    "derived": false
+   },
+   {
+    "feature": "V13",
+    "auc": 0.488881957845857,
+    "strength": 0.022236084308286053,
+    "derived": false
+   }
+  ],
+  "features": {
+   "pca": 28,
+   "derived": [
+    "hour_of_cycle",
+    "log_amount"
+   ],
+   "total": 31,
+   "excluded": [
+    "Time"
+   ],
+   "excluded_reason": "Time is seconds since the first row in this file; using it lets the model fit where fraud bursts sit in these particular 48 hours."
+  }
  },
  "budgets": [
   20,

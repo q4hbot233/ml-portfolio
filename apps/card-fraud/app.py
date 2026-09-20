@@ -118,6 +118,64 @@ def figure_queue(curve: pd.DataFrame, k: int, prevalence: float):
     return fig
 
 
+def ordinal(n: int) -> str:
+    """22nd, not 22th."""
+    if 11 <= n % 100 <= 13:
+        return f"{n}th"
+    return f"{n}{ {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th') }".replace(" ", "")
+
+
+def figure_eda(eda: dict):
+    """Three things about the data before any model: how rare fraud is, where it sits in
+    amount, and whether the hour of day carries anything."""
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(10.2, 3.0))
+    bal = eda["balance"]
+
+    ax1.bar([0], [bal["n_legit"]], 0.6, color=GREY, label="legitimate")
+    ax1.bar([1], [bal["n_fraud"]], 0.6, color=RED, label="fraud")
+    ax1.set_yscale("log")
+    ax1.set_xticks([0, 1], ["legit", "fraud"])
+    ax1.set_ylabel("training rows (log scale)", fontsize=8.5, color=MUTED)
+    ax1.set_title(f"1 in {bal['one_in']:,} rows is fraud", fontsize=9.5, color=MUTED,
+                  loc="left")
+    for x, v in ((0, bal["n_legit"]), (1, bal["n_fraud"])):
+        ax1.text(x, v * 1.35, f"{v:,}", ha="center", fontsize=8.5, color=MUTED)
+
+    bins = eda["amount"]["bins"]
+    y = np.arange(len(bins))
+    ax2.barh(y, [b["fraud_rate"] * 100 for b in bins], 0.65, color=RED)
+    ax2.set_yticks(y, [f"{int(b['lo'])}–{int(b['hi'])}" for b in bins], fontsize=7)
+    ax2.set_xlabel("fraud rate in that band (%)", fontsize=8.5, color=MUTED)
+    ax2.set_title("by transaction amount", fontsize=9.5, color=MUTED, loc="left")
+    ax2.invert_yaxis()
+
+    hrs = eda["hours"]
+    ax3.plot([h["hour"] for h in hrs], [h["fraud_rate"] * 100 for h in hrs],
+             color=BLUE, lw=1.8)
+    ax3.axhline(bal["prevalence"] * 100, color=GREY, ls="--", lw=1)
+    ax3.set_xlabel("hours since the file starts, mod 24", fontsize=8.5, color=MUTED)
+    ax3.set_title("by hour of cycle", fontsize=9.5, color=MUTED, loc="left")
+    fig.tight_layout()
+    return fig
+
+
+def figure_separability(eda: dict, top: int = 14):
+    """One-feature ROC-AUC, folded so a component that separates downwards is not reported
+    as useless. The two engineered columns are marked."""
+    rows = eda["separability"][:top]
+    fig, ax = plt.subplots(figsize=(7.4, 3.6))
+    y = np.arange(len(rows))[::-1]
+    colours = [RED if r["derived"] else BLUE for r in rows]
+    ax.barh(y, [r["strength"] for r in rows], 0.68, color=colours)
+    ax.set_yticks(y, [r["feature"] + ("  (engineered)" if r["derived"] else "")
+                      for r in rows], fontsize=8.5)
+    ax.set_xlabel("separating power of that column alone  |2·AUC − 1|", fontsize=9,
+                  color=MUTED)
+    ax.set_xlim(0, 1)
+    fig.tight_layout()
+    return fig
+
+
 def figure_split(split_comparison: list):
     """The grey bars are taller and that is the problem, not the point.
 
@@ -194,6 +252,11 @@ def main() -> None:
     st.markdown(
         "284,807 card transactions over 48 hours, **492 of them fraud — 0.173%**. A model "
         "that predicts \"not fraud\" for every row is right 99.83% of the time.\n\n"
+        "This walks the whole thing: what is in the file, what could be engineered out of "
+        "it, two model families and what they have to beat, six ways of handling the "
+        "imbalance, and the rule that picked one. Then the two findings that came out of "
+        "it — that the real decision is a **queue length**, not a threshold, and that **how "
+        "the data was split mattered more than which model was fitted**.\n\n"
         "The received advice at that prevalence is to rebalance: weight the classes, drop "
         "negatives, or synthesise positives with SMOTE. This page is what happened when I "
         "tested the advice instead of repeating it, and asked the question it usually "
@@ -203,7 +266,181 @@ def main() -> None:
     )
 
     st.divider()
-    st.subheader("1 · The queue, which is the real decision")
+    st.subheader("1 · The data, before any model")
+    eda = ref["eda"]
+    bal, amt = eda["balance"], eda["amount"]
+    st.markdown(
+        f"{bal['n_rows']:,} training transactions, **{bal['n_fraud']} of them fraud — "
+        f"{bal['prevalence']:.4%}, one in {bal['one_in']:,}**. Every figure in this section "
+        f"is computed on the training split only: describing a dataset with its test rows "
+        f"included is a leak that never shows up as a score, only as a modelling decision "
+        f"made knowing the answer.\n\n"
+        f"The first thing that follows is that **accuracy is unusable**. Predicting "
+        f"\"not fraud\" every time scores {bal['majority_accuracy']:.2%}."
+    )
+    st.pyplot(figure_eda(eda), use_container_width=True)
+    fr = amt["quantiles"]["fraud"]; lg = amt["quantiles"]["legit"]
+    st.markdown(
+        f"**Amount is not the giveaway people expect.** Median fraud is "
+        f"€{fr['0.5']:.2f} against €{lg['0.5']:.2f} for legitimate traffic, and the fraud "
+        f"rate is highest in the smallest band — card testing, where a stolen number is "
+        f"tried on something tiny first. {amt['zero_amount']['fraud']} frauds are for "
+        f"exactly €0.\n\n"
+        f"**Hour of cycle carries a little.** The file starts at an unknown wall-clock hour, "
+        f"so this is hours-since-start mod 24 rather than \"3 a.m.\" — a periodic "
+        f"coordinate, not a time of day, and it is labelled that way everywhere."
+    )
+
+    st.divider()
+    st.subheader("2 · Feature engineering, and what it was worth")
+    ft = eda["features"]
+    st.markdown(
+        f"There is not much room here and the write-up should say so. **{ft['pca']} of the "
+        f"{ft['total']} columns are `V1..V28`, principal components** published instead of "
+        f"the raw fields because the raw fields are a European issuer's transaction records. "
+        f"You cannot engineer on top of a component you cannot interpret.\n\n"
+        f"So the work was two derived columns and one deliberate exclusion:\n\n"
+        f"- **`log_amount`** — amounts span €0 to €25,691 with a long tail; the log is what "
+        f"a linear model can use.\n"
+        f"- **`hour_of_cycle`** — derived from `Time`, because a deployed detector does know "
+        f"the clock.\n"
+        f"- **`Time` itself is excluded.** It is seconds since the first row *of this file*. "
+        f"A model given it can fit where the fraud bursts happen to sit in these particular "
+        f"48 hours, which is a fact about the file and not about fraud."
+    )
+    st.pyplot(figure_separability(eda), use_container_width=True)
+    sep = eda["separability"]
+    ranks = {r["feature"]: i + 1 for i, r in enumerate(sep)}
+    st.warning(
+        f"**And they were worth very little.** Ranked by how well each column separates the "
+        f"classes on its own, `hour_of_cycle` comes **{ordinal(ranks['hour_of_cycle'])} of "
+        f"{len(sep)}** and `log_amount` **{ordinal(ranks['log_amount'])}**. The top of that "
+        f"list is "
+        f"components — `{sep[0]['feature']}`, `{sep[1]['feature']}`, `{sep[2]['feature']}` — "
+        f"which somebody else's PCA already found. Reporting the engineering without this "
+        f"chart would imply it did work it did not do.",
+        icon=":material/trending_down:")
+
+    st.divider()
+    st.subheader("3 · Training, and what a model has to beat")
+    base = ref["baselines"]
+    b1, b2, b3 = st.columns(3)
+    b1.metric("Predict the majority class", f"{base['majority']['average_precision']['point']:.4f}",
+              "average precision — the prevalence floor", delta_color="off")
+    b1.caption(f"ROC-AUC {base['majority']['roc_auc']['point']:.2f}. Accuracy "
+               f"{bal['majority_accuracy']:.2%} and useless.")
+    lg_ap = base["logistic"]["average_precision"]
+    b2.metric("Logistic regression", f"{lg_ap['point']:.4f}",
+              f"[{lg_ap['ci_lo']:.3f}, {lg_ap['ci_hi']:.3f}]", delta_color="off")
+    b2.caption("Standardised inputs, no rebalancing, no tuning.")
+    if "lgbm" in base:
+        tr_ap = base["lgbm"]["average_precision"]
+        b3.metric("LightGBM", f"{tr_ap['point']:.4f}",
+                  f"[{tr_ap['ci_lo']:.3f}, {tr_ap['ci_hi']:.3f}]", delta_color="off")
+        b3.caption("Same features, default leaf size.")
+    st.markdown(
+        f"Two families, both on the {ft['total']} features above: a logistic regression with "
+        f"standardised inputs, and LightGBM. The floor is not zero — it is the prevalence, "
+        f"**{base['majority']['average_precision']['point']:.4f}** — because average "
+        f"precision for a random ranker is the base rate. A model reporting 0.30 on this "
+        f"data is 230× the floor and still catching two frauds per three alerts.\n\n"
+        f"Each family is then run against six imbalance treatments, giving twelve "
+        f"configurations. Section 4 is what that bought."
+    )
+
+    st.divider()
+    st.subheader("4 · Class imbalance: which treatment is actually the most powerful")
+    shapes = pd.DataFrame(ref["treatment_shapes"])
+    smote = shapes.loc[shapes["treatment"] == "smote"].iloc[0]
+    under = shapes.loc[shapes["treatment"] == "undersample"].iloc[0]
+    st.markdown(
+        f"Six treatments, on 199,368 training rows holding 384 frauds. What each one does "
+        f"to the data *before* any metric is computed:\n\n"
+        f"- **undersample** discards **{int(under['rows_removed']):,} real negatives**, "
+        f"leaving {int(under['rows']):,} rows.\n"
+        f"- **SMOTE** manufactures **{int(smote['rows_added']):,} synthetic frauds** from "
+        f"384 real ones — {int(smote['rows_added'])/384:.0f} per real fraud. It interpolates "
+        f"between a fraud and one of its nearest fraud neighbours; in 30 dimensions with 384 "
+        f"positives those neighbours are not near. It is not more data, it is an assumption "
+        f"that the space between two frauds is also fraud.\n"
+        f"- **SMOTETomek** is SMOTE plus removing boundary pairs. It took 78 seconds and "
+        f"removed **{ref['smote_tomek_rows_removed']} rows** — a training set byte-identical "
+        f"to plain SMOTE, which is why those rows match to four decimals below.\n"
+        f"- **class_weight** and **scale_pos_weight** touch no rows at all."
+    )
+    st.pyplot(figure_treatments(ref["treatments"], ref["headline_budget"]),
+              use_container_width=True)
+
+    nf = ref["noise_floor"]
+    st.markdown(
+        f"**Read the left panel and you would say SMOTE wins.** Read the right one and the "
+        f"ordering mostly disappears. And before believing either: the validation split holds "
+        f"**{nf['n_positives_valid']} frauds**, so at a budget of {nf['budget']} one "
+        f"transaction moving in or out of the queue is **{nf['one_transaction_pct']:.0f} "
+        f"percentage point**, and the median 95% interval across all twelve configurations is "
+        f"**{nf['median_interval_width_pts']:.1f} points wide**. Most of them overlap almost "
+        f"entirely. A two-point win here is two transactions."
+    )
+
+    hh = ref["best_tree_minus_untouched_logistic_queue"]
+    c1, c2 = st.columns(2)
+    c1.markdown(
+        "**On the tree, rebalancing is doing something real.** Average precision 0.32 → "
+        "0.85. The mechanism is mechanical rather than statistical: LightGBM needs a minimum "
+        "number of rows in a leaf, and at 0.19% prevalence the splits that would isolate "
+        "fraud **cannot form**. The tree was not underfitting — it was prevented from "
+        "fitting by a hyperparameter that is sensible at any normal prevalence."
+    )
+    c2.markdown(
+        "**On the linear model it moves the ranking metric and leaves the queue alone.** "
+        "Average precision +0.067; precision@100 **+0.000, interval [−0.040, +0.020]**. Same "
+        "treatment, same data, opposite conclusions — and the only way to know which case "
+        "you are in is to check."
+    )
+    st.info(
+        f"**So: which treatment is most powerful? The question is malformed.** Best "
+        f"rebalanced tree minus the untouched logistic regression, on the queue: "
+        f"**{hh['point']:+.3f} [{hh['ci_lo']:+.3f}, {hh['ci_hi']:+.3f}]**. Every piece of "
+        f"rebalancing machinery applied to the tree gets back to where an untreated linear "
+        f"model was already standing. The most powerful intervention on this dataset was not "
+        f"a resampler — it was picking a model that can fit at this prevalence, and then "
+        f"choosing the split properly (section 6).",
+        icon=":material/flag:")
+
+    with st.expander("What it costs: the scores stop being probabilities"):
+        calib = pd.DataFrame(ref["calibration"])
+        show = calib[["model", "treatment", "mean_predicted", "actual_rate", "ECE"]]
+        st.dataframe(show.style.format({"mean_predicted": "{:.4f}", "actual_rate": "{:.4f}",
+                                        "ECE": "{:.5f}"}), use_container_width=True)
+        st.markdown(
+            "Read `mean_predicted` against `actual_rate`. Every treatment changes the base "
+            "rate the model is fitted on, so the score stops estimating P(fraud | "
+            "transaction) and starts estimating it for a population that does not exist.\n\n"
+            "But note the last two rows: for the **barely-fitting tree**, rebalancing "
+            "*improves* calibration, because the untreated tree over-predicts to begin with. "
+            "So \"rebalancing wrecks calibration\" is true of one family here and false of "
+            "the other — the same lesson as everything else on this page."
+        )
+
+    st.divider()
+    st.subheader("5 · Choosing one, by a rule written down first")
+    sel = ref["selection"]
+    st.markdown(
+        f"Twelve configurations and one test split. The rule was fixed before the test split "
+        f"was opened:\n\n> *{sel['rule']}*\n\n"
+        f"**{len(sel['tied_at_top'])} configurations tied at the top** — every logistic "
+        f"variant, all at 0.490 on validation precision@100. The tie-break sent it to the "
+        f"one that does least to the data, so the shipped model is "
+        f"**{sel['selected'][0]} with `{sel['selected'][1]}`**: no weighting, no resampling, "
+        f"nothing synthesised.\n\n"
+        f"That five configurations tie exactly is not a coincidence, it is the noise floor "
+        f"from section 4 showing up in the selection: at {nf['budget']} alerts and "
+        f"{nf['n_positives_valid']} validation frauds there are only so many distinct values "
+        f"precision@{nf['budget']} can take."
+    )
+
+    st.divider()
+    st.subheader("6 · The queue, which is the real decision")
     st.markdown(
         "Nobody at a card issuer says \"flag at p ≥ 0.6\". Somebody says **\"we have four "
         "analysts and they can clear about a hundred alerts a shift\"** — and that sentence "
@@ -239,29 +476,8 @@ def main() -> None:
         f"transactions contain 19 frauds.** That is the number I would put in front of a "
         f"fraud team, because it is the number they would experience on Monday."
     )
-
     st.divider()
-    st.subheader("2 · The noise floor, which should come first")
-    n_pos = int(y.sum())
-    st.markdown(
-        f"Before believing any comparison: this split contains **{n_pos} frauds**. At your "
-        f"budget of {k}, one transaction moving in or out of the queue is "
-        f"**{100/k:.1f} percentage points**, and the highest precision anyone could possibly "
-        f"reach is **{min(1.0, n_pos/k):.2f}** — you cannot have more frauds in the queue "
-        f"than exist.\n\n"
-        f"That is arithmetic, not an estimate, and it is the reason the interval above is "
-        f"{(hi-lo)*100:.0f} points wide. A paper reporting that treatment A beats treatment B "
-        f"by two points of precision on this dataset is reporting two transactions."
-    )
-    nf = ref["noise_floor"]
-    st.info(
-        f"Across the twelve model-and-treatment configurations tried, the median 95% "
-        f"interval on precision@{nf['budget']} is **{nf['median_interval_width_pts']:.1f} "
-        f"percentage points wide**. Most of them overlap almost completely.",
-        icon=":material/straighten:")
-
-    st.divider()
-    st.subheader("3 · The split decided more than the model did")
+    st.subheader("7 · The split decided more than the model did")
     st.markdown(
         "This file has a `Time` column spanning 48 hours, and almost every published "
         "treatment of it splits **at random**. Below are the same model and the same "
@@ -297,78 +513,6 @@ def main() -> None:
         f"measuring a different and later population, which is exactly the population a "
         f"deployed model faces."
     )
-
-    st.divider()
-    st.subheader("4 · What rebalancing buys, and what it buys it in")
-    shapes = pd.DataFrame(ref["treatment_shapes"])
-    smote = shapes.loc[shapes["treatment"] == "smote"].iloc[0]
-    under = shapes.loc[shapes["treatment"] == "undersample"].iloc[0]
-    st.markdown(
-        f"Before any metric, what each treatment does to 199,368 training rows holding 384 "
-        f"frauds:\n\n"
-        f"- **undersample** discards **{int(under['rows_removed']):,} real negatives**, "
-        f"leaving {int(under['rows']):,} rows in total.\n"
-        f"- **SMOTE** manufactures **{int(smote['rows_added']):,} synthetic frauds** from "
-        f"384 real ones — {int(smote['rows_added'])/384:.0f} per real fraud. It interpolates "
-        f"between a fraud and one of its nearest fraud neighbours; in 30 dimensions with 384 "
-        f"positives those neighbours are not near. It is not more data, it is an assumption "
-        f"that the space between two frauds is also fraud.\n"
-        f"- **class_weight** and **scale_pos_weight** touch no rows at all."
-    )
-    st.pyplot(figure_treatments(ref["treatments"], ref["headline_budget"]),
-              use_container_width=True)
-
-    hh = ref["best_tree_minus_untouched_logistic_queue"]
-    c1, c2 = st.columns(2)
-    c1.markdown(
-        "**On the tree it is doing something real.** Average precision 0.32 → 0.85, and the "
-        "queue moves too. The mechanism is mechanical: LightGBM needs a minimum number of "
-        "rows in a leaf, and at 0.19% prevalence the splits that would isolate fraud "
-        "**cannot form**. The tree was not underfitting — it was prevented from fitting by a "
-        "hyperparameter that is sensible at any normal prevalence."
-    )
-    c2.markdown(
-        "**On the linear model it moves the ranking metric and leaves the queue alone.** "
-        "Average precision +0.067; precision@100 **+0.000, interval [−0.040, +0.020]**. Same "
-        "treatment, same data, opposite conclusions — and the only way to know which case "
-        "you are in is to check."
-    )
-    st.info(
-        f"**Best rebalanced tree minus the untouched logistic regression, on the queue: "
-        f"{hh['point']:+.3f} [{hh['ci_lo']:+.3f}, {hh['ci_hi']:+.3f}].** Every piece of "
-        f"rebalancing machinery applied to the tree gets back to where an untreated linear "
-        f"model was already standing. That is not an argument against rebalancing — it is an "
-        f"argument against reporting it as a single number called \"improvement\" without "
-        f"saying improvement in what.",
-        icon=":material/flag:")
-
-    with st.expander("A recommended step that provably does nothing"):
-        st.markdown(
-            f"`SMOTETomek` is SMOTE followed by removing Tomek links — opposite-class nearest "
-            f"neighbours sitting on the boundary — and is widely recommended as the cleaner "
-            f"variant. It took 78 seconds.\n\n"
-            f"**It removed {ref['smote_tomek_rows_removed']} rows**, and produced a training "
-            f"set byte-identical to plain SMOTE. That is why every `smote` and `smote_tomek` "
-            f"row in the chart above matches to four decimals. After SMOTE has filled the "
-            f"minority region with 199,000 synthetic points there are no boundary pairs left "
-            f"to find."
-        )
-
-    with st.expander("What it costs: the scores stop being probabilities"):
-        calib = pd.DataFrame(ref["calibration"])
-        show = calib[["model", "treatment", "mean_predicted", "actual_rate", "ECE"]]
-        st.dataframe(show.style.format({"mean_predicted": "{:.4f}", "actual_rate": "{:.4f}",
-                                        "ECE": "{:.5f}"}), use_container_width=True)
-        st.markdown(
-            "Read `mean_predicted` against `actual_rate`. Every treatment changes the base "
-            "rate the model is fitted on, so the score stops estimating P(fraud | "
-            "transaction) and starts estimating it for a population that does not exist.\n\n"
-            "But note the last two rows: for the **barely-fitting tree**, rebalancing "
-            "*improves* calibration, because the untreated tree was badly fitted to begin "
-            "with and over-predicts. So \"rebalancing wrecks calibration\" is true of one "
-            "family here and false of the other — the same lesson as everything else on this "
-            "page."
-        )
 
     st.divider()
     with st.expander("What this is, and what it is not"):
