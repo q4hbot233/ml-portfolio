@@ -3,66 +3,542 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Is it the car or the driver?</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/browser@1.9.1/build/stlite.css">
+<title>Who is driving?</title>
+<meta name="description" content="Can F1 telemetry identify the driver, or only the car? A season of qualifying corners, and a permutation test against each driver's own teammate.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap">
 <style>
-  :root { color-scheme: light dark; }
-  body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
-  #boot { padding:48px 24px; max-width:640px; margin:0 auto; color:#4a5560; }
-  #boot h1 { font-size:20px; margin:0 0 10px; color:#12181f; }
-  #boot p { margin:0 0 8px; font-size:14.5px; line-height:1.6; }
-  #boot .bar { height:3px; background:#e3e8ee; border-radius:2px; overflow:hidden; margin-top:18px; }
-  #boot .bar i { display:block; height:100%; width:38%; background:#1f5f8b; animation:sl 1.25s ease-in-out infinite; }
-  @keyframes sl { 0%{margin-left:-38%} 100%{margin-left:100%} }
-  #boot a { color:#1f5f8b; }
-  @media (prefers-color-scheme: dark){ #boot{color:#98a2b0} #boot h1{color:#e7ebf1} #boot .bar{background:#272d36} }
+:root{
+  --void:#08090B; --panel:#101216; --panel-2:#161920; --edge:#1F232B; --edge-2:#2B313B;
+  --text:#F2F3F5; --dim:#99A0AC; --faint:#626A78;
+  --accent:#C0533A; --warm:#E08A4F; --cool:#6E8FA8; --good:#57A773;
+  --sans:"Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Roboto Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;padding-inline:24px;background:var(--void);color:var(--text);
+  font-family:var(--sans);font-size:15px;line-height:1.62;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin-inline:auto;padding-block:0 110px}
+a{color:inherit}
+a:focus-visible,button:focus-visible{outline:2px solid var(--warm);outline-offset:3px;border-radius:3px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---------- hero ---------- */
+.hero{padding-block:72px 40px;max-width:760px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--faint);margin:0 0 20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.eyebrow .dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+h1{font-size:clamp(34px,5.6vw,56px);line-height:1.05;letter-spacing:-.032em;font-weight:700;
+  margin:0;text-wrap:balance}
+.deck{font-size:18px;line-height:1.56;color:var(--dim);max-width:60ch;margin:22px 0 0}
+.deck em{font-style:normal;color:var(--text)}
+.facts{margin-top:28px;display:flex;gap:24px;flex-wrap:wrap;font-family:var(--mono);
+  font-size:11.5px;letter-spacing:.06em;color:var(--faint)}
+.facts b{color:var(--text);font-weight:500}
+
+/* ---------- section chrome ---------- */
+section{margin-top:56px;scroll-margin-top:20px}
+.shead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+  padding-bottom:13px;border-bottom:1px solid var(--edge);margin-bottom:24px}
+.shead .n{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--accent)}
+.shead h2{font-size:22px;font-weight:600;letter-spacing:-.018em;margin:0}
+.shead .sub{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.07em;
+  margin-left:auto}
+p.note{color:var(--dim);max-width:72ch;margin:16px 0 0;font-size:14.5px}
+p.note b{color:var(--text);font-weight:600}
+p.note code{font-family:var(--mono);font-size:12.5px;color:var(--warm)}
+
+/* ---------- §1 lift bars ---------- */
+.q{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:6px}
+.qrow{background:var(--panel);border:1px solid var(--edge);border-radius:10px;padding:15px 18px}
+.qrow .lab{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.qrow .lab h3{margin:0;font-size:16px;font-weight:600}
+.qrow .lab .cls{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.07em}
+.qrow .lab .acc{margin-left:auto;font-family:var(--mono);font-size:19px;font-weight:700;
+  font-variant-numeric:tabular-nums}
+.track{position:relative;height:26px;background:var(--panel-2);border-radius:4px;overflow:hidden}
+.track .fill{position:absolute;inset:0 auto 0 0;border-radius:4px}
+.track .chance{position:absolute;top:0;bottom:0;width:2px;background:var(--faint)}
+.track .ct{position:absolute;top:50%;transform:translateY(-50%);font-family:var(--mono);
+  font-size:10px;letter-spacing:.08em;color:var(--dim);padding-left:7px;white-space:nowrap}
+.qrow .lift{margin-top:8px;font-family:var(--mono);font-size:11.5px;color:var(--dim);
+  letter-spacing:.05em}
+.rollup{margin-top:18px;background:var(--panel);border:1px solid var(--edge-2);border-radius:10px;
+  padding:17px 19px}
+.rollup .rk{font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--faint);margin-bottom:12px}
+.rollup .rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:18px}
+.rollup .rc .v{font-family:var(--mono);font-size:27px;font-weight:700;line-height:1.1;
+  font-variant-numeric:tabular-nums}
+.rollup .rc .d{color:var(--dim);font-size:13.5px;line-height:1.5;margin-top:4px}
+.rollup .rc.hi .v{color:var(--warm)}
+
+/* ---------- §2 teammates ---------- */
+.picker{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px}
+.picker button{font-family:var(--mono);font-size:11px;letter-spacing:.08em;cursor:pointer;
+  background:var(--panel);color:var(--dim);border:1px solid var(--edge-2);border-radius:20px;
+  padding:7px 14px;display:flex;align-items:center;gap:8px;transition:.13s}
+.picker button .sw{width:9px;height:9px;border-radius:50%;flex:none}
+.picker button:hover{color:var(--text);border-color:var(--faint)}
+.picker button[aria-pressed=true]{background:var(--panel-2);color:var(--text);border-color:var(--text)}
+.picker button.ns{opacity:.62}
+
+.duel{display:grid;grid-template-columns:1.15fr 1fr;gap:16px}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:11px;padding:16px 18px 14px}
+.card h4{margin:0 0 3px;font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--faint);font-weight:500}
+.card .cap{color:var(--dim);font-size:13px;line-height:1.5;margin:8px 0 0}
+.card .cap b{color:var(--text);font-weight:600}
+.card svg{width:100%;display:block;overflow:visible}
+.verdict{font-family:var(--mono);font-size:12px;letter-spacing:.06em;margin-top:9px;
+  padding-top:9px;border-top:1px solid var(--edge)}
+.verdict .yes{color:var(--good)} .verdict .no{color:var(--warm)}
+
+.deltas{display:grid;grid-template-columns:repeat(auto-fit,minmax(152px,1fr));gap:1px;
+  background:var(--edge);border:1px solid var(--edge);border-radius:11px;overflow:hidden;
+  margin-top:16px}
+.dc{background:var(--panel);padding:13px 15px 14px}
+.dc .dk{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--faint);min-height:26px;line-height:1.35}
+.dc .dv{display:flex;gap:11px;align-items:baseline;margin-top:5px;font-family:var(--mono);
+  font-variant-numeric:tabular-nums}
+.dc .dv .a,.dc .dv .b{font-size:17px;font-weight:700}
+.dc .du{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.06em;margin-top:2px}
+
+/* ---------- §3 map ---------- */
+.maprow{display:grid;grid-template-columns:1fr 290px;gap:16px;align-items:start}
+.toggle{display:flex;gap:6px}
+.toggle button{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;cursor:pointer;
+  background:var(--panel);color:var(--dim);border:1px solid var(--edge-2);padding:6px 11px;
+  border-radius:5px}
+.toggle button[aria-pressed=true]{background:var(--panel-2);color:var(--text);border-color:var(--text)}
+.diag{background:var(--panel);border:1px solid var(--edge);border-radius:11px;padding:16px 18px}
+.diag .row{display:flex;justify-content:space-between;gap:14px;padding:7px 0;
+  border-bottom:1px solid var(--edge);font-size:13.5px}
+.diag .row:last-of-type{border-bottom:0}
+.diag .row span:first-child{color:var(--dim)}
+.diag .row b{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700}
+
+/* ---------- footer ---------- */
+footer{margin-top:60px;padding-top:26px;border-top:1px solid var(--edge);color:var(--dim);
+  font-size:14px;max-width:76ch}
+footer h3{color:var(--text);font-size:14px;margin:0 0 10px;font-weight:600}
+footer ul{margin:0 0 20px;padding-left:19px} footer li{margin-bottom:7px}
+footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
+#err{display:none;background:#2A1614;border:1px solid var(--accent);border-radius:10px;
+  padding:16px 18px;color:#F0C9C0;font-family:var(--mono);font-size:12.5px;margin-top:30px}
+
+@media (max-width:860px){
+  .duel,.maprow{grid-template-columns:1fr}
+  .hero{padding-block:52px 30px}
+}
+
+#zback{position:fixed;left:12px;bottom:12px;z-index:99999;font-family:var(--mono);font-size:11px;
+  letter-spacing:.09em;text-transform:uppercase;text-decoration:none;background:#1B1B18;
+  color:#EDEDE6;padding:9px 13px;border:1px solid #1B1B18;box-shadow:0 2px 10px rgba(0,0,0,.28);
+  opacity:.93}
+#zback:hover{background:var(--accent);border-color:var(--accent);opacity:1}
+@media print{#zback{display:none}}
 </style>
 </head>
 <body>
-<div id="root">
-  <div id="boot">
-    <h1>Is it the car or the driver?</h1>
-    <p>Diagnosing a suspected car problem from qualifying telemetry using two different reference frames.</p>
-    <p>Starting a Python runtime in your browser — this takes about 10–20 seconds on a first visit,
-       then it is cached. Nothing is sent to a server; the whole app runs locally on this page.</p>
-    <div class="bar"><i></i></div>
-    <p style="margin-top:18px"><a href="../../">&larr; back to all projects</a></p>
-  </div>
+<div class="wrap">
+
+  <header class="hero">
+    <p class="eyebrow"><span class="dot"></span> Driver fingerprinting · 2023 qualifying</p>
+    <h1>Can telemetry tell you who is driving?</h1>
+    <p class="deck">Give a model where a car brakes, how it picks up the throttle and what gear it
+      takes a corner in, and ask it for the driver's name. It will beat chance — and it will mostly
+      be <em>recognising the car</em>. Everything here is built to take the car away.</p>
+    <p class="facts" id="facts"></p>
+  </header>
+
+  <section id="s1">
+    <div class="shead"><span class="n">01</span><h2>Who is driving, and what are they driving</h2>
+      <span class="sub">folds grouped by circuit</span></div>
+    <div class="q" id="q"></div>
+    <div class="rollup" id="rollup"></div>
+    <p class="note">The tempting next line is "so the car is easier, 0.250 against 0.141" — and it
+      is wrong. Those are a 10-class score and a 22-class score with different chance levels, so
+      neither they nor their lifts are on one scale; by lift the <em>driver</em> model looks better,
+      which is just as meaningless. And team is a function of driver, so the two questions are not
+      independent. What works instead is to score <b>one model's own predictions at two
+      resolutions</b>: map each predicted driver to their garage, and ask how often the driver model
+      got the garage right — then, of those, how often it got the driver too. Its no-signal baseline
+      is measured rather than assumed to be 0.5, because a coin flip is only the right baseline
+      where every garage holds two drivers, and AlphaTauri ran four.</p>
+  </section>
+
+  <section id="s2">
+    <div class="shead"><span class="n">02</span><h2>Teammates, where the car is held constant</h2>
+      <span class="sub">30 permutations per pair</span></div>
+    <div class="picker" id="picker"></div>
+    <div class="duel">
+      <div class="card">
+        <h4>Observed against its own null</h4>
+        <svg id="nullsvg" viewBox="0 0 560 186" role="img"></svg>
+        <p class="cap" id="nullcap"></p>
+        <p class="verdict" id="verdict"></p>
+      </div>
+      <div class="card">
+        <h4>What separates them</h4>
+        <svg id="impsvg" viewBox="0 0 400 210" role="img"></svg>
+        <p class="cap">Permutation importance on held-out circuits: the drop in balanced accuracy
+          when that one feature is shuffled.</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h4>The approach, averaged over every corner both of them ran</h4>
+      <svg id="appsvg" viewBox="0 0 980 230" role="img"></svg>
+      <p class="cap" id="appcap"></p>
+    </div>
+    <div class="deltas" id="deltas"></div>
+    <p class="note">Paired by corner: teammates share a car but not a set of laps — one of them
+      reaches Q3 more often — so an unpaired average would partly be comparing their session lists.
+      These raw differences are descriptive. They are <b>not</b> what the classifier scores on, and
+      a difference of a metre or two is well inside the spread of individual laps.</p>
+  </section>
+
+  <section id="s3">
+    <div class="shead"><span class="n">03</span><h2>Are the style groups just the teams again?</h2>
+      <span class="sub">k-means on driver profiles</span></div>
+    <div class="maprow">
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+          <h4 style="margin:0">Style map · two principal components</h4>
+          <div class="toggle" style="margin-left:auto" id="toggle">
+            <button data-mode="cluster" aria-pressed="true">by cluster</button>
+            <button data-mode="team" aria-pressed="false">by team</button>
+          </div>
+        </div>
+        <svg id="mapsvg" viewBox="0 0 640 430" role="img"></svg>
+        <p class="cap" id="mapcap">Every driver is the average of how they take a corner,
+          standardised <b>within</b> each corner first. Thin lines join teammates.</p>
+      </div>
+      <div class="diag" id="diag"></div>
+    </div>
+    <p class="note">If the clusters were a car signature wearing a style label, teammates would land
+      together far more often than chance puts them there. They do not — which is the evidence that
+      section 02 is not the car creeping back in through a feature that should have been excluded.</p>
+  </section>
+
+  <div id="err"></div>
+
+  <footer>
+    <h3>What this does not show</h3>
+    <ul>
+      <li><b>Separability is not skill.</b> The pair that separates best is not the best pair, it is
+        the pair whose two drivers do different things.</li>
+      <li>Qualifying only, one season, and <b>one corner at a time</b> — the hardest version of the
+        question. Pooling a whole lap would score higher and answer an easier one.</li>
+      <li>Engine speed on entry leads for most pairs. Within a team the gear ratios are identical, so
+        RPM at a point is a function of gear choice and shift timing — a real input — but it could
+        also pick up an engine mode that differs between Q1 and Q3, and this data cannot separate those.</li>
+      <li>AlphaTauri ran four drivers in 2023 and is excluded: a mid-season change is not a
+        controlled comparison, because the car was developed in between.</li>
+    </ul>
+    <p class="lk">Telemetry via <a href="https://github.com/theOehrly/Fast-F1">FastF1</a> (MIT)
+      against the public F1 timing API · derived features only, no raw telemetry redistributed ·
+      2023 qualifying, 22 sessions</p>
+  </footer>
 </div>
-<script type="module">
-import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser@1.9.1/build/stlite.js";
-mount({
-  requirements: ["matplotlib", "scikit-learn"],
-  entrypoint: "app.py",
-  files: {
-      "app.py": { url: "app.py?v=35d4b864" },
-      "data/corner_markers.csv": { url: "data/corner_markers.csv?v=03248bb6" },
-      "data/corner_summary.csv": { url: "data/corner_summary.csv?v=4484cfcc" },
-      "data/error_by_corner.csv": { url: "data/error_by_corner.csv?v=e27d5746" },
-      "data/evolution_q1_q2.csv": { url: "data/evolution_q1_q2.csv?v=b7914544" },
-      "data/feature_ablation.csv": { url: "data/feature_ablation.csv?v=2c952485" },
-      "data/lap_profile.csv": { url: "data/lap_profile.csv?v=d3bdd9c9" },
-      "data/laps.csv": { url: "data/laps.csv?v=7a4eeb0e" },
-      "data/meta.csv": { url: "data/meta.csv?v=f738edf5" },
-      "data/permutation_importance.csv": { url: "data/permutation_importance.csv?v=35f788a9" },
-      "data/season_gap_to_fastest.csv": { url: "data/season_gap_to_fastest.csv?v=04de38e3" },
-      "data/session_best_laps.csv": { url: "data/session_best_laps.csv?v=b7fca851" },
-      "data/track_centreline.csv": { url: "data/track_centreline.csv?v=2dc298ec" },
-  },
-}, document.getElementById("root"));
-</script>
-<style>
-#zback{
-  position:fixed; left:12px; bottom:12px; z-index:99999;
-  font-family:"Roboto Mono",ui-monospace,Menlo,monospace; font-size:11px; letter-spacing:.09em;
-  text-transform:uppercase; text-decoration:none;
-  background:#1B1B18; color:#EDEDE6; padding:9px 13px; border:1px solid #1B1B18;
-  box-shadow:0 2px 10px rgba(0,0,0,.28); opacity:.93;
-}
-#zback:hover{background:#E0417F; border-color:#E0417F; opacity:1}
-#zback:focus-visible{outline:2px solid #E0417F; outline-offset:2px}
-@media print{#zback{display:none}}
-</style>
 <a id="zback" href="../../">← Contents</a>
+
+<script>
+const TEAM_COLOUR = {
+  "Red Bull Racing":"#3671C6", "Ferrari":"#E8002D", "Mercedes":"#6CD3BF", "Alpine":"#2293D1",
+  "McLaren":"#F58020", "Alfa Romeo":"#C92D4B", "Aston Martin":"#3FA987",
+  "Haas F1 Team":"#B9BDC0", "Williams":"#64C4FF", "AlphaTauri":"#8E9BAE",
+};
+const CLUSTER_COLOUR = ["#E08A4F","#6E8FA8","#57A773","#B9739B"];
+const SVG = "http://www.w3.org/2000/svg";
+const el = (n, a = {}, t) => { const e = document.createElementNS(SVG, n);
+  for (const k in a) e.setAttribute(k, a[k]); if (t != null) e.textContent = t; return e; };
+const f3 = v => v.toFixed(3);
+let D = null, TEAM = null, MODE = "cluster";
+
+fetch("data/showcase.json").then(r => {
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}).then(d => { D = d; boot(); }).catch(e => {
+  const b = document.getElementById("err");
+  b.style.display = "block";
+  b.textContent = "Could not load data/showcase.json — " + e.message;
+});
+
+function boot(){
+  const ds = D.dataset;
+  document.getElementById("facts").innerHTML =
+    `<span><b>${ds.traversals.toLocaleString()}</b> corner traversals</span>` +
+    `<span><b>${ds.drivers}</b> drivers</span><span><b>${ds.teams}</b> teams</span>` +
+    `<span><b>${ds.circuits}</b> circuits</span>` +
+    `<span><b>${D.features.style.length}</b> driver-input features, ` +
+    `<b>${D.features.excluded.length}</b> excluded</span>`;
+  drawQ(); drawRollup(); buildPicker(); drawMap(); drawDiag();
+  select(D.teams[0].team);
+}
+
+/* ---------------- §1 ---------------- */
+function drawQ(){
+  const rows = [
+    {t:"Who is driving?", r:D.identify.driver, c:"var(--accent)"},
+    {t:"What are they driving?", r:D.identify.team, c:"var(--cool)"},
+  ];
+  const max = 0.34;   // one shared axis, so the two bars are comparable as drawn
+  document.getElementById("q").innerHTML = rows.map(({t,r,c}) => `
+    <div class="qrow">
+      <div class="lab"><h3>${t}</h3>
+        <span class="cls">${r.n_classes} classes · chance ${f3(r.chance)}</span>
+        <span class="acc">${f3(r.accuracy)}</span></div>
+      <div class="track">
+        <div class="fill" style="width:${(r.accuracy/max*100).toFixed(1)}%;background:${c};opacity:.85"></div>
+        <div class="chance" style="left:${(r.chance/max*100).toFixed(1)}%"></div>
+        <div class="ct" style="left:${(r.chance/max*100).toFixed(1)}%">chance</div>
+      </div>
+      <div class="lift">balanced ${f3(r.balanced_accuracy)} &nbsp;·&nbsp;
+        ${(r.accuracy/r.chance).toFixed(1)}× chance &nbsp;·&nbsp;
+        sd across folds ${r.accuracy_sd.toFixed(3)}</div>
+    </div>`).join("");
+}
+
+function drawRollup(){
+  const r = D.identify.driver;
+  document.getElementById("rollup").innerHTML = `
+    <div class="rk">The driver model, scored at the garage</div>
+    <div class="rgrid">
+      <div class="rc"><div class="v">${f3(r.rollup_accuracy)}</div>
+        <div class="d">of traversals, the driver model names the right <b>team</b> —
+          against ${f3(r.rollup_chance)} chance.</div></div>
+      <div class="rc"><div class="v">${f3(r.accuracy)}</div>
+        <div class="d">of traversals, it names the right <b>driver</b>.</div></div>
+      <div class="rc hi"><div class="v">${f3(r.within_rollup_share)}</div>
+        <div class="d">of the cars it gets right, it gets the driver right too — against
+          <b>${f3(r.within_rollup_chance)}</b> with no signal inside the garage at all.</div></div>
+    </div>`;
+}
+
+/* ---------------- §2 ---------------- */
+function buildPicker(){
+  const p = document.getElementById("picker");
+  p.innerHTML = D.teams.map(t => `
+    <button data-team="${t.team}" aria-pressed="false" class="${t.p < 0.05 ? "" : "ns"}">
+      <span class="sw" style="background:${TEAM_COLOUR[t.team] || "#888"}"></span>
+      ${t.a}&nbsp;v&nbsp;${t.b}</button>`).join("");
+  p.querySelectorAll("button").forEach(b =>
+    b.addEventListener("click", () => select(b.dataset.team)));
+}
+
+function select(team){
+  TEAM = D.teams.find(t => t.team === team);
+  document.querySelectorAll("#picker button").forEach(b =>
+    b.setAttribute("aria-pressed", String(b.dataset.team === team)));
+  drawNull(); drawImp(); drawApproach(); drawDeltas();
+}
+
+function drawNull(){
+  const t = TEAM, s = document.getElementById("nullsvg");
+  s.innerHTML = "";
+  const W = 560, H = 186, L = 14, R = 14, yAx = H - 30;
+  const vals = t.nulls.length ? t.nulls : [t.null_mean];
+  const lo = Math.min(0.47, Math.min(...vals) - .012);
+  const hi = Math.max(0.74, t.balanced + .035);
+  const x = v => L + (v - lo) / (hi - lo) * (W - L - R);
+  const col = TEAM_COLOUR[t.team] || "#888";
+
+  // null band up to q95, then the tail
+  s.appendChild(el("rect", {x:x(Math.min(...vals)), y:34, width:Math.max(1,x(Math.max(...vals))-x(Math.min(...vals))),
+    height:yAx-34, fill:"#2B313B", opacity:".30", rx:2}));
+  s.appendChild(el("rect", {x:x(Math.min(...vals)), y:34, width:Math.max(1,x(t.null_q95)-x(Math.min(...vals))),
+    height:yAx-34, fill:"#2B313B", opacity:".55", rx:2}));
+  s.appendChild(el("text", {x:x(t.null_q95)+5, y:46, fill:"#626A78", "font-family":"var(--mono)",
+    "font-size":"9.5"}, "95th pct of the null"));
+
+  // the 30 null scores, stacked where they collide
+  const used = [];
+  vals.forEach(v => {
+    const px = x(v);
+    let lane = 0;
+    while (used.some(u => u.lane === lane && Math.abs(u.px - px) < 7.5)) lane++;
+    used.push({lane, px});
+    s.appendChild(el("circle", {cx:px, cy:yAx - 12 - lane * 10, r:3.1, fill:"#7C8796", opacity:".85"}));
+  });
+
+  // observed
+  s.appendChild(el("line", {x1:x(t.balanced), y1:26, x2:x(t.balanced), y2:yAx,
+    stroke:col, "stroke-width":2.5}));
+  s.appendChild(el("circle", {cx:x(t.balanced), cy:26, r:5, fill:col}));
+  const lx = Math.min(x(t.balanced) + 9, W - 92);
+  s.appendChild(el("text", {x:lx, y:21, fill:col, "font-family":"var(--mono)", "font-size":"13",
+    "font-weight":"700"}, f3(t.balanced)));
+  s.appendChild(el("text", {x:lx, y:34, fill:"#99A0AC", "font-family":"var(--mono)",
+    "font-size":"9.5"}, "observed"));
+
+  // axis
+  s.appendChild(el("line", {x1:L, y1:yAx, x2:W-R, y2:yAx, stroke:"#2B313B"}));
+  for (let v = 0.45; v <= hi + 1e-9; v += 0.05) {
+    if (v < lo - 1e-9) continue;
+    s.appendChild(el("line", {x1:x(v), y1:yAx, x2:x(v), y2:yAx+4, stroke:"#2B313B"}));
+    s.appendChild(el("text", {x:x(v), y:yAx+17, fill:"#626A78", "font-family":"var(--mono)",
+      "font-size":"10", "text-anchor":"middle"}, v.toFixed(2)));
+  }
+  s.appendChild(el("text", {x:W-R, y:H-2, fill:"#626A78", "font-family":"var(--mono)",
+    "font-size":"9.5", "text-anchor":"end"}, "balanced accuracy, held-out circuits"));
+
+  document.getElementById("nullcap").innerHTML =
+    `The null shuffles the driver label across <b>${t.team}</b>'s ${t.n.toLocaleString()} traversals
+     and refits — the hypothesis that ${t.a} and ${t.b} are interchangeable given the corner.
+     It is not centred on 0.5, because correlated laps and a finite sample can put a chance-level
+     model above half on their own.`;
+  const beat = t.p < 0.05;
+  document.getElementById("verdict").innerHTML = beat
+    ? `<span class="yes">◆ beats its null</span> &nbsp; p = ${t.p.toFixed(3)}
+       ${Math.abs(t.p - t.p_floor) < 1e-9 ? "(the floor: never beaten in 30 draws)" : ""}`
+    : `<span class="no">◇ inside its null</span> &nbsp; p = ${t.p.toFixed(3)} —
+       on one corner, telling ${t.a} from ${t.b} is a coin flip`;
+}
+
+function drawImp(){
+  const t = TEAM, s = document.getElementById("impsvg");
+  s.innerHTML = "";
+  const rows = t.importance.slice(0, 7);
+  const W = 400, rowH = 28, pad = 4;
+  const max = Math.max(...rows.map(r => r.drop), 0.02);
+  const col = TEAM_COLOUR[t.team] || "#888";
+  rows.forEach((r, i) => {
+    const y = pad + i * rowH;
+    s.appendChild(el("text", {x:0, y:y+10, fill:"#99A0AC", "font-family":"var(--sans)",
+      "font-size":"11.5"}, r.label));
+    const w = Math.max(1, Math.abs(r.drop) / max * (W - 52));
+    s.appendChild(el("rect", {x:0, y:y+14, width:w, height:7, rx:2,
+      fill:r.drop >= 0 ? col : "#3A414C", opacity:".9"}));
+    s.appendChild(el("text", {x:W, y:y+21, fill:"#626A78", "font-family":"var(--mono)",
+      "font-size":"10.5", "text-anchor":"end"}, (r.drop >= 0 ? "+" : "") + r.drop.toFixed(4)));
+  });
+  s.setAttribute("viewBox", `0 0 ${W} ${pad * 2 + rows.length * rowH}`);
+}
+
+function drawApproach(){
+  const t = TEAM, s = document.getElementById("appsvg"), a = t.approach;
+  s.innerHTML = "";
+  const W = 980, H = 230, L = 52, R = 118, T = 16, B = 42;
+  const xs = a.m, ys = a.a_kph.concat(a.b_kph);
+  const lo = Math.min(...ys) - 3, hi = Math.max(...ys) + 3;
+  const X = m => L + (m - xs[0]) / (xs[xs.length-1] - xs[0]) * (W - L - R);
+  const Y = v => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
+  const col = TEAM_COLOUR[t.team] || "#888";
+  const pair = [{k:"a_kph", n:t.a, c:col, dash:""}, {k:"b_kph", n:t.b, c:"#E8ECF2", dash:"5 4"}];
+
+  for (let i = 0; i <= 4; i++) {
+    const v = lo + (hi - lo) * i / 4;
+    s.appendChild(el("line", {x1:L, y1:Y(v), x2:W-R, y2:Y(v), stroke:"#1F232B"}));
+    s.appendChild(el("text", {x:L-9, y:Y(v)+4, fill:"#626A78", "font-family":"var(--mono)",
+      "font-size":"10", "text-anchor":"end"}, v.toFixed(0)));
+  }
+  xs.forEach(m => {
+    s.appendChild(el("text", {x:X(m), y:H-22, fill:"#626A78", "font-family":"var(--mono)",
+      "font-size":"10.5", "text-anchor":"middle"}, m + " m"));
+  });
+  s.appendChild(el("text", {x:(L+W-R)/2, y:H-6, fill:"#4A5262", "font-family":"var(--mono)",
+    "font-size":"9.5", "text-anchor":"middle"}, "distance before the apex"));
+  s.appendChild(el("text", {x:L-9, y:T-2, fill:"#4A5262", "font-family":"var(--mono)",
+    "font-size":"9.5", "text-anchor":"end"}, "km/h"));
+
+  pair.forEach(p => {
+    const pts = xs.map((m, i) => `${X(m)},${Y(t.approach[p.k][i])}`).join(" ");
+    s.appendChild(el("polyline", {points:pts, fill:"none", stroke:p.c, "stroke-width":2.2,
+      "stroke-dasharray":p.dash, "stroke-linejoin":"round"}));
+    xs.forEach((m, i) => s.appendChild(el("circle", {cx:X(m), cy:Y(t.approach[p.k][i]), r:3.4,
+      fill:p.c})));
+    const last = t.approach[p.k][xs.length-1];
+    s.appendChild(el("text", {x:W-R+12, y:Y(last)+4, fill:p.c, "font-family":"var(--mono)",
+      "font-size":"12.5", "font-weight":"700"}, `${p.n}  ${last.toFixed(1)}`));
+  });
+
+  const gap = t.approach.a_kph.map((v, i) => v - t.approach.b_kph[i]);
+  const big = gap.reduce((m, v, i) => Math.abs(v) > Math.abs(gap[m]) ? i : m, 0);
+  document.getElementById("appcap").innerHTML =
+    `Mean speed at five fixed points on the way into a corner, over the
+     <b>${a.n_corners}</b> corners both drivers ran. Largest separation at
+     <b>${xs[big]} m</b>: ${gap[big] > 0 ? t.a : t.b} is
+     <b>${Math.abs(gap[big]).toFixed(1)} km/h</b> quicker there on average.
+     Both lines are averages over a whole season — the spread of individual laps is far wider
+     than the gap between them.`;
+}
+
+function drawDeltas(){
+  const t = TEAM;
+  document.getElementById("deltas").innerHTML = t.deltas.map(d => `
+    <div class="dc">
+      <div class="dk">${d.label}</div>
+      <div class="dv">
+        <span class="a" style="color:${TEAM_COLOUR[t.team] || "#888"}">${d.a_text ?? d.a}</span>
+        <span class="b">${d.b_text ?? d.b}</span>
+      </div>
+      <div class="du">${t.a} · ${t.b}${d.unit ? " &nbsp;" + d.unit : ""}</div>
+    </div>`).join("");
+}
+
+/* ---------------- §3 ---------------- */
+function drawMap(){
+  const s = document.getElementById("mapsvg");
+  s.innerHTML = "";
+  const W = 640, H = 430, P = 34;
+  const ds = D.drivers;
+  const xr = [Math.min(...ds.map(d => d.pc1)), Math.max(...ds.map(d => d.pc1))];
+  const yr = [Math.min(...ds.map(d => d.pc2)), Math.max(...ds.map(d => d.pc2))];
+  const X = v => P + (v - xr[0]) / (xr[1] - xr[0]) * (W - 2*P);
+  const Y = v => H - P - (v - yr[0]) / (yr[1] - yr[0]) * (H - 2*P);
+  const colour = d => MODE === "cluster" ? CLUSTER_COLOUR[d.cluster % 4]
+                                         : (TEAM_COLOUR[d.team] || "#888");
+  const byTeam = {};
+  ds.forEach(d => (byTeam[d.team] = byTeam[d.team] || []).push(d));
+
+  Object.values(byTeam).forEach(g => {
+    if (g.length !== 2) return;
+    s.appendChild(el("line", {x1:X(g[0].pc1), y1:Y(g[0].pc2), x2:X(g[1].pc1), y2:Y(g[1].pc2),
+      stroke:"#3A414C", "stroke-width":1, "stroke-dasharray":"3 3"}));
+  });
+  ds.forEach(d => {
+    const c = colour(d);
+    s.appendChild(el("circle", {cx:X(d.pc1), cy:Y(d.pc2), r:6.5, fill:c, opacity:".92"}));
+    const t = el("text", {x:X(d.pc1)+10, y:Y(d.pc2)+4, fill:"#E8ECF2",
+      "font-family":"var(--mono)", "font-size":"11"}, d.driver);
+    s.appendChild(t);
+    const title = el("title", {}, `${d.driver} — ${d.team} · cluster ${d.cluster} · ` +
+      `${d.n_traversals.toLocaleString()} traversals`);
+    t.appendChild(title.cloneNode(true));
+    s.lastChild.appendChild(title);
+  });
+  document.getElementById("mapcap").innerHTML =
+    `Every driver is the average of how they take a corner, standardised <b>within</b> each
+     corner first. Thin lines join teammates. <b>${ds.length} of ${D.dataset.drivers}</b> drivers
+     are here: a profile needs 300 corner traversals to be an average of anything, which leaves
+     out the two AlphaTauri stand-ins and gives that garage two drivers like every other.`;
+  const ev = D.cluster_diagnostic.explained_variance;
+  s.appendChild(el("text", {x:W-4, y:H-8, fill:"#4A5262", "font-family":"var(--mono)",
+    "font-size":"9.5", "text-anchor":"end"},
+    `PC1 ${(ev[0]*100).toFixed(0)}% · PC2 ${(ev[1]*100).toFixed(0)}% of the variance between profiles`));
+}
+
+function drawDiag(){
+  const c = D.cluster_diagnostic;
+  document.getElementById("diag").innerHTML = `
+    <div class="row"><span>teammate pairs together</span><b>${c.teammates_together} of ${c.n_pairs}</b></div>
+    <div class="row"><span>expected by chance</span><b>${c.expected_by_chance.toFixed(2)}</b></div>
+    <div class="row"><span>p (2,000 shuffles)</span><b style="color:var(--warm)">${c.p_value.toFixed(3)}</b></div>
+    <div class="row"><span>clusters</span><b>4</b></div>
+    <p class="cap" style="margin-top:12px">Not significant — and that is the result being looked
+      for here. A car signature would put teammates together.</p>`;
+}
+
+document.getElementById("toggle").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  MODE = b.dataset.mode;
+  document.querySelectorAll("#toggle button").forEach(x =>
+    x.setAttribute("aria-pressed", String(x.dataset.mode === MODE)));
+  drawMap();
+});
+</script>
 </body>
 </html>
