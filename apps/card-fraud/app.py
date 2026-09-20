@@ -119,20 +119,33 @@ def figure_queue(curve: pd.DataFrame, k: int, prevalence: float):
 
 
 def figure_split(split_comparison: list):
+    """The grey bars are taller and that is the problem, not the point.
+
+    The first version of this put "-34%" over the chronological bar, which reads as "the
+    chronological split performs worse" — the opposite of what it means. The model is the
+    same in both; only the evaluation changed. So the label now sits on the shuffled bar and
+    names it as inflation, the axis says which number is the honest one, and the legend says
+    what each bar is rather than only how it was split.
+    """
     rows = {r["index"]: r for r in split_comparison}
-    fig, ax = plt.subplots(figsize=(7.0, 2.9))
+    fig, ax = plt.subplots(figsize=(7.4, 3.3))
     metrics = ["average_precision", "roc_auc", "precision_at_100"]
     labels = ["average precision", "ROC-AUC", "precision@100"]
     x = np.arange(len(metrics))
     a = [rows["shuffled"][m] for m in metrics]
     b = [rows["chronological"][m] for m in metrics]
-    ax.bar(x - 0.19, a, 0.36, color=GREY, label="shuffled split")
-    ax.bar(x + 0.19, b, 0.36, color=BLUE, label="chronological split")
+    ax.bar(x - 0.19, a, 0.36, color=GREY, hatch="///", edgecolor="white", linewidth=0,
+           label="shuffled — inflated by leakage")
+    ax.bar(x + 0.19, b, 0.36, color=BLUE, label="chronological — what deployment would give")
     for i, (u, v) in enumerate(zip(a, b)):
-        ax.text(i, max(u, v) + 0.07, f"{(v-u)/u:+.0%}", ha="center", fontsize=9.5,
+        ax.text(i - 0.19, u + 0.04, f"+{(u - v) / v:.0%}", ha="center", fontsize=10,
                 color=RED, fontweight="semibold")
+        ax.text(i + 0.19, v + 0.04, f"{v:.2f}", ha="center", fontsize=9.5, color=BLUE)
     ax.set_xticks(x, labels)
-    ax.set_ylim(0, 1.05)
+    ax.set_ylim(0, 1.12)
+    ax.set_ylabel("higher is not better here", fontsize=9, color=MUTED)
+    ax.set_title("the red figure is how much shuffling overstates the blue one",
+                 fontsize=9.5, color=MUTED, loc="left", pad=8)
     ax.legend(fontsize=8.5, labelcolor=MUTED, loc="upper right")
     fig.tight_layout()
     return fig
@@ -248,23 +261,41 @@ def main() -> None:
         icon=":material/straighten:")
 
     st.divider()
-    st.subheader("3 · The split was worth more than the model")
+    st.subheader("3 · The split decided more than the model did")
     st.markdown(
         "This file has a `Time` column spanning 48 hours, and almost every published "
-        "treatment of it uses a **random** split. That lets the model learn from "
-        "transactions that happen after the ones it is scored on, and it breaks the "
-        "card-level structure — one compromised card often produces several frauds minutes "
-        "apart, and shuffling puts some in train and the rest in test."
+        "treatment of it splits **at random**. Below are the same model and the same "
+        "hyperparameters scored two ways. The bars are not two models competing — they are "
+        "one model, evaluated honestly and evaluated with a leak."
     )
     st.pyplot(figure_split(ref["split_comparison"]), use_container_width=True)
     drift = ref["prevalence_drift"]
+    sc = {r["index"]: r for r in ref["split_comparison"]}
+    sh, ch = sc["shuffled"], sc["chronological"]
+    infl = sh["average_precision"] / ch["average_precision"] - 1
     st.markdown(
-        f"Same model, same hyperparameters, two ways of holding data out. **Average "
-        f"precision falls 34% when the split stops being shuffled.**\n\n"
-        f"The fraud rate is not even constant across the file: **{drift['train']:.3%} in "
-        f"training, {drift['valid']:.3%} in validation, {drift['test']:.3%} in test** — a "
-        f"37% relative drop inside two days. A chronological split is not merely stricter, "
-        f"it is measuring a different population."
+        f"**Use the chronological one.** The taller grey bars are not a better model — the "
+        f"model, the features and the hyperparameters are identical in both. Only the way "
+        f"data was held out changed, and shuffling lets the model see transactions that "
+        f"happen *after* the ones it is scored on. A deployed fraud model never gets that: "
+        f"it only ever scores what comes next. So **{ch['average_precision']:.2f} is the "
+        f"honest estimate and {sh['average_precision']:.2f} is the number you would report "
+        f"to yourself — shuffling overstates average precision by "
+        f"{infl:.0%}.**\n\n"
+        f"ROC-AUC barely notices ({sh['roc_auc']:.3f} against {ch['roc_auc']:.3f}, a "
+        f"{sh['roc_auc'] / ch['roc_auc'] - 1:.0%} gap) which is its own warning: the metric "
+        f"most papers lead with is the one least able to tell a leaking evaluation from a "
+        f"clean one.\n\n"
+        f"Two reasons the gap is real rather than pessimism. One compromised card often "
+        f"produces several frauds minutes apart, and shuffling puts some of them in training "
+        f"and the rest in test — the model has effectively seen the answer. And the fraud "
+        f"rate is not constant across the file: **{drift['train']:.3%} in training, "
+        f"{drift['valid']:.3%} in validation, {drift['test']:.3%} in test** — a 37% relative "
+        f"drop inside two days, so the chronological test set holds "
+        f"{int(ch['n_positives'])} frauds where the shuffled one holds "
+        f"{int(sh['n_positives'])}. The chronological split is not merely stricter; it is "
+        f"measuring a different and later population, which is exactly the population a "
+        f"deployed model faces."
     )
 
     st.divider()

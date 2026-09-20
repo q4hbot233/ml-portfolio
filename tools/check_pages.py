@@ -21,6 +21,7 @@ not. Prose does not get re-run when the data does.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import sys
@@ -103,6 +104,27 @@ def static_prose(html: str) -> list[tuple[str, str]]:
     return out
 
 
+#: The stlite pages bust caches with `file?v=<first 8 of sha256>`. The hash is written by
+#: hand, so editing the file and forgetting the hash serves returning visitors the old code
+#: against the new page — silently, and only for people who have been before.
+VERSIONED = re.compile(r'"([\w./-]+)\?v=([0-9a-f]{8})"')
+
+
+def stale_hashes(app: Path, html: str) -> list[str]:
+    out = []
+    for m in VERSIONED.finditer(html):
+        rel, claimed = m.group(1), m.group(2)
+        target = app / rel
+        if not target.exists():
+            out.append(f"{rel}?v= points at a file that is not there")
+            continue
+        actual = hashlib.sha256(target.read_bytes()).hexdigest()[:8]
+        if actual != claimed:
+            out.append(f"{rel} is versioned ?v={claimed} but hashes to {actual} — "
+                       f"returning visitors would get the old file")
+    return out
+
+
 def check(app: Path) -> list[str]:
     html = (app / "index.html").read_text()
     problems = []
@@ -117,6 +139,8 @@ def check(app: Path) -> list[str]:
             if not resolve(payload, r):
                 problems.append(f"page reads D.{r}, not in {path.name}")
 
+    problems += stale_hashes(app, html)
+
     for kind, txt in static_prose(html):
         for m in CLAIM.finditer(txt):
             lit = m.group(1)
@@ -127,8 +151,35 @@ def check(app: Path) -> list[str]:
     return problems
 
 
+def rewrite_hashes(app: Path) -> int:
+    """Rewrite every ?v= to the file's actual hash. Only safe because the hash IS the file —
+    there is no judgement in it, unlike the prose checks, which are never auto-fixed."""
+    page = app / "index.html"
+    html = page.read_text()
+
+    def repl(m):
+        target = app / m.group(1)
+        if not target.exists():
+            return m.group(0)
+        return f'"{m.group(1)}?v={hashlib.sha256(target.read_bytes()).hexdigest()[:8]}"'
+
+    fixed = VERSIONED.sub(repl, html)
+    if fixed != html:
+        page.write_text(fixed)
+        return sum(1 for a, b in zip(VERSIONED.findall(html), VERSIONED.findall(fixed))
+                   if a != b)
+    return 0
+
+
 def main() -> int:
+    fix = "--fix" in sys.argv
     apps = sorted(d for d in APPS.iterdir() if (d / "index.html").exists())
+    if fix:
+        for app in apps:
+            n = rewrite_hashes(app)
+            if n:
+                print(f"~ {app.name}: rewrote {n} cache-busting hash(es)")
+        print()
     bad = 0
     for app in apps:
         problems = check(app)
