@@ -696,10 +696,21 @@ function drawScorerTeams(){
 
 function drawTeams(){
   const s = document.getElementById("teamsvg"); s.innerHTML = "";
-  const t = [...D.teams].sort((a,b) => b.mean - a.mean);
+  let t = [...D.teams].sort((a,b) => b.mean - a.mean);
   const W = 900, rowH = 34, L = 168, R = 92, T = 26;
   const H = T + t.length * rowH + 30;
   s.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  // The residuals come out of an OLS fit with an intercept, so they are centred on zero
+  // while the raw means are centred on about +0.10. Drawn on one axis as they stand, every
+  // adjusted marker sits left of its raw one by that offset — an artefact of the two
+  // centrings, which reads as "the adjustment made everyone gloomier". Shifting the adjusted
+  // series onto the raw centre removes the artefact and leaves the only thing that carries
+  // meaning here: how far a team MOVES between the two.
+  const rawMean = t.reduce((a, r) => a + r.mean, 0) / t.length;
+  const residMean = t.reduce((a, r) => a + r.resid_mean, 0) / t.length;
+  const shift = rawMean - residMean;
+  t = t.map(r => ({...r, resid_mean: r.resid_mean + shift,
+                         resid_lo: r.resid_lo + shift, resid_hi: r.resid_hi + shift}));
   const all = t.flatMap(r => [r.lo, r.hi, r.resid_lo, r.resid_hi]);
   const lo = Math.min(...all) - .02, hi = Math.max(...all) + .02;
   const X = v => L + (v - lo) / (hi - lo) * (W - L - R);
@@ -729,10 +740,17 @@ function drawTeams(){
   const sepRaw = t.filter(r => r.lo > mean || r.hi < mean).length;
   const rmean = t.reduce((a, r) => a + r.resid_mean, 0) / t.length;
   const sepAdj = t.filter(r => r.resid_lo > rmean || r.resid_hi < rmean).length;
+  const moved = t.filter(r => Math.abs(r.mean - r.resid_mean) > 0.05).length;
   document.getElementById("teamcap").innerHTML =
     `<b>${sepRaw} of ${t.length}</b> teams sit clear of the field mean on raw sentiment;
      <b>${sepAdj} of ${t.length}</b> still do once their own results are accounted for.
-     Intervals resample whole races, so one loud weekend cannot carry a team.`;
+     Intervals resample whole races, so one loud weekend cannot carry a team.
+     <br><br>The adjusted series is centred on the raw one so the two rows can be read against
+     the same line — residuals from a fit with an intercept sit around zero, and drawn as they
+     come out every adjusted marker would fall left of its raw one by the same amount, which
+     is an artefact and not a result. <b>The horizontal distance between a team's two markers
+     is the readable quantity</b>: it is how much of that team's position was its own results
+     rather than how it talks. ${moved} of ${t.length} move by more than 0.05.`;
 }
 </script>
 </body>
