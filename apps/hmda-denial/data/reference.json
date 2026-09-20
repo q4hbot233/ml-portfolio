@@ -1,13 +1,23 @@
 {
  "_source": "hmda-mortgage-denial-audit (private repo)",
  "_derived_from": "CFPB HMDA data browser (Regulation C loan/application register)",
- "_note": "Derived artefacts only: outcome, predicted denial probability and the four audited attributes. No loan amounts, incomes or geography.",
+ "_note": "Derived artefacts only: outcome, predicted denial probability and group aggregates. No applicant rows are shipped.",
  "slice": {
   "state": "GA",
   "year": 2023
  },
  "n_published": 450495,
  "n_modelled": 297104,
+ "outcome_counts": {
+  "originated": 209723,
+  "denied": 87381,
+  "withdrawn": 66448,
+  "purchased": 50679,
+  "incomplete": 24873,
+  "approved_not_accepted": 10239,
+  "preapproval_approved_not_accepted": 886,
+  "preapproval_denied": 266
+ },
  "dropped_by_the_convention": {
   "withdrawn": 66448,
   "incomplete": 24873,
@@ -174,6 +184,15 @@
   ],
   "credit_history_share_of_all_denials": 0.30519220425492954
  },
+ "dti_band_counts": {
+  "36-49 (exact)": 126982,
+  "50%-60%": 35861,
+  "30%-<36%": 35801,
+  "20%-<30%": 33945,
+  ">60%": 24815,
+  "not reported": 24521,
+  "<20%": 15179
+ },
  "models": [
   {
    "index": 0,
@@ -334,6 +353,146 @@
    "n_perm": 2000
   }
  },
+ "outcome_by_race": [
+  {
+   "race": "american_indian",
+   "originated": 0.3774053383,
+   "denied": 0.3327126009,
+   "withdrawn": 0.1756672874,
+   "incomplete": 0.1142147734,
+   "n": 1611
+  },
+  {
+   "race": "asian",
+   "originated": 0.595916744,
+   "denied": 0.1658933227,
+   "withdrawn": 0.1794157939,
+   "incomplete": 0.0587741394,
+   "n": 22629
+  },
+  {
+   "race": "black",
+   "originated": 0.4468689019,
+   "denied": 0.2992935333,
+   "withdrawn": 0.1875945695,
+   "incomplete": 0.0662429953,
+   "n": 95829
+  },
+  {
+   "race": "joint",
+   "originated": 0.5949044586,
+   "denied": 0.1790718835,
+   "withdrawn": 0.174522293,
+   "incomplete": 0.0515013649,
+   "n": 5495
+  },
+  {
+   "race": "not_provided",
+   "originated": 0.5015880218,
+   "denied": 0.225625126,
+   "withdrawn": 0.1963601533,
+   "incomplete": 0.0764266989,
+   "n": 79344
+  },
+  {
+   "race": "two_or_more_minority",
+   "originated": 0.3695510735,
+   "denied": 0.3376707872,
+   "withdrawn": 0.1990891347,
+   "incomplete": 0.0936890046,
+   "n": 1537
+  },
+  {
+   "race": "white",
+   "originated": 0.600618717,
+   "denied": 0.1917691888,
+   "withdrawn": 0.1498817159,
+   "incomplete": 0.0577303783,
+   "n": 181343
+  }
+ ],
+ "group_table_valid": [
+  {
+   "index": 0,
+   "group": "american_indian",
+   "n": 237.0,
+   "base_rate": 0.4810126582,
+   "selection_rate": 0.3839662447,
+   "tpr": 0.7192982456,
+   "fpr": 0.0731707317,
+   "fnr": 0.2807017544
+  },
+  {
+   "index": 1,
+   "group": "asian",
+   "n": 3505.0,
+   "base_rate": 0.2233951498,
+   "selection_rate": 0.1392296719,
+   "tpr": 0.5772669221,
+   "fpr": 0.0132255694,
+   "fnr": 0.4227330779
+  },
+  {
+   "index": 2,
+   "group": "black",
+   "n": 14245.0,
+   "base_rate": 0.4011934012,
+   "selection_rate": 0.2714636715,
+   "tpr": 0.6092738408,
+   "fpr": 0.0451348183,
+   "fnr": 0.3907261592
+  },
+  {
+   "index": 3,
+   "group": "joint",
+   "n": 857.0,
+   "base_rate": 0.211201867,
+   "selection_rate": 0.1446907818,
+   "tpr": 0.5690607735,
+   "fpr": 0.0310650888,
+   "fnr": 0.4309392265
+  },
+  {
+   "index": 4,
+   "group": "not_provided",
+   "n": 11649.0,
+   "base_rate": 0.314104215,
+   "selection_rate": 0.2026783415,
+   "tpr": 0.5777534846,
+   "fpr": 0.0309136421,
+   "fnr": 0.4222465154
+  },
+  {
+   "index": 5,
+   "group": "pacific_islander",
+   "n": 88.0,
+   "base_rate": 0.4318181818,
+   "selection_rate": 0.4204545455,
+   "tpr": 0.8684210526,
+   "fpr": 0.08,
+   "fnr": 0.1315789474
+  },
+  {
+   "index": 6,
+   "group": "two_or_more_minority",
+   "n": 211.0,
+   "base_rate": 0.4549763033,
+   "selection_rate": 0.3033175355,
+   "tpr": 0.6145833333,
+   "fpr": 0.0434782609,
+   "fnr": 0.3854166667
+  },
+  {
+   "index": 7,
+   "group": "white",
+   "n": 28629.0,
+   "base_rate": 0.2406650599,
+   "selection_rate": 0.1821928813,
+   "tpr": 0.634107402,
+   "fpr": 0.0389622338,
+   "fnr": 0.365892598
+  }
+ ],
  "published_test": {
   "n": 59420,
   "denial_rate": 0.29410972736452373,
@@ -352,17 +511,317 @@
   "residual_risk_ratio": 1.2453706924502326,
   "e_value": 1.7981613120918283
  },
- "excluded_on_purpose": {
-  "tract_minority_population_percent": "neighbourhood racial composition; including it is redlining by construction",
-  "tract_to_msa_income_percentage": "neighbourhood income, a close proxy for the above",
-  "derived_race": "protected attribute, audit only",
-  "derived_sex": "protected attribute, audit only",
-  "derived_ethnicity": "protected attribute, audit only",
-  "applicant_age": "protected attribute, audit only",
-  "denial_reason-1": "recorded after the decision it would be predicting",
-  "interest_rate": "priced after approval; absent on every denied row",
-  "rate_spread": "same",
-  "total_loan_costs": "same"
+ "eda": {
+  "_written_utc": "2026-09-20T15:27:53+00:00",
+  "_name": "eda",
+  "_smoke_mode": false,
+  "split_used": "train",
+  "slice": {
+   "state": "GA",
+   "year": 2023
+  },
+  "outcome": {
+   "n": 178263,
+   "n_denied": 52429,
+   "denial_rate": 0.29411038746122303,
+   "majority_accuracy": 0.705889612538777
+  },
+  "breakdowns": {
+   "dti_band": [
+    {
+     "level": "36-49 (exact)",
+     "label": "36-49 (exact)",
+     "n": 76020,
+     "n_denied": 13410,
+     "denial_rate": 0.17640094711917917
+    },
+    {
+     "level": "30%-<36%",
+     "label": "30%-<36%",
+     "n": 21698,
+     "n_denied": 3782,
+     "denial_rate": 0.1743017789658033
+    },
+    {
+     "level": "50%-60%",
+     "label": "50%-60%",
+     "n": 21556,
+     "n_denied": 8167,
+     "denial_rate": 0.37887363147151604
+    },
+    {
+     "level": "20%-<30%",
+     "label": "20%-<30%",
+     "n": 20279,
+     "n_denied": 4184,
+     "denial_rate": 0.20632181074017455
+    },
+    {
+     "level": ">60%",
+     "label": ">60%",
+     "n": 14892,
+     "n_denied": 14171,
+     "denial_rate": 0.9515847434864356
+    },
+    {
+     "level": "not reported",
+     "label": "not reported",
+     "n": 14775,
+     "n_denied": 5300,
+     "denial_rate": 0.3587140439932318
+    },
+    {
+     "level": "<20%",
+     "label": "<20%",
+     "n": 9043,
+     "n_denied": 3415,
+     "denial_rate": 0.37764016366250136
+    }
+   ],
+   "loan_purpose": [
+    {
+     "level": "1",
+     "label": "Home purchase",
+     "n": 92099,
+     "n_denied": 15520,
+     "denial_rate": 0.16851431611635306
+    },
+    {
+     "level": "32",
+     "label": "Cash-out refinancing",
+     "n": 29268,
+     "n_denied": 10728,
+     "denial_rate": 0.36654366543665434
+    },
+    {
+     "level": "4",
+     "label": "Other purpose",
+     "n": 22841,
+     "n_denied": 11829,
+     "denial_rate": 0.5178845059323147
+    },
+    {
+     "level": "2",
+     "label": "Home improvement",
+     "n": 21592,
+     "n_denied": 10602,
+     "denial_rate": 0.49101519081141165
+    },
+    {
+     "level": "31",
+     "label": "Refinancing",
+     "n": 12435,
+     "n_denied": 3726,
+     "denial_rate": 0.29963811821471653
+    }
+   ],
+   "loan_type": [
+    {
+     "level": "1",
+     "label": "Conventional",
+     "n": 129225,
+     "n_denied": 40545,
+     "denial_rate": 0.3137550783517121
+    },
+    {
+     "level": "2",
+     "label": "FHA-insured",
+     "n": 32414,
+     "n_denied": 8567,
+     "denial_rate": 0.26429937681248844
+    },
+    {
+     "level": "3",
+     "label": "VA-guaranteed",
+     "n": 15796,
+     "n_denied": 3192,
+     "denial_rate": 0.20207647505697646
+    },
+    {
+     "level": "4",
+     "label": "USDA Rural Housing / FSA",
+     "n": 828,
+     "n_denied": 125,
+     "denial_rate": 0.15096618357487923
+    }
+   ],
+   "lien_status": [
+    {
+     "level": "1",
+     "label": "First lien",
+     "n": 134523,
+     "n_denied": 32327,
+     "denial_rate": 0.24030834875820492
+    },
+    {
+     "level": "2",
+     "label": "Subordinate lien",
+     "n": 43740,
+     "n_denied": 20102,
+     "denial_rate": 0.4595793324188386
+    }
+   ],
+   "preapproval": [
+    {
+     "level": "2",
+     "label": "Preapproval not requested",
+     "n": 174596,
+     "n_denied": 52429,
+     "denial_rate": 0.3002875209054045
+    },
+    {
+     "level": "1",
+     "label": "Preapproval requested",
+     "n": 3667,
+     "n_denied": 0,
+     "denial_rate": 0.0
+    }
+   ]
+  },
+  "missingness": [
+   {
+    "feature": "loan_to_value_ratio",
+    "n_missing": 19067,
+    "share": 0.10695994121045871
+   },
+   {
+    "feature": "property_value",
+    "n_missing": 11830,
+    "share": 0.06636262151988916
+   },
+   {
+    "feature": "income",
+    "n_missing": 9012,
+    "share": 0.05055451776308039
+   },
+   {
+    "feature": "loan_term",
+    "n_missing": 8003,
+    "share": 0.04489434150665029
+   },
+   {
+    "feature": "conforming_loan_limit",
+    "n_missing": 525,
+    "share": 0.0029450867538412346
+   }
+  ],
+  "numeric_quantiles": {
+   "loan_amount": {
+    "approved": {
+     "0.1": 55000.0,
+     "0.5": 245000.0,
+     "0.9": 495000.0
+    },
+    "denied": {
+     "0.1": 35000.0,
+     "0.5": 125000.0,
+     "0.9": 365000.0
+    }
+   },
+   "income": {
+    "approved": {
+     "0.1": 51.0,
+     "0.5": 103.0,
+     "0.9": 241.0
+    },
+    "denied": {
+     "0.1": 29.0,
+     "0.5": 75.0,
+     "0.9": 181.0
+    }
+   },
+   "property_value": {
+    "approved": {
+     "0.1": 205000.0,
+     "0.5": 365000.0,
+     "0.9": 715000.0
+    },
+    "denied": {
+     "0.1": 135000.0,
+     "0.5": 315000.0,
+     "0.9": 625000.0
+    }
+   },
+   "loan_to_value_ratio": {
+    "approved": {
+     "0.1": 46.5878,
+     "0.5": 80.0,
+     "0.9": 97.17020000000001
+    },
+    "denied": {
+     "0.1": 36.364,
+     "0.5": 76.129,
+     "0.9": 98.247
+    }
+   },
+   "loan_term": {
+    "approved": {
+     "0.1": 180.0,
+     "0.5": 360.0,
+     "0.9": 360.0
+    },
+    "denied": {
+     "0.1": 180.0,
+     "0.5": 360.0,
+     "0.9": 360.0
+    }
+   },
+   "applicant_count": {
+    "approved": {
+     "0.1": 1.0,
+     "0.5": 1.0,
+     "0.9": 2.0
+    },
+    "denied": {
+     "0.1": 1.0,
+     "0.5": 1.0,
+     "0.9": 2.0
+    }
+   }
+  },
+  "features": {
+   "numeric": [
+    "loan_amount",
+    "income",
+    "property_value",
+    "loan_to_value_ratio",
+    "loan_term",
+    "applicant_count"
+   ],
+   "categorical": [
+    "dti_band",
+    "loan_type",
+    "loan_purpose",
+    "occupancy_type",
+    "lien_status",
+    "construction_method",
+    "conforming_loan_limit",
+    "open_end_line_of_credit",
+    "business_or_commercial_purpose",
+    "derived_dwelling_category",
+    "preapproval"
+   ],
+   "total": 17,
+   "excluded_on_purpose": {
+    "tract_minority_population_percent": "neighbourhood racial composition; including it is redlining by construction",
+    "tract_to_msa_income_percentage": "neighbourhood income, a close proxy for the above",
+    "derived_race": "protected attribute, audit only",
+    "derived_sex": "protected attribute, audit only",
+    "derived_ethnicity": "protected attribute, audit only",
+    "applicant_age": "protected attribute, audit only",
+    "denial_reason-1": "recorded after the decision it would be predicting",
+    "interest_rate": "priced after approval; absent on every denied row",
+    "rate_spread": "same",
+    "total_loan_costs": "same"
+   },
+   "protected_carried_for_audit": [
+    "race",
+    "ethnicity",
+    "sex",
+    "age_band"
+   ]
+  },
+  "min_cell": 300
  },
  "min_audit_cell": 300,
  "race_codes": {
@@ -424,5 +883,17 @@
    "originated": 108918,
    "withdrawn": 27180
   }
+ },
+ "excluded_on_purpose": {
+  "tract_minority_population_percent": "neighbourhood racial composition; including it is redlining by construction",
+  "tract_to_msa_income_percentage": "neighbourhood income, a close proxy for the above",
+  "derived_race": "protected attribute, audit only",
+  "derived_sex": "protected attribute, audit only",
+  "derived_ethnicity": "protected attribute, audit only",
+  "applicant_age": "protected attribute, audit only",
+  "denial_reason-1": "recorded after the decision it would be predicting",
+  "interest_rate": "priced after approval; absent on every denied row",
+  "rate_spread": "same",
+  "total_loan_costs": "same"
  }
 }
