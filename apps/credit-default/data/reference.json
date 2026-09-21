@@ -632,7 +632,6 @@
   "n_outer_folds": 10
  },
  "swap": {
-  "_written_utc": "2026-09-19T16:17:38+00:00",
   "_name": "swap_comparison",
   "_note": "re-scores two already-published models on the test split; selects nothing and changes nothing",
   "_environment_matches_requirements": true,
@@ -671,7 +670,6 @@
   "reading": "The nested comparison implied roughly 180 units on 6,000 rows. The frozen cuts delivered 8. Threshold transfer explains part of it and the rest is inside one standard deviation of this split."
  },
  "selection_vs_cost_ratio": {
-  "_written_utc": "2026-09-19T18:00:44+00:00",
   "_name": "selection_vs_cost_ratio",
   "_note": "does the cost assumption change which model the selection rule picks; pooled train + valid only, test split never read",
   "_environment_matches_requirements": true,

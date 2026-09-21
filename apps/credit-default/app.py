@@ -54,14 +54,24 @@ PERMUTATION_SEED = 907
 THRESHOLD_STEP = 0.0005
 THRESHOLD_MIN, THRESHOLD_MAX = 0.0050, 0.8000
 
-INK = "#1b1b1f"
-MUTED = "#6b6b76"
-GRID = "#dcdce2"
-BLUE = "#2f5d9e"
-ORANGE = "#d1662a"
-RED = "#b3402f"
-GREY = "#8d8d98"
-TEAL = "#2d7d74"
+INK = "#E9ECF1"
+MUTED = "#99A0AC"
+GRID = "#232830"
+BLUE = "#6B9BD8"
+ORANGE = "#EE8A4A"
+RED = "#E2644E"
+GREY = "#7D8594"
+TEAL = "#46B3A6"
+
+# Dark, to sit on the page it is drawn into. The demos share the landing page's
+# ground (#08090B), so a figure with a white face would print as a white card on it.
+BG = "#08090B"
+matplotlib.rcParams.update({
+    "figure.facecolor": BG, "axes.facecolor": BG, "savefig.facecolor": BG,
+    "text.color": INK, "axes.titlecolor": INK, "axes.labelcolor": MUTED,
+    "axes.edgecolor": GRID, "xtick.color": MUTED, "ytick.color": MUTED,
+    "grid.color": GRID, "legend.labelcolor": MUTED,
+})
 
 
 # =====================================================================================
@@ -202,8 +212,8 @@ def optimal_threshold(y_true, score, cost_ratio: float) -> float:
 def flat_region(curve: pd.DataFrame, tolerance: float = 0.01) -> tuple[float, float, int]:
     """The band of cuts within ``tolerance`` of the cheapest one: ``(lo, hi, n_cuts)``.
 
-    The minimum of this curve is a basin, not a point. Reporting only the argmin invites a
-    reader to believe the third decimal place matters, which it does not.
+    The cost curve is nearly flat around its minimum, so the argmin alone would suggest the
+    third decimal place of the threshold matters. The band shows that it does not.
     """
     best = float(curve["expected_cost"].min())
     inside = curve.loc[curve["expected_cost"] <= best * (1.0 + tolerance), "threshold"]
@@ -404,11 +414,11 @@ def figure_cost_curve(curve: pd.DataFrame, threshold: float, cost_ratio: float,
     span = max(float(view["expected_cost"].max()) - best, 1.0)
 
     fig, ax = plt.subplots(figsize=(7.2, 4.2), dpi=110)
-    fig.patch.set_facecolor("white")
-    ax.set_facecolor("white")
+    fig.patch.set_facecolor(BG)
+    ax.set_facecolor(BG)
 
     ax.axvspan(lo, min(hi, xmax), color=BLUE, alpha=0.08, lw=0,
-               label=f"within 1% of the cheapest cut — {n_cuts} distinct cuts qualify")
+               label=f"within 1% of the cheapest cut, {n_cuts} distinct cuts qualify")
     ax.plot(view["threshold"], view["expected_cost"], color=BLUE, lw=2.1, zorder=3)
 
     ax.axvline(frozen_threshold, color=TEAL, lw=1.1, ls=(0, (5, 3)), alpha=0.9, zorder=2)
@@ -416,21 +426,21 @@ def figure_cost_curve(curve: pd.DataFrame, threshold: float, cost_ratio: float,
                 xy=(frozen_threshold, best), xytext=(frozen_threshold + 0.013, best - span * 0.12),
                 fontsize=8.5, color=TEAL, ha="left", va="center")
 
-    ax.plot([0.5], [half], "o", ms=8, mfc="white", mec=GREY, mew=2, zorder=5)
-    ax.annotate(f"0.5 — the cut you get for free\n{half:,.0f} units, {half / max(best, 1):.1f}x the minimum",
+    ax.plot([0.5], [half], "o", ms=8, mfc=BG, mec=GREY, mew=2, zorder=5)
+    ax.annotate(f"0.5: the cut you get for free\n{half:,.0f} units, {half / max(best, 1):.1f}x the minimum",
                 xy=(0.5, half), xytext=(0.5 - 0.022, half + span * 0.06),
                 fontsize=8.5, color=MUTED, ha="right", va="bottom")
 
-    ax.plot([threshold], [here], "o", ms=10, mfc=ORANGE, mec="white", mew=1.8, zorder=6)
+    ax.plot([threshold], [here], "o", ms=10, mfc=ORANGE, mec=BG, mew=1.8, zorder=6)
     ax.annotate(f"you are here: {threshold:.4f}\n{here:,.0f} units",
                 xy=(threshold, here), xytext=(threshold + 0.02, here + span * 0.10),
                 fontsize=9, color=ORANGE, ha="left", va="bottom", fontweight="semibold")
 
     _dress(
         ax,
-        title=(f"At r = {cost_ratio:g}, the cheapest cut is {t_best:.3f} — "
+        title=(f"At r = {cost_ratio:g}, the cheapest cut is {t_best:.3f}, "
                f"and 0.5 costs {half / max(best, 1):.1f}x as much"),
-        xlabel="decision threshold — flag when the calibrated probability of default is at least this",
+        xlabel="decision threshold: flag when the calibrated probability of default is at least this",
         ylabel="expected cost on 6,000 test clients\n(units of one false alarm)",
     )
     ax.set_xlim(0, xmax)
@@ -444,16 +454,16 @@ def figure_cost_curve(curve: pd.DataFrame, threshold: float, cost_ratio: float,
 def figure_group_errors(tables: dict, threshold: float, min_n: int = MIN_AUDIT_CELL):
     """False-negative and false-positive rates by group, for all four attributes."""
     fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.8), dpi=110)
-    fig.patch.set_facecolor("white")
+    fig.patch.set_facecolor(BG)
 
     for ax, attr in zip(axes.ravel(), ATTRIBUTES):
         table = tables[attr].sort_index(ascending=False)
-        ax.set_facecolor("white")
+        ax.set_facecolor(BG)
         pos = np.arange(len(table))
         ax.barh(pos + 0.19, table["fnr"] * 100, height=0.34, color=RED, alpha=0.9,
-                label="missed defaults — % of that group's defaulters")
+                label="missed defaults: % of that group's defaulters")
         ax.barh(pos - 0.19, table["fpr"] * 100, height=0.34, color=BLUE, alpha=0.9,
-                label="false flags — % of that group's non-defaulters")
+                label="false flags: % of that group's non-defaulters")
         labels = [f"{g}\nn = {int(r.n):,}" + ("  (too small)" if r.below_min_n else "")
                   for g, r in table.iterrows()]
         ax.set_yticks(pos)
@@ -562,8 +572,8 @@ def main() -> None:
     st.markdown(
         "**Most projects on this dataset finish where this one starts.** They fit a few "
         "models, report an AUC in the high 0.70s, draw a feature-importance chart and stop. "
-        "But a fitted model is not a decision — it is a column of probabilities. Somebody "
-        "still has to draw a line and say *these clients get flagged and those do not*, and "
+        "But a fitted model hands back a column of probabilities. Somebody still has to "
+        "draw a line and say *these clients get flagged and those do not*, and "
         "the moment that line exists it hands a bill to somebody.\n\n"
         "So this page is about the part that comes after the model: **how you pick that "
         "line, why you pick it there, and what the assumption behind it turns out to "
@@ -571,31 +581,31 @@ def main() -> None:
         "not only move the line, it reaches back and changes which model you should have "
         "trained.\n\n"
         "Everything here is computed live from the model's 6,000 held-out test scores, "
-        "shipped with this page. **The full analysis — model selection, calibration, "
-        "interpretability, the mitigation attempts — lives in a private repository.**"
+        "shipped with this page. **The full analysis (model selection, calibration, "
+        "interpretability, the mitigation attempts) lives in a private repository.**"
     )
 
     st.divider()
     st.subheader("1 · Draw the line")
     st.markdown(
         "**There is no threshold in the data.** A classifier hands you a probability per "
-        "client; turning that into an action needs one number the data does not contain — "
+        "client; turning that into an action needs one number the data does not contain: "
         "how much worse a missed default is than a false alarm. Call it `r`. Fix `r` and the "
         "threshold follows: the rule minimising `r × FN + FP` is the cheapest line you can "
         "draw. Refuse to fix it and you have not avoided the assumption, you have made it "
-        "silently — cutting at 0.5, which is what `predict()` hands you, *is* the choice "
+        "silently: cutting at 0.5, which is what `predict()` hands you, *is* the choice "
         "`r = 1`.\n\n"
         "Three candidate lines, and they are different objects:\n\n"
-        "- **0.5** — free, and optimal only if a missed default and a false alarm cost the "
+        "- **0.5**: free, and optimal only if a missed default and a false alarm cost the "
         "same.\n"
-        "- **1/(1+r)** — Bayes-optimal for a *perfectly calibrated* score. Needs no data "
+        "- **1/(1+r)**: Bayes-optimal for a *perfectly calibrated* score. Needs no data "
         "beyond `r`, and is wrong exactly to the extent the score is miscalibrated. This is "
         "why calibration was checked before any cost rule was applied.\n"
-        "- **the empirical minimum** — sweep every distinct cut on validation and take the "
+        "- **the empirical minimum**: sweep every distinct cut on validation and take the "
         "cheapest. Uses the data, and pays for it in sampling noise.\n\n"
         "This project uses the third, chosen on validation and frozen before the test split "
         "was opened. Turn on *snap* below and the three land within about a percent of each "
-        "other in cost — which is the finding, and the reason the third decimal place is not "
+        "other in cost, which is the finding, and the reason the third decimal place is not "
         "worth arguing about."
     )
 
@@ -619,13 +629,13 @@ def main() -> None:
     if snap:
         st.session_state["threshold"] = snap_to_grid(t_opt)
     threshold = float(st.slider(
-        "Decision threshold — flag the client at or above this probability",
+        "Decision threshold: flag the client at or above this probability",
         min_value=THRESHOLD_MIN, max_value=THRESHOLD_MAX, step=THRESHOLD_STEP,
         format="%.4f", key="threshold", disabled=snap))
     if snap:
         st.caption(f"Snapped to **{threshold:.4f}**. The exact cost-minimising cut on this "
                    f"split at r = {cost_ratio} is {t_opt:.5f}, and a perfectly calibrated "
-                   f"score would want 1/(1+r) = {bayes_threshold(cost_ratio):.4f} — the "
+                   f"score would want 1/(1+r) = {bayes_threshold(cost_ratio):.4f}; the "
                    f"three agree to about a percent of cost, because the minimum is a basin.")
 
     d = get_decision(threshold, cost_ratio)
@@ -640,8 +650,8 @@ def main() -> None:
     e, f, g = st.columns(3)
     e.metric("Accuracy", f"{d['accuracy']:.1%}",
              f"{d['accuracy'] - (1 - d['base_rate']):+.1%} vs flagging nobody")
-    f.metric("Recall — defaulters caught", f"{d['recall']:.1%}")
-    g.metric("Precision — flags that were right",
+    f.metric("Recall: defaulters caught", f"{d['recall']:.1%}")
+    g.metric("Precision: flags that were right",
              "—" if np.isnan(d["precision"]) else f"{d['precision']:.1%}")
 
     left, right = st.columns([1, 1])
@@ -660,7 +670,7 @@ def main() -> None:
             f"**{d['fn']:,} missed defaults** and **{1 - share:.0%}** by the "
             f"**{d['fp']:,} people who would have paid** but got flagged anyway. Which of "
             f"those is *the harm* depends on whether a flag is a declined card or a "
-            f"supportive phone call — a product decision, not a modelling one."
+            f"supportive phone call, and that is a product decision."
         )
 
     st.pyplot(figure_cost_curve(get_curve(cost_ratio), threshold, cost_ratio, frozen_t),
@@ -668,7 +678,7 @@ def main() -> None:
     st.caption(
         f"The minimum is a basin, not a point. At the assumed r = 10, "
         f"{ref['frozen']['flat_region']['n_cuts']} distinct cuts on validation sat within 1% "
-        f"of the cheapest one, while 0.5 — the threshold `predict()` hands you for free — "
+        f"of the cheapest one, while 0.5 (the threshold `predict()` hands you for free) "
         f"sits far up the right-hand wall. The third decimal place does not matter; the "
         f"choice between 0.5 and 0.11 matters enormously. The deployed cut "
         f"{frozen_t:.4f} was chosen on the validation split and only ever evaluated here."
@@ -678,15 +688,15 @@ def main() -> None:
     st.subheader("2 · Who absorbs the errors")
     st.markdown(
         "The same rule, sliced four ways. These four attributes were carried through the "
-        "whole project for this panel alone and never reached a `fit` call — the model has "
+        "whole project for this panel alone and never reached a `fit` call; the model has "
         "never seen any of them. Drag the threshold above and watch the bars move."
     )
     tables = get_audit(threshold)
     st.pyplot(figure_group_errors(tables, threshold), use_container_width=True)
     st.markdown(
         "**Read the two bars separately: they have different denominators.** The red bar is "
-        "a share of that group's *defaulters* — the ones it let through. The blue bar is a "
-        "share of that group's *non-defaulters* — the ones it flagged anyway. A single "
+        "a share of that group's *defaulters*, the ones it let through. The blue bar is a "
+        "share of that group's *non-defaulters*, the ones it flagged anyway. A single "
         "error rate would average these two into a number that hides the thing worth seeing, "
         "which is that a group can be treated worse in **two opposite directions at once**."
     )
@@ -711,7 +721,7 @@ def main() -> None:
         f"**The protected attribute everyone audits is not where the spread is.** At this "
         f"cut the selection-rate gap across `{worst}` is "
         f"{gaps.loc[worst, 'demographic_parity_difference']:.1%} against "
-        f"{gaps.loc['sex', 'demographic_parity_difference']:.1%} across `sex` — and the model "
+        f"{gaps.loc['sex', 'demographic_parity_difference']:.1%} across `sex`, and the model "
         f"was given neither. Excluding an attribute from the feature matrix removes it as an "
         f"*input*, not as a *pattern*; the correlated proxies are all still there. That is why "
         f"this panel measures outcomes rather than inspecting inputs."
@@ -721,7 +731,7 @@ def main() -> None:
     st.markdown(
         "Everything above describes a single operating point. Sweeping the threshold "
         "separates gaps that are a property of the **rule** from gaps that are a property of "
-        "**where the rule happens to sit** — which are different claims, and only the first "
+        "**where the rule happens to sit**, which are different claims, and only the first "
         "survives someone changing the cost assumption."
     )
     gap_attr = st.selectbox(
@@ -742,7 +752,7 @@ def main() -> None:
         "the same. The gaps live in the middle, and what separates them is *where* in the "
         "middle.\n\n"
         "Across the whole high-flagging half of this range the **catch-rate gap sits near "
-        "0.9 points** while the other two climb to 6 and 7 — at a cut this low almost every "
+        "0.9 points** while the other two climb to 6 and 7. At a cut this low almost every "
         "defaulter in every group is flagged, so the catch rate has no room left to differ. "
         "That is the reading most audits of this model would stop at. **Push the line the "
         "other way, to where only 15% of the book is flagged, and the catch-rate gap becomes "
@@ -765,7 +775,7 @@ def main() -> None:
                                         "missed-default rate": "{:.1%}"}),
                      use_container_width=True)
         st.caption(
-            "Base rates differ across every attribute audited — look at the second column — "
+            "Base rates differ across every attribute audited (look at the second column), "
             "so demographic parity and equalised odds cannot both hold: a calibrated score "
             "applied to groups that default at different rates must flag them at different "
             "rates. Both are shown and no winner is declared. Groups under "
@@ -793,7 +803,7 @@ def main() -> None:
             st.caption(
                 "A bootstrap interval cannot answer this. Every gap here is a `max − min` "
                 "statistic, so it is non-negative by construction and its interval can "
-                "approach zero but never straddle it — \"excludes zero\" describes how "
+                "approach zero but never straddle it; \"excludes zero\" describes how "
                 "precisely the gap is estimated, not whether there is one. The exact null is "
                 "cheap instead: hold the model, the cut and every client's outcome fixed and "
                 "shuffle the group labels 5,000 times. These p-values are from the deployed "
@@ -804,9 +814,9 @@ def main() -> None:
     st.subheader("3 · Why this model and not the simpler one")
     st.markdown(
         "Two families were fitted, tuned and calibrated the same way: an L2 logistic "
-        "regression and LightGBM. One of them has to ship. **The interesting part of this "
-        "project is not which one won — it is that the obvious way to decide was the wrong "
-        "way, and it took a specific piece of machinery to see that.**"
+        "regression and LightGBM. One of them has to ship. **Which one won matters less than "
+        "how the choice was made: the obvious way to decide was the wrong way, and it took "
+        "a specific piece of machinery to see that.**"
     )
 
     st.markdown("##### The default answer, and why it is not obviously right")
@@ -817,10 +827,10 @@ def main() -> None:
         f"that metric is **average precision**, and by it the two are a tie: LightGBM wins the "
         f"cross-validation ({ms['lgbm_cv']:.4f} against {ms['logistic_cv']:.4f}) and then "
         f"produces a paired difference on validation of **{d_ap['point']:+.5f}, 95% interval "
-        f"[{d_ap['ci_lo']:+.4f}, {d_ap['ci_hi']:+.4f}]** — an interval straddling zero. On that "
+        f"[{d_ap['ci_lo']:+.4f}, {d_ap['ci_hi']:+.4f}]**, an interval straddling zero. On that "
         f"reading you keep the simpler model, and the first version of this project did.\n\n"
         f"Average precision integrates precision over the **whole** recall axis. It gives the "
-        f"stretch at recall 0.1 — where precision is high and this rule never operates — the "
+        f"stretch at recall 0.1 (where precision is high and this rule never operates) the "
         f"same standing as recall {published['confusion']['tpr']:.2f}, which is where the rule "
         f"actually lives. **Choosing with a number that averages over everywhere, in order to "
         f"act in one place, is a decision rather than a default**, and it is not one I had "
@@ -829,7 +839,7 @@ def main() -> None:
 
     st.markdown("##### The obstacle: one validation split cannot answer the better question")
     st.markdown(
-        "The better question is which family is cheaper at the operating point — expected "
+        "The better question is which family is cheaper at the operating point: expected "
         "cost at r = 10, the quantity the decision actually pays. Asked on the 6,000-row "
         "validation split, the paired bootstrap on that difference runs from about "
         "**−318 to +81**: LightGBM cheaper in 88% of resamples and still not separated from "
@@ -850,15 +860,15 @@ def main() -> None:
             "- **The inner loop tunes each family separately, on outer-training rows only.** "
             "Neither family gets a hyperparameter chosen with a peek at what judges it, and "
             "neither gets a longer look than the other.\n"
-            "- **Both arms are built exactly as the deployed model is** — same calibration "
+            "- **Both arms are built exactly as the deployed model is**: same calibration "
             "wrapper, same folds, same settings. Give one family a five-fold calibration and "
             "the other a bare three-fold and you are comparing calibration states, not model "
             "families. That was a real bug in the first version of this comparison.\n"
             "- **Each fold is charged its own cheapest cut**, not a threshold fixed elsewhere. "
             "That makes the statistic a property of the *ranking*, so a family is not "
             "penalised for a cut that happens to suit the other one.\n\n"
-            "And the inner loop runs **twice** — once selecting hyperparameters on average "
-            "precision, once on expected cost — which turns \"would a cost-aware rule have "
+            "And the inner loop runs **twice**: once selecting hyperparameters on average "
+            "precision, once on expected cost, which turns \"would a cost-aware rule have "
             "caught this on its own?\" into a measurement instead of an opinion."
         )
         rows = []
@@ -885,7 +895,7 @@ def main() -> None:
         st.info(
             "**Switch away from the simpler incumbent only if the paired interval on expected "
             "cost is clear of zero.** Winning on average is not enough. This is the *same* "
-            "rule that kept the logistic regression in the first version — only the statistic "
+            "rule that kept the logistic regression in the first version; only the statistic "
             "it is applied to changed. Writing it down before looking is the difference "
             "between a rule and a rationalisation.",
             icon=":material/rule:",
@@ -893,13 +903,13 @@ def main() -> None:
         c1, c2 = st.columns(2)
         c1.markdown(
             "**LightGBM clears it, on every fold, under both criteria.** The tie on average "
-            "precision was a real tie — about a question this project was never going to act "
+            "precision was a real tie, about a question this project was never going to act "
             "on."
         )
         c2.markdown(
             "**But changing the selection metric is not what found it.** Tuning on cost rather "
             "than average precision moves the answer by less than its own interval. "
-            "**The gain is in the model family, not the metric** — \"optimise the business "
+            "**The gain is in the model family, not the metric**: \"optimise the business "
             "number directly\" would not have got here on its own."
         )
 
@@ -908,7 +918,7 @@ def main() -> None:
         st.markdown("##### The part I did not see coming: `r` chooses the model too")
         st.markdown(
             "Everything above treats `r = 10` as fixed. But `r` is the input to the "
-            "selection criterion, not just to the threshold — so it decides *which part of "
+            "selection criterion, not just to the threshold, so it decides *which part of "
             "the curve is being graded*. If the two families are not equally good "
             "everywhere on that curve, then changing the assumption should change the "
             "winner. Running the whole nested comparison again at each `r` says whether it "
@@ -941,7 +951,7 @@ def main() -> None:
         c1, c2 = st.columns(2)
         c1.markdown(
             f"**At r = 1 the rule keeps the logistic regression.** The interval is "
-            f"[{sweep.iloc[0]['ci_lo']:+.1f}, {sweep.iloc[0]['ci_hi']:+.1f}] — it crosses "
+            f"[{sweep.iloc[0]['ci_lo']:+.1f}, {sweep.iloc[0]['ci_hi']:+.1f}]; it crosses "
             f"zero, LightGBM is ahead on only "
             f"{int(sweep.iloc[0]['lgbm_cheaper_on_n_folds'])} of "
             f"{int(sweep.iloc[0]['n_folds'])} folds, and the rule refuses to switch. "
@@ -951,7 +961,7 @@ def main() -> None:
         best = sweep.loc[sweep['difference'].idxmin()]
         c2.markdown(
             f"**And the advantage has a shape.** It peaks at r = {best['cost_ratio']:g} "
-            f"({best['difference']:+,.0f}) and falls away on both sides — at r = 1 you flag "
+            f"({best['difference']:+,.0f}) and falls away on both sides: at r = 1 you flag "
             f"almost nobody and at r = 50 almost everybody, and a rule that intervenes "
             f"everywhere or nowhere cannot express a better model. **Which model you use "
             f"matters most exactly where the decision is hardest**, and not at all where it "
@@ -960,8 +970,8 @@ def main() -> None:
         st.markdown(
             "This is the thing I would put first if I had to keep one sentence from the "
             "project: **the number I could not measure did not just set the operating "
-            "point, it selected the model.** Everything downstream of it — the threshold, "
-            "the confusion matrix, who absorbs the errors in section 2 — inherits an "
+            "point, it selected the model.** Everything downstream of it (the threshold, "
+            "the confusion matrix, who absorbs the errors in section 2) inherits an "
             "assumption that never appears in the data, and a reader who believes "
             "`r = 1` is entitled to a different model, not just a different cut."
         )
@@ -992,7 +1002,7 @@ def main() -> None:
         c1.markdown(
             f"**One of my four design choices came back.** Charging every fold its own "
             f"cheapest cut made the statistic a property of the ranking, which is what I "
-            f"wanted — and it made the design blind to the fact that LightGBM transfers a "
+            f"wanted, and it made the design blind to the fact that LightGBM transfers a "
             f"*frozen* threshold worse ({b['threshold_transfer_loss']:+,.0f} against "
             f"{a['threshold_transfer_loss']:+,.0f}). Its cost curve is less flat near the "
             f"minimum. That is {sw['explained_by_threshold_transfer']:+,.0f} units of the gap."
@@ -1009,20 +1019,20 @@ def main() -> None:
             "cannot confirm; both of those are true and the second governs what I am allowed "
             "to claim. What it cost is concrete: \"held out, opened once\" became \"opened "
             "twice under a rule that changed in between\". The unambiguous gain was somewhere "
-            "I was not looking — re-running the calibration rule for the new model **rejected "
+            "I was not looking: re-running the calibration rule for the new model **rejected "
             "isotonic** and adopted sigmoid, more than halving expected calibration error on "
             "test, 0.0150 → 0.0062.",
             icon=":material/flag:",
         )
 
     st.divider()
-    with st.expander("What this is, and what it is not"):
+    with st.expander("Before reusing any of this"):
         ms = ref["model"]
         diff = ms["lgbm_minus_logistic_ap"]
         st.markdown(
             f"""
 **The rule on screen.** LightGBM on 19 predictors, sigmoid-calibrated, selected on **expected
-cost at r = {ref['frozen']['cost_ratio_ASSUMED']:g} under nested cross-validation** — accuracy
+cost at r = {ref['frozen']['cost_ratio_ASSUMED']:g} under nested cross-validation**. Accuracy
 was ruled out before anything was fitted, because flagging nobody is right 77.9% of the time,
 and average precision was ruled out later, for the reason in section 4. On average precision
 the two families are a tie: LightGBM wins the cross-validation
@@ -1033,22 +1043,22 @@ On the test split it scores average precision **{published['average_precision'][
 [{published['average_precision']['ci_lo']:.4f}, {published['average_precision']['ci_hi']:.4f}]
 against a floor of {ref['dataset']['prevalence']:.4f}, ROC-AUC
 **{published['roc_auc']['point']:.4f}**, and expected calibration error
-**{published['ece']:.4f}** — calibration checked first, because a cost rule applied to an
+**{published['ece']:.4f}**; calibration checked first, because a cost rule applied to an
 uncalibrated score is arithmetic on the wrong quantity. The calibration method was chosen by a
 rule written down before either model existed: adopt only if **both** Brier and ECE improve on
 validation. For this model that rule **rejected isotonic** and adopted sigmoid.
 
-**The test split has been opened twice** — once for a logistic regression selected on average
+**The test split has been opened twice**: once for a logistic regression selected on average
 precision, and again for this model after the selection rule changed. Nothing on the test split
 informed that change, but "opened once" is a stronger claim than this project can now make.
 
 **This is behavioural scoring, not underwriting.** Every client already holds a card and six
 months of history, so it says nothing about who should have been given one. Everyone here was
-approved — declined applicants are absent and their counterfactual outcomes are
+approved: declined applicants are absent and their counterfactual outcomes are
 unobservable, so any bias in the original granting decision is invisible. Every group result
 is scoped to *among clients who held a card*.
 
-**One month, one country, twenty years ago** — October 2005, Taiwan, in the aftermath of a
+**One month, one country, twenty years ago**: October 2005, Taiwan, in the aftermath of a
 domestic card-debt crisis. The base rate is not a general fact about consumer credit.
 
 **`sex` is a binary 2005 administrative code**, not gender identity, with no non-binary
