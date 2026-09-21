@@ -11,7 +11,7 @@
 :root{
   --void:#08090C; --panel:#0E1116; --panel-2:#12161D; --edge:#1C2128; --edge-2:#2A313B;
   --text:#E8ECF2; --dim:#7C8796; --faint:#4A5462;
-  --purple:#B372FF;      /* session best — real F1 timing convention */
+  --purple:#B372FF;      /* session best, real F1 timing convention */
   --green:#39E27D;       /* personal best */
   --yellow:#FFC24B;      /* caution / neutralised */
   --red:#FF4B4B;
@@ -73,7 +73,7 @@ main[hidden]{display:none!important}
 .row .pp.vhot{color:var(--red);font-weight:700}
 /* Map and lap chart share the top of the right column. The map was taking the whole of
    it; at 46% it is still legible and the chart beside it is the thing that gets read. */
-.toprow{display:grid;grid-template-columns:46% 1fr;flex:1;min-height:0;border-bottom:1px solid var(--edge)}
+.toprow{display:grid;grid-template-columns:46% 1fr;flex:1 1 auto;min-height:230px;border-bottom:1px solid var(--edge)}
 .lapchart{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;background:var(--panel)}
 .lapchart .chead{display:flex;align-items:center;gap:8px;padding:7px 11px;border-bottom:1px solid var(--edge);
   background:var(--panel-2);flex:none}
@@ -86,6 +86,7 @@ main[hidden]{display:none!important}
 .lapchart .cnote b{color:var(--amber)}
 /* Strategy sits under the model cards, bottom right. */
 .strategy{border-top:1px solid var(--edge);background:var(--panel-2);flex:none;padding:9px 12px 11px;
+  max-height:38vh;overflow-y:auto;
   display:grid;grid-template-columns:auto auto 1fr;gap:6px 18px;align-items:baseline}
 .strategy .sk{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;color:var(--faint);text-transform:uppercase}
 .strategy .sv{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
@@ -120,7 +121,13 @@ main.mx{display:block;overflow-y:auto;padding:16px 18px 40px}
 .mx .cl{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
 .mx .cl span{font-family:var(--mono);font-size:10px;padding:3px 7px;border:1px solid var(--edge-2);
   border-radius:2px;color:var(--dim)}
-@media (max-width:1100px){.toprow{grid-template-columns:1fr;grid-template-rows:minmax(180px,34vh) 1fr}}
+/* Stacked, the map takes its share first and the lap chart gets what is left. Both
+   rows get a floor, and `.right` scrolls when the two of them plus the panels below
+   exceed the column. */
+@media (max-width:1100px){
+  .toprow{grid-template-columns:1fr;grid-template-rows:minmax(170px,32vh) minmax(190px,1fr);
+    min-height:380px}
+}
 .tower{border-right:1px solid var(--edge);background:var(--panel);display:flex;flex-direction:column;min-height:0}
 .towerhead,.panelhead{
   font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;color:var(--faint);text-transform:uppercase;
@@ -152,7 +159,11 @@ main.mx{display:block;overflow-y:auto;padding:16px 18px 40px}
   margin-left:5px;vertical-align:1px;box-shadow:0 0 6px rgba(255,75,75,.85)}
 
 /* ---------- right ---------- */
-.right{display:flex;flex-direction:column;min-height:0;min-width:0}
+/* `.models` and `.strategy` are `flex:none`, so on a short viewport they keep their
+   natural height and `.toprow` (flex:1) absorbs the whole shortfall, down to zero. A
+   floor on that row and a scroll on the column make the failure mode a scrollbar
+   instead of a panel with no height. */
+.right{display:flex;flex-direction:column;min-height:0;min-width:0;overflow-y:auto}
 .mapwrap{flex:1;position:relative;min-height:0;background:
    radial-gradient(1100px 620px at 62% 32%, #10151D 0%, #0A0C11 62%, #08090C 100%)}
 #map{position:absolute;inset:0;width:100%;height:100%}
@@ -205,6 +216,48 @@ footer a{color:var(--dim)}
   .tower{border-right:0;border-bottom:1px solid var(--edge)}
   .mgrid{grid-template-columns:repeat(2,1fr)}
   .brand{min-width:0}
+}
+
+/* ---------- phones ----------
+   Everything above assumes a viewport it can divide up: the app is one screen tall,
+   the body never scrolls, and the panels split what is left. A phone is too small for
+   that, so below 760px the app becomes a page. Panels keep their own heights, the
+   document scrolls, and the header wraps instead of pushing its controls off the
+   edge. */
+@media (max-width:760px){
+  body{overflow:auto;-webkit-text-size-adjust:100%}
+  #app{height:auto;min-height:100vh}
+
+  header{flex-wrap:wrap}
+  .brand{min-width:100%;border-right:0;border-bottom:1px solid var(--edge);padding:10px 14px}
+  .brand .ev{font-size:17px}
+  .hstat{min-width:0;flex:1 1 0;padding:8px 10px;overflow:hidden}
+  .hstat .k{font-size:8.5px;letter-spacing:.1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hstat .v{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .flagpill{margin:8px 0 8px 12px}
+  .spacer{display:none}
+  .transport{width:100%;border-left:0;border-top:1px solid var(--edge);padding:9px 12px;
+    flex-wrap:wrap;gap:7px}
+  .transport select.ctl{flex:1;min-width:120px}
+  .scrubrow{padding:8px 14px}
+  .scrublbl{min-width:0}
+
+  /* Panels are sized by content now, not by a share of the viewport. */
+  main{grid-template-columns:1fr;grid-template-rows:auto auto;min-height:0}
+  .toprow{grid-template-columns:1fr;grid-template-rows:auto auto;min-height:0}
+  .tower{min-height:0;max-height:none}
+  .tower .rows{max-height:58vh;overflow-y:auto}
+  .right{min-height:0}
+  .mapwrap{aspect-ratio:1/1;min-height:0}
+  .models{max-height:none;overflow:visible}
+  .mgrid{grid-template-columns:1fr}
+  .mcard{border-right:0;border-bottom:1px solid var(--edge)}
+  .mcard:last-child{border-bottom:0}
+  .strategy{grid-template-columns:1fr 1fr;gap:8px 14px}
+  .strategy .srec{grid-column:1/-1}
+
+  /* The model tab is already a scrolling document; give it phone padding. */
+  main.mx{padding:14px 14px 48px}
 }
 </style>
 </head>
@@ -313,7 +366,7 @@ footer a{color:var(--dim)}
     <p class="lede">
       Lap-time prediction and the anomaly flag are questions inside a session, and one race is the
       right substrate for them. These two are not. <b>When does a team pit</b> and <b>how fast does a
-      compound fall away</b> are questions about circuits, conditions and rules — fit either on a
+      compound fall away</b> are questions about circuits, conditions and rules. Fit either on a
       single race and you have measured that race. Both are fitted on <span id="mxCorpus">—</span>,
       split by season rather than at random: a random split puts the 2023 and 2024 running of the
       same circuit on opposite sides, and scores the model on a track it has already learned.
@@ -327,7 +380,7 @@ footer a{color:var(--dim)}
       <div class="card">
         <h3>What the pit model leans on</h3>
         <table id="mxImp"></table>
-        <div class="note">Permutation importance, measured on the <b>held-out season</b> — drop in
+        <div class="note">Permutation importance, measured on the <b>held-out season</b>: drop in
           average precision when one feature is shuffled. Measuring it on training rows would say
           which features the model memorised with.</div>
       </div>
@@ -445,7 +498,7 @@ async function loadRace(slug){
   S.lapEnds = replay.lap_end_ms;
   S.tMax = Math.max(...replay.lap_end_ms.filter(v=>v!=null));
   // Open on a board that already has something on it. At t=0 no car has completed a
-  // lap, so every row would read as a dash — a real timing screen never looks like that.
+  // lap, so every row would read as a dash; a real timing screen never looks like that.
   const lap1 = [];
   for (let i=0;i<n;i++) if (replay.lap[i]===1 && replay.lap_end_ms[i]!=null) lap1.push(replay.lap_end_ms[i]);
   S.t = lap1.length ? Math.max(...lap1) : 0;
@@ -460,11 +513,10 @@ async function loadRace(slug){
   header(); buildRows(); renderModels(); renderStrategy();
   render(); drawLapChart();
 
-  // The track trace is the largest file in the bundle and is fetched last. Switching race
-  // while one is in flight used to leave the previous circuit on screen: the old promise
-  // resolved after the new race had loaded and wrote its own trace into S.track. Capture
-  // the slug this fetch belongs to and drop the response if it is no longer the race on
-  // screen.
+  // The track trace is the largest file in the bundle and is fetched last. If the reader
+  // switches race while it is in flight, the earlier promise can resolve after the new
+  // race has loaded and overwrite S.track with the wrong circuit, so each fetch keeps the
+  // slug it belongs to and discards a response for a race that is no longer on screen.
   const want = slug;
   j("track.json").then(tr => {
       if (S.slug !== want) return;
@@ -477,7 +529,7 @@ function header(){
   const m = S.meta;
   $("evName").textContent = m.session.year + " " + m.session.event;
   $("evSub").textContent = (m.circuit.location+", "+m.circuit.country+" · "+m.event_date+" · RACE").toUpperCase();
-  $("foot").innerHTML = "Replay of a completed session — every model is fitted on laps earlier than "+
+  $("foot").innerHTML = "Replay of a completed session. Every model is fitted on laps earlier than "+
     "the laps it scores, but none of this has been run against a live feed. "+
     "Timing data via <a href='https://github.com/theOehrly/Fast-F1'>FastF1</a> (MIT). "+
     "Derived data only; "+m.total_laps+" laps, "+m.drivers.length+" drivers.";
@@ -703,7 +755,7 @@ function renderModels(){
     $("ltTab").innerHTML = rows;
     const first = st[0], last = st[st.length-1];
     $("ltSub").innerHTML = "MAE in ms over "+first.n_laps.toLocaleString()+" laps against b1, the baseline that "+
-      "matters. At lap start the model wins only <b>"+(first.win_rate_vs_b1*100).toFixed(0)+"%</b> of laps — a tie. "+
+      "matters. At lap start the model wins only <b>"+(first.win_rate_vs_b1*100).toFixed(0)+"%</b> of laps, a tie. "+
       "It pulls ahead only once two sectors are in, and by then two thirds of the lap is an input rather than a prediction.";
     const v = $("ltVerdict");
     const earlyEdge = first.win_rate_vs_b1 > 0.5;
@@ -712,18 +764,64 @@ function renderModels(){
   }
 
   // degradation
-  const cps = (M.degradation?.compounds)||[];
-  const uc = M.undercut||{};
+  // A compound's slope is shipped only when the clustered fit and the by-stint
+  // bootstrap agree on it; where they do not, `deg_ms_per_lap` is null and the
+  // bootstrap median is all there is. Say which is which rather than printing a
+  // figure the race could not identify.
+  const cps  = (M.degradation?.compounds)||[];
+  const uc   = M.undercut||{};
+  const got  = cps.filter(c => c.deg_ms_per_lap != null);
+  const ran  = cps.filter(c => c.n_stints > 0);
+  // Two different failures, and they need different sentences. A compound with
+  // one stint or none has nothing to bootstrap and no interval is estimable; a
+  // compound with plenty of stints whose two estimators disagree was measured
+  // and the measurement did not hold.
+  const noData = ran.filter(c => c.deg_ms_per_lap == null && c.bootstrap_median_ms == null);
+  const lost   = ran.filter(c => c.deg_ms_per_lap == null && c.bootstrap_median_ms != null);
+
   if (uc.deg_s_per_lap != null){
     $("degVal").innerHTML = uc.deg_s_per_lap.toFixed(4)+'<span class="munit">s / lap</span>';
-    $("degSub").innerHTML = "Pooled across compounds, CI <b>["+uc.deg_ci[0].toFixed(4)+", "+uc.deg_ci[1].toFixed(4)+"]</b> s/lap. "+
-      cps.map(c=>c.compound+" "+(c.deg_ms_per_lap/1000).toFixed(3)).join(" · ")+".";
-    const sep = cps.some(c=>c.separable_from_other_compounds);
-    const v=$("degVerdict");
-    v.textContent = sep ? "compounds separable" : "compounds not separable";
-    v.className = "verdict " + (sep ? "v-ok" : "v-weak");
-    spark($("degSpark"), cps.map(c=>c.deg_ms_per_lap), "#FFC24B");
+  } else if (got.length > 1){
+    // No pooled rate survived, so there is no single number to show. The span of
+    // the compounds that did hold up is the honest headline; an average of them
+    // would be a quantity nothing in the analysis estimated.
+    const lo = Math.min(...got.map(c=>c.deg_ms_per_lap)) / 1000;
+    const hi = Math.max(...got.map(c=>c.deg_ms_per_lap)) / 1000;
+    $("degVal").innerHTML = lo.toFixed(3)+'&ndash;'+hi.toFixed(3)+'<span class="munit">s / lap</span>';
+  } else if (got.length === 1){
+    $("degVal").innerHTML = (got[0].deg_ms_per_lap/1000).toFixed(4)+
+      '<span class="munit">s / lap, '+got[0].compound.toLowerCase()+' only</span>';
+  } else {
+    $("degVal").innerHTML = 'not identified<span class="munit"></span>';
   }
+
+  let sub = uc.deg_s_per_lap != null
+    ? "Pooled across compounds, CI <b>["+uc.deg_ci[0].toFixed(4)+", "+uc.deg_ci[1].toFixed(4)+"]</b> s/lap. "
+    : "No pooled rate survived this race's diagnostics, so the compounds are listed on their own. ";
+  sub += got.length
+    ? got.map(c=>c.compound+" "+(c.deg_ms_per_lap/1000).toFixed(3)).join(" · ")+"."
+    : "No compound was identified.";
+  if (lost.length){
+    sub += " <b>"+lost.map(c=>c.compound.toLowerCase()).join(" and ")+"</b> not identified here: "+
+      "with one race's stints the driver dummies leave fewer clusters than parameters, and the "+
+      "clustered fit disagrees with the by-stint bootstrap by "+
+      lost.map(c=>Math.round(c.identification_gap_ms)+" ms").join(" and ")+
+      ". The bootstrap alone put "+lost.map(c=>c.compound.toLowerCase()+" near "+
+      (c.bootstrap_median_ms/1000).toFixed(3)).join(" and ")+" s/lap.";
+  }
+  if (noData.length){
+    sub += " No estimate for <b>"+noData.map(c=>c.compound.toLowerCase()).join(" or ")+"</b>: "+
+      noData.map(c=>c.n_stints+(c.n_stints===1?" stint":" stints")).join(" and ")+
+      " on it in this race, which is too few to resample.";
+  }
+  $("degSub").innerHTML = sub;
+
+  const sep = cps.some(c=>c.separable_from_other_compounds);
+  const dv = $("degVerdict");
+  dv.textContent = lost.length ? (lost.length+" of "+ran.length+" not identified")
+                               : (sep ? "compounds separable" : "compounds not separable");
+  dv.className = "verdict " + (lost.length || !sep ? "v-weak" : "v-ok");
+  spark($("degSpark"), got.map(c=>c.deg_ms_per_lap), "#FFC24B");
 
   // anomaly
   const a = M.anomaly||{};
@@ -743,12 +841,24 @@ function renderModels(){
   // undercut
   if (uc.supported){
     $("ucVal").innerHTML = uc.pit_cost_s.toFixed(2)+'<span class="munit">s pit cost</span>';
-    const payback = uc.pit_cost_s / uc.deg_s_per_lap;
-    $("ucSub").innerHTML = "In-lap <b>"+uc.pit_cost_in_lap_s.toFixed(2)+"</b> s, out-lap <b>"+
-      uc.pit_cost_out_lap_s.toFixed(2)+"</b> s. Degradation was only "+uc.deg_s_per_lap.toFixed(4)+
-      " s/lap here, so fresh rubber would need <b>"+Math.round(payback)+"</b> laps to repay the stop — "+
-      "far longer than the "+S.meta.total_laps+"-lap race. Tyre pace alone does not justify stopping; "+
-      "strategy here is about track position.";
+    // What the stop buys depends on how worn the tyre being replaced is: the
+    // fresh set's advantage is the degradation rate times the age gap, so it
+    // widens every lap the old set stays out. Dividing the pit cost by one lap's
+    // degradation would assume the gap never grows. `window` holds the break-even
+    // at each age of the tyre being replaced.
+    const win = (uc.window||[]).filter(w => w.break_even_laps != null);
+    const early = win[Math.min(1, win.length-1)], late = win[Math.min(4, win.length-1)];
+    let sub = "In-lap <b>"+uc.pit_cost_in_lap_s.toFixed(2)+"</b> s, out-lap <b>"+
+      uc.pit_cost_out_lap_s.toFixed(2)+"</b> s, at "+uc.deg_s_per_lap.toFixed(4)+" s/lap pooled. ";
+    if (early && late && early !== late){
+      sub += "What the stop repays depends on the tyre it replaces. Against a set "+
+        early.tyre_age+" laps old the fresh rubber gains "+early.undercut_gain_s.toFixed(2)+
+        " s/lap and takes <b>"+Math.round(early.break_even_laps)+" laps</b> to clear the stop; "+
+        "against one "+late.tyre_age+" laps old it gains "+late.undercut_gain_s.toFixed(2)+
+        " s/lap and takes <b>"+Math.round(late.break_even_laps)+"</b>. The advantage widens as the "+
+        "other set ages, which is the same trade-off the stint-length panel inverts.";
+    }
+    $("ucSub").innerHTML = sub;
     const v=$("ucVerdict"); v.textContent="when, not which compound"; v.className="verdict v-weak";
     spark($("ucSpark"), [uc.pit_cost_in_lap_s, uc.pit_cost_out_lap_s, uc.pit_cost_s], "#B372FF");
   } else {
@@ -869,9 +979,14 @@ function renderStrategy(){
   $("stObs").innerHTML  = (o && o.median!=null)
       ? 'lap ' + o.median.toFixed(0) + '<small> &nbsp;(' + o.p25.toFixed(0) + '–' + o.p75.toFixed(0) + ')</small>'
       : "—";
-  const per = (st.by_compound||[]).filter(c=>c.optimal_stint_laps!=null)
-      .map(c=>c.compound.toLowerCase()+" "+c.optimal_stint_laps.toFixed(0))
-      .join(", ");
+  const cands = (st.by_compound||[]).filter(c=>c.optimal_stint_laps!=null);
+  const per = cands.map(c=>c.compound.toLowerCase()+" "+c.optimal_stint_laps.toFixed(0)).join(", ");
+  // The headline is the longest viable stint, so the slope behind it is the one
+  // belonging to that compound. Printing it matters: the degradation card above
+  // shows this race's own fit, the formula runs on the circuit's corpus fit, and
+  // a reader who substitutes the first into the second does not get this answer.
+  const head = cands.find(c => c.optimal_stint_laps === opt) || cands[0];
+  const skipped = (st.by_compound||[]).filter(c=>c.optimal_stint_laps==null);
   let verdict;
   if (opt == null || !o || o.median == null) verdict = "Not enough of this circuit in the corpus to invert.";
   else {
@@ -882,11 +997,32 @@ function renderStrategy(){
         + "something: the stint length is derived from pit loss and measured degradation, not fitted to what teams did."
       : "<b>The window sits " + lapWord(d) + " from where teams actually stopped.</b> "
         + "The formula has no traffic, no undercut and no safety car in it, and it does not "
-        + "know about a mandated stint limit — so a gap this size is a question about the race, not a bug.";
+        + "know about a mandated stint limit, so a gap this size says more about the race than about the formula.";
   }
-  $("stRec").innerHTML = "&radic;(2 &times; pit loss / degradation) gives " +
-    (opt==null?"no stint length":"<b>"+opt.toFixed(0)+" laps</b>") +
-    (per ? " (" + per + ")" : "") + ". " + verdict +
+  const raceDeg = (S.models && S.models.undercut && S.models.undercut.deg_s_per_lap) || null;
+  const sums = (opt != null && head)
+    ? "&radic;(2 &times; " + loss.toFixed(1) + " s &divide; " + head.slope_s_per_lap.toFixed(3) +
+      " s/lap) = <b>" + opt.toFixed(0) + " laps</b>" + (per ? " (" + per + ")" : "") + ". "
+    : "No stint length. ";
+
+  let provenance = "";
+  if (opt != null && head){
+    provenance = "The " + head.slope_s_per_lap.toFixed(3) + " s/lap is fitted across every " +
+      "running of this circuit in the corpus (" + st.n_stints_observed + " stints), not on this " +
+      "afternoon alone.";
+    if (raceDeg != null){
+      provenance += " This race on its own gives " + raceDeg.toFixed(4) + " s/lap, which in the " +
+        "same formula would say " + Math.sqrt(2*loss/raceDeg).toFixed(0) + " laps. One race's " +
+        "stints are too few to set a stint length with, which is why the panel does not use it.";
+    }
+  }
+  if (skipped.length){
+    provenance += " No recommendation for " + skipped.map(c=>c.compound.toLowerCase()).join(" or ") +
+      ": the corpus slope there is too flat to invert, and the formula diverges rather than " +
+      "returning a long stint.";
+  }
+
+  $("stRec").innerHTML = sums + verdict + (provenance ? "<br><br>" + provenance : "") +
     " <span style=\'color:#5A6472\'>" + (st.caveat||"") + "</span>";
 }
 
@@ -897,9 +1033,23 @@ function renderModelTab(c){
     " races at " + co.circuits + " circuits";
 
   const t = pit.test, fl = t.prevalence;
+  // Per-race, because that is the unit the model is used at: one race, one car,
+  // one lap. Pooling 24 races into a single ranking asks it to compare a lap at
+  // Monza with a lap at Singapore, which nobody on a pit wall ever does, and the
+  // pooled figure comes out below the median race.
+  const pr = (pit.per_race || []).filter(r => r.ap != null && r.floor != null);
+  const med = a => { const s = [...a].sort((x,y)=>x-y), h = s.length >> 1;
+                     return s.length % 2 ? s[h] : (s[h-1]+s[h]) / 2; };
+  const medAp = pr.length ? med(pr.map(r=>r.ap)) : null;
+  const medFloor = pr.length ? med(pr.map(r=>r.floor)) : null;
+  const aboveFloor = pr.filter(r => r.ap > r.floor).length;
+
   $("mxPit").innerHTML =
     "<tr><th>metric</th><th>model</th><th>baseline</th></tr>" +
-    row("average precision", t.average_precision.toFixed(4), fl.toFixed(4) + " (flag nobody)") +
+    (medAp != null ? row("average precision, per race (median)", medAp.toFixed(4),
+                         medFloor.toFixed(4) + " (that race's floor)") : "") +
+    (medAp != null ? row("&nbsp;", "", "above floor in " + aboveFloor + " of " + pr.length + " races") : "") +
+    row("average precision, pooled", t.average_precision.toFixed(4), fl.toFixed(4) + " (flag nobody)") +
     row("&nbsp;", "", "tyre age alone " + pit.baselines.tyre_age_start.toFixed(4)) +
     row("&nbsp;", "", "two-compound rule " + pit.baselines.must_still_change.toFixed(4)) +
     row("ROC-AUC", t.roc_auc.toFixed(4), "0.5000") +
@@ -907,10 +1057,24 @@ function renderModelTab(c){
     row("stops in the season", t.n_stops + " in " + t.n.toLocaleString() + " laps", (fl*100).toFixed(2) + "%");
   $("mxPitNote").innerHTML =
     "Fitted on " + pit.n_train_stops + " stops across the " + co.train_season + " season and scored " +
-    "once on " + co.test_season + ". <b>" + (t.average_precision/fl).toFixed(1) + "&times; the floor</b>, " +
-    "and ahead of both single-feature baselines. Within-season it reaches " +
-    t.oof_ap_train_season.toFixed(4) + " out of fold, so <b>transferring to a new season costs about " +
-    Math.round((1 - t.average_precision/t.oof_ap_train_season)*100) + "%</b> — that number belongs next to the first one.";
+    "once on " + co.test_season + ", and ahead of both single-feature baselines. Within-season it " +
+    "reaches " + t.oof_ap_train_season.toFixed(4) + " out of fold, so <b>transferring to a new " +
+    "season costs about " + Math.round((1 - t.average_precision/t.oof_ap_train_season)*100) +
+    "%</b>. That number belongs next to the first one." +
+    (medAp != null
+      ? "<br><br><b>Read the per-race row, not the pooled one.</b> Pooled, the model ranks every " +
+        "lap of the season against every other, so it is asked whether a lap at Monza is closer to " +
+        "a stop than a lap at Singapore. Nobody uses it that way, and the pooled figure (" +
+        t.average_precision.toFixed(3) + ", " + (t.average_precision/fl).toFixed(1) + "&times; its floor) " +
+        "lands below the median race it is made of (" + medAp.toFixed(3) + ", " +
+        (medAp/medFloor).toFixed(1) + "&times;). Per race it clears the floor in " + aboveFloor +
+        " of " + pr.length + "."
+      : "") +
+    "<br><br><b>The probabilities run high.</b> The calibrator was fitted on " + co.train_season +
+    " and applied to " + co.test_season + ". Across the test season it predicts " +
+    (t.mean_predicted*100).toFixed(2) + "% against an observed " + (fl*100).toFixed(2) + "%, and the " +
+    "gap widens at the top of the range. The percentage in the timing tower is the model's, " +
+    "uncorrected, and it is about " + Math.round((t.mean_predicted/fl - 1)*100) + "% too high.";
 
   const imp = pit.importance.slice(0,8), mx = Math.max(...imp.map(r=>r.drop_in_ap));
   $("mxImp").innerHTML = "<tr><th>feature</th><th>drop in AP</th><th></th></tr>" +
@@ -962,7 +1126,7 @@ function renderModelTab(c){
     "<b>The lap-number effect is fitted per race</b> and runs from " +
     Math.min(...Object.values(deg.lap_number_effect_per_race)).toFixed(3) + " to " +
     Math.max(...Object.values(deg.lap_number_effect_per_race)).toFixed(3) + " s/lap. A single " +
-    "constant across races returned negative degradation at Monaco, Jeddah and Qatar — tyres " +
+    "constant across races returned negative degradation at Monaco, Jeddah and Qatar, tyres " +
     "apparently getting faster as they aged.";
 }
 
@@ -1010,6 +1174,14 @@ boot().catch(err=>{
 }
 #zback:hover{background:#E0417F; border-color:#E0417F; opacity:1}
 #zback:focus-visible{outline:2px solid #E0417F; outline-offset:2px}
+/* The back link is fixed bottom-left, which on a phone parks it on top of the
+   paragraph the reader is in. Smaller there, and the page keeps a gutter under
+   its last line so nothing important ends up beneath it. */
+@media (max-width:640px){
+  #zback{left:10px;bottom:10px;padding:7px 10px;font-size:10px;letter-spacing:.06em}
+  .stAppViewContainer .block-container,.main .block-container{padding-bottom:76px!important}
+  body{padding-bottom:env(safe-area-inset-bottom)}
+}
 @media print{#zback{display:none}}
 </style>
 <a id="zback" href="../../">← Contents</a>

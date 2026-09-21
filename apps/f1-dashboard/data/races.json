@@ -9,7 +9,7 @@
    "circuit": "Spanish",
    "role": "primary",
    "rationale": "Three compounds with 17-24 stints each, highest accurate-lap share of the candidates, and zero neutralisations to confound the degradation fit.",
-   "bytes": 861676
+   "bytes": 862085
   },
   {
    "slug": "2023_qatar_race",
@@ -18,7 +18,7 @@
    "circuit": "Qatar",
    "role": "replay",
    "rationale": "Extreme degradation: kerb damage to sidewalls forced a mandated 18-lap stint limit, so every stint is short and the wear signal is as strong as this period gets.",
-   "bytes": 724674
+   "bytes": 725025
   },
   {
    "slug": "2023_italy_race",
@@ -27,7 +27,7 @@
    "circuit": "Italian",
    "role": "replay",
    "rationale": "Monza: the low-degradation end. Two compounds only and long stints, which is the case a model fitted on high-wear circuits is most likely to get wrong.",
-   "bytes": 660824
+   "bytes": 661243
   },
   {
    "slug": "2024_china_race",
@@ -36,7 +36,7 @@
    "circuit": "Chinese",
    "role": "replay",
    "rationale": "Safety car and VSC. The only replay session with neutralisations, so it is the only one where the anomaly attribution can be checked against something other than pit laps.",
-   "bytes": 925098
+   "bytes": 925615
   },
   {
    "slug": "2024_singapore_race",
@@ -45,7 +45,7 @@
    "circuit": "Singapore",
    "role": "replay",
    "rationale": "Street circuit, high track temperature, highest accurate-lap share of the five. Track position dominates strategy here in a way it does not at the permanent circuits.",
-   "bytes": 953215
+   "bytes": 953478
   }
  ]
 }
