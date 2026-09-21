@@ -8,14 +8,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="../../assets/demo.css?v=ab6fba2c">
+<link rel="stylesheet" href="../../assets/demo.css?v=52474071">
 </head>
 <body>
 <div id="veil" role="status" aria-live="polite">
   <div class="box">
-    <p class="kicker">Credit risk · interpretability · fairness</p>
+    <p class="kicker">Credit risk · fairness</p>
     <h1>Who pays for the model's mistakes?</h1>
-    <p>Turning predicted probabilities into a cost-aware decision, then asking who absorbs the errors.</p>
+    <!-- Numbers copied from the analysis; the app prints the same summary from its data. -->
+    <p class="tldr"><span class="k">In short</span>A default model for 30,000 credit card clients (Taiwan, 2005), carried past the ROC curve to the lending decision. If a missed default costs ten times a false alarm, the cheapest cutoff is about 0.09, and the usual 0.5 costs about 2.1 times as much. That ratio is an assumption, so the page lets you change it and shows which groups of clients absorb the errors. It also changes which of the two models should be deployed.</p>
     <p class="status">Starting Python in your browser. Up to a minute the first time; cached after that. Nothing is sent to a server.</p>
     <div class="bar"><i></i></div>
     <a href="../../">&larr; All projects</a>
@@ -28,7 +29,7 @@ mountDemo({
   hue: "#5B7FA6",
   requirements: ["matplotlib", "scikit-learn"],
   files: {
-      "app.py": { url: "app.py?v=73d17d17" },
+      "app.py": { url: "app.py?v=e70932cb" },
       "data/reference.json": { url: "data/reference.json?v=a14bf487" },
       "data/test_predictions.csv": { url: "data/test_predictions.csv?v=ca73d46f" },
   },

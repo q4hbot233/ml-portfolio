@@ -4,8 +4,8 @@ Runs in the browser under stlite. Everything heavy was pre-computed in the priva
 exported to ``data/``; what happens here is arithmetic on 6,000 shipped test-set scores.
 
 The file is deliberately split in two. Everything above the ``STREAMLIT UI`` banner is plain
-Python -- functions that take arguments and return arrays, frames and dicts, with no
-streamlit call anywhere inside them -- so the compute layer imports and runs under ordinary
+Python: functions that take arguments and return arrays, frames and dicts, with no
+streamlit call anywhere inside them, so the compute layer imports and runs under ordinary
 Python. Below the banner there is no arithmetic: widgets in, those functions called, figures
 out.
 """
@@ -93,7 +93,7 @@ def load_rows(data_dir: Path | str = DATA_DIR) -> pd.DataFrame:
 # =====================================================================================
 
 def flag(score, threshold: float) -> np.ndarray:
-    """Flag a client when the score is **at or above** the threshold.
+    """Flag a client when the score is at or above the threshold.
 
     ``>=`` is the convention used throughout the source analysis, including in the sweep
     that chose the deployed cut, so a threshold read off the curve reproduces exactly the
@@ -200,7 +200,7 @@ def cost_at(curve: pd.DataFrame, threshold: float) -> float:
 def optimal_threshold(y_true, score, cost_ratio: float) -> float:
     """The cut minimising ``r * FN + FP`` on the rows given.
 
-    Ties break towards the **higher** threshold, i.e. towards flagging fewer people:
+    Ties break towards the higher threshold, i.e. towards flagging fewer people:
     wherever two rules cost the same, the one that intervenes in fewer lives wins. The
     tie-break is stated rather than left to whatever order argsort happened to produce.
     """
@@ -287,13 +287,13 @@ def group_table(y_true, y_pred, groups) -> pd.DataFrame:
 
 
 def parity_gaps_from_rates(rates) -> dict:
-    """Parity scalars from per-group rate arrays -- the arithmetic, spelled out.
+    """Parity scalars from per-group rate arrays: the arithmetic, spelled out.
 
     Every measure here is ``max - min`` across groups, which for two groups is an absolute
     difference. That shape is the reason a bootstrap interval cannot test any of them: the
     statistic is non-negative by construction, so its interval can approach zero but never
-    straddle it. What tests them is a permutation null -- shuffle the group labels with
-    everything else held fixed -- computed in the analysis repository and shipped here
+    straddle it. What tests them is a permutation null (shuffle the group labels with
+    everything else held fixed), computed in the analysis repository and shipped here
     as p-values rather than recomputed on the page.
     """
     def gap(name: str) -> float:
@@ -342,7 +342,7 @@ def headline_gaps(tables: dict, min_n: int = MIN_AUDIT_CELL) -> pd.DataFrame:
 
 
 # =====================================================================================
-# THE SAME COMPUTATIONS, ADDRESSED BY THE UI -- still plain Python, still testable
+# THE SAME COMPUTATIONS, ADDRESSED BY THE UI: still plain Python, still testable
 # =====================================================================================
 
 def compute_curve(cost_ratio: float, data_dir: Path | str = DATA_DIR) -> pd.DataFrame:
@@ -548,7 +548,7 @@ def figure_gap_vs_threshold(curve: pd.DataFrame, attribute: str, threshold: floa
 
 
 # =====================================================================================
-# STREAMLIT UI -- widgets in, the functions above called, figures out. No arithmetic here.
+# STREAMLIT UI: widgets in, the functions above called, figures out. No arithmetic here.
 # =====================================================================================
 
 def main() -> None:
@@ -569,20 +569,33 @@ def main() -> None:
     published = ref["published_test"]
 
     st.title("Who pays for the model's mistakes?")
+    naive, chosen = ref["validation_naive_half_vs_chosen"][:2]
+    ratios = {r["cost_ratio"]: r["selected"] for r in ref["selection_vs_cost_ratio"]["ratios"]}
+    with st.container(border=True):
+        st.caption("In short")
+        st.markdown(
+            f"A default model for {ref['dataset']['n_rows']:,} credit card clients (Taiwan, "
+            f"2005), carried past the ROC curve to the lending decision. If a missed default "
+            f"costs {({2: 'two', 5: 'five', 10: 'ten', 20: 'twenty'}).get(int(ref['frozen']['cost_ratio_ASSUMED']), format(ref['frozen']['cost_ratio_ASSUMED'], 'g'))} times a false alarm, the cheapest "
+            f"cutoff is about {frozen_t:.2f}, and the usual 0.5 costs about "
+            f"{naive['expected_cost'] / chosen['expected_cost']:.1f} times as much. That ratio "
+            f"is an assumption, so the page lets you change it and shows which groups of "
+            f"clients absorb the errors."
+            + (" It also changes which of the two models should be deployed."
+               if len(set(ratios.values())) > 1 else ""))
     st.markdown(
         "**Most projects on this dataset finish where this one starts.** They fit a few "
         "models, report an AUC in the high 0.70s, draw a feature-importance chart and stop. "
         "But a fitted model hands back a column of probabilities. Somebody still has to "
         "draw a line and say *these clients get flagged and those do not*, and "
         "the moment that line exists it hands a bill to somebody.\n\n"
-        "So this page is about the part that comes after the model: **how you pick that "
+        "So this page is about the part that comes after the model: how you pick that "
         "line, why you pick it there, and what the assumption behind it turns out to "
-        "control.** The answer to the last one was not what I expected — the assumption does "
-        "not only move the line, it reaches back and changes which model you should have "
-        "trained.\n\n"
+        "control. The answer to the last one surprised me: the assumption moves the line, and "
+        "it also changes which model you should have trained.\n\n"
         "Everything here is computed live from the model's 6,000 held-out test scores, "
-        "shipped with this page. **The full analysis (model selection, calibration, "
-        "interpretability, the mitigation attempts) lives in a private repository.**"
+        "shipped with this page. The full analysis (model selection, calibration, "
+        "interpretability, the mitigation attempts) lives in a private repository."
     )
 
     st.divider()
@@ -596,17 +609,16 @@ def main() -> None:
         "silently: cutting at 0.5, which is what `predict()` hands you, *is* the choice "
         "`r = 1`.\n\n"
         "Three candidate lines, and they are different objects:\n\n"
-        "- **0.5**: free, and optimal only if a missed default and a false alarm cost the "
+        "- 0.5: free, and optimal only if a missed default and a false alarm cost the "
         "same.\n"
-        "- **1/(1+r)**: Bayes-optimal for a *perfectly calibrated* score. Needs no data "
+        "- 1/(1+r): Bayes-optimal for a *perfectly calibrated* score. Needs no data "
         "beyond `r`, and is wrong exactly to the extent the score is miscalibrated. This is "
         "why calibration was checked before any cost rule was applied.\n"
-        "- **the empirical minimum**: sweep every distinct cut on validation and take the "
+        "- the empirical minimum: sweep every distinct cut on validation and take the "
         "cheapest. Uses the data, and pays for it in sampling noise.\n\n"
         "This project uses the third, chosen on validation and frozen before the test split "
         "was opened. Turn on *snap* below and the three land within about a percent of each "
-        "other in cost, which is the finding, and the reason the third decimal place is not "
-        "worth arguing about."
+        "other in cost, so the third decimal place of the threshold does not matter."
     )
 
     c1, c2 = st.columns([3, 2])
@@ -633,7 +645,7 @@ def main() -> None:
         min_value=THRESHOLD_MIN, max_value=THRESHOLD_MAX, step=THRESHOLD_STEP,
         format="%.4f", key="threshold", disabled=snap))
     if snap:
-        st.caption(f"Snapped to **{threshold:.4f}**. The exact cost-minimising cut on this "
+        st.caption(f"Snapped to {threshold:.4f}. The exact cost-minimising cut on this "
                    f"split at r = {cost_ratio} is {t_opt:.5f}, and a perfectly calibrated "
                    f"score would want 1/(1+r) = {bayes_threshold(cost_ratio):.4f}; the "
                    f"three agree to about a percent of cost, because the minimum is a basin.")
@@ -666,9 +678,9 @@ def main() -> None:
         share = d["share_of_cost_from_false_negatives"]
         st.markdown("**Who the bill goes to**")
         st.markdown(
-            f"Of {d['expected_cost']:,.0f} cost units, **{share:.0%}** is carried by the "
-            f"**{d['fn']:,} missed defaults** and **{1 - share:.0%}** by the "
-            f"**{d['fp']:,} people who would have paid** but got flagged anyway. Which of "
+            f"Of {d['expected_cost']:,.0f} cost units, {share:.0%} is carried by the "
+            f"{d['fn']:,} missed defaults and {1 - share:.0%} by the "
+            f"{d['fp']:,} people who would have paid but got flagged anyway. Which of "
             f"those is *the harm* depends on whether a flag is a declined card or a "
             f"supportive phone call, and that is a product decision."
         )
@@ -698,7 +710,7 @@ def main() -> None:
         "a share of that group's *defaulters*, the ones it let through. The blue bar is a "
         "share of that group's *non-defaulters*, the ones it flagged anyway. A single "
         "error rate would average these two into a number that hides the thing worth seeing, "
-        "which is that a group can be treated worse in **two opposite directions at once**."
+        "which is that a group can be treated worse in two opposite directions at once."
     )
 
     sex_tab = tables["sex"].loc[["female", "male"]] if "male" in tables["sex"].index else None
@@ -707,8 +719,8 @@ def main() -> None:
         st.markdown(
             f"At this cut men absorb more false alarms ({m['fpr']:.1%} of male non-defaulters "
             f"against {f['fpr']:.1%} of female ones) and women absorb more missed defaults "
-            f"({f['fnr']:.1%} against {m['fnr']:.1%}). **Which of those is the harm is not a "
-            f"question the data can answer.** If a flag is a declined card, the men are the "
+            f"({f['fnr']:.1%} against {m['fnr']:.1%}). Which of those is the harm is not a "
+            f"question the data can answer. If a flag is a declined card, the men are the "
             f"ones being hurt. If a flag is a phone call before the account goes bad, the "
             f"women are the ones not getting it. Same numbers, opposite conclusion, and the "
             f"choice belongs to whoever decides what a flag *does*."
@@ -730,8 +742,8 @@ def main() -> None:
     st.markdown("##### One gap at one cut is a fact about that cut")
     st.markdown(
         "Everything above describes a single operating point. Sweeping the threshold "
-        "separates gaps that are a property of the **rule** from gaps that are a property of "
-        "**where the rule happens to sit**, which are different claims, and only the first "
+        "separates gaps that are a property of the rule from gaps that are a property of "
+        "where the rule happens to sit, which are different claims, and only the first "
         "survives someone changing the cost assumption."
     )
     gap_attr = st.selectbox(
@@ -747,19 +759,19 @@ def main() -> None:
         "Dashed line: the cut this project deployed. Solid line: where you have put it."
     )
     st.markdown(
-        "**Every gap vanishes at both ends, and that is arithmetic rather than fairness.** "
+        "**Every gap vanishes at both ends, for arithmetic reasons.** "
         "Flag almost everyone and no group can differ from another; flag almost nobody and "
         "the same. The gaps live in the middle, and what separates them is *where* in the "
         "middle.\n\n"
-        "Across the whole high-flagging half of this range the **catch-rate gap sits near "
-        "0.9 points** while the other two climb to 6 and 7. At a cut this low almost every "
+        "Across the whole high-flagging half of this range the catch-rate gap sits near "
+        "0.9 points while the other two climb to 6 and 7. At a cut this low almost every "
         "defaulter in every group is flagged, so the catch rate has no room left to differ. "
-        "That is the reading most audits of this model would stop at. **Push the line the "
+        "That is the reading most audits of this model would stop at. Push the line the "
         "other way, to where only 15% of the book is flagged, and the catch-rate gap becomes "
-        "the largest of the three** (4.5 points against 3.3 and 1.8).\n\n"
+        "the largest of the three (4.5 points against 3.3 and 1.8).\n\n"
         "So \"the catch-rate gap is negligible\" is not a property of this rule. It is a "
         "property of this rule *at this threshold*, and the threshold came from a cost ratio "
-        "I made up. The jaggedness on the right is real rather than rendering: past that "
+        "I made up. The jaggedness on the right is real: past that "
         "point so few clients are flagged that one person moves a group rate."
     )
 
@@ -814,9 +826,9 @@ def main() -> None:
     st.subheader("3 · Why this model and not the simpler one")
     st.markdown(
         "Two families were fitted, tuned and calibrated the same way: an L2 logistic "
-        "regression and LightGBM. One of them has to ship. **Which one won matters less than "
+        "regression and LightGBM. One of them has to ship. Which one won matters less than "
         "how the choice was made: the obvious way to decide was the wrong way, and it took "
-        "a specific piece of machinery to see that.**"
+        "a specific piece of machinery to see that."
     )
 
     st.markdown("##### The default answer, and why it is not obviously right")
@@ -824,25 +836,25 @@ def main() -> None:
     d_ap = ms["lgbm_minus_logistic_ap"]
     st.markdown(
         f"The reflex is to pick whichever scores better on the cross-validation metric. Here "
-        f"that metric is **average precision**, and by it the two are a tie: LightGBM wins the "
+        f"that metric is average precision, and by it the two are a tie: LightGBM wins the "
         f"cross-validation ({ms['lgbm_cv']:.4f} against {ms['logistic_cv']:.4f}) and then "
-        f"produces a paired difference on validation of **{d_ap['point']:+.5f}, 95% interval "
-        f"[{d_ap['ci_lo']:+.4f}, {d_ap['ci_hi']:+.4f}]**, an interval straddling zero. On that "
+        f"produces a paired difference on validation of {d_ap['point']:+.5f}, 95% interval "
+        f"[{d_ap['ci_lo']:+.4f}, {d_ap['ci_hi']:+.4f}], an interval straddling zero. On that "
         f"reading you keep the simpler model, and the first version of this project did.\n\n"
-        f"Average precision integrates precision over the **whole** recall axis. It gives the "
+        f"Average precision integrates precision over the whole recall axis. It gives the "
         f"stretch at recall 0.1 (where precision is high and this rule never operates) the "
         f"same standing as recall {published['confusion']['tpr']:.2f}, which is where the rule "
-        f"actually lives. **Choosing with a number that averages over everywhere, in order to "
-        f"act in one place, is a decision rather than a default**, and it is not one I had "
-        f"made deliberately."
+        f"operates. Choosing with a number that averages over the whole curve, in order to "
+        f"act at one point on it, is itself a decision, and not one I had made "
+        f"deliberately."
     )
 
     st.markdown("##### The obstacle: one validation split cannot answer the better question")
     st.markdown(
         "The better question is which family is cheaper at the operating point: expected "
-        "cost at r = 10, the quantity the decision actually pays. Asked on the 6,000-row "
+        "cost at r = 10, the quantity the decision pays. Asked on the 6,000-row "
         "validation split, the paired bootstrap on that difference runs from about "
-        "**−318 to +81**: LightGBM cheaper in 88% of resamples and still not separated from "
+        "−318 to +81: LightGBM cheaper in 88% of resamples and still not separated from "
         "zero. The effect is real and smaller than one split of this size can resolve, which "
         "is exactly why the reassuring paragraph above sounded so safe."
     )
@@ -852,22 +864,22 @@ def main() -> None:
     if sa:
         st.markdown("##### The design, and what each piece of it is for")
         st.markdown(
-            f"Nested cross-validation over the **{sa['design']['n_rows']:,} pooled training "
-            f"and validation rows** ({sa['design']['outer']}). Four choices, each one closing "
+            f"Nested cross-validation over the {sa['design']['n_rows']:,} pooled training "
+            f"and validation rows ({sa['design']['outer']}). Four choices, each one closing "
             f"a specific way the comparison could have flattered one side:\n\n"
-            "- **The outer loop holds out a fold and never touches it.** The number reported "
+            "- The outer loop holds out a fold and never touches it. The number reported "
             "for a fold is scored on rows nothing in that fold's pipeline has seen.\n"
-            "- **The inner loop tunes each family separately, on outer-training rows only.** "
+            "- The inner loop tunes each family separately, on outer-training rows only. "
             "Neither family gets a hyperparameter chosen with a peek at what judges it, and "
             "neither gets a longer look than the other.\n"
-            "- **Both arms are built exactly as the deployed model is**: same calibration "
+            "- Both arms are built exactly as the deployed model is: same calibration "
             "wrapper, same folds, same settings. Give one family a five-fold calibration and "
             "the other a bare three-fold and you are comparing calibration states, not model "
             "families. That was a real bug in the first version of this comparison.\n"
-            "- **Each fold is charged its own cheapest cut**, not a threshold fixed elsewhere. "
+            "- Each fold is charged its own cheapest cut, not a threshold fixed elsewhere. "
             "That makes the statistic a property of the *ranking*, so a family is not "
             "penalised for a cut that happens to suit the other one.\n\n"
-            "And the inner loop runs **twice**: once selecting hyperparameters on average "
+            "And the inner loop runs twice: once selecting hyperparameters on average "
             "precision, once on expected cost, which turns \"would a cost-aware rule have "
             "caught this on its own?\" into a measurement instead of an opinion."
         )
@@ -909,7 +921,7 @@ def main() -> None:
         c2.markdown(
             "**But changing the selection metric is not what found it.** Tuning on cost rather "
             "than average precision moves the answer by less than its own interval. "
-            "**The gain is in the model family, not the metric**: \"optimise the business "
+            "The gain is in the model family, not the metric: \"optimise the business "
             "number directly\" would not have got here on its own."
         )
 
@@ -955,7 +967,7 @@ def main() -> None:
             f"zero, LightGBM is ahead on only "
             f"{int(sweep.iloc[0]['lgbm_cheaper_on_n_folds'])} of "
             f"{int(sweep.iloc[0]['n_folds'])} folds, and the rule refuses to switch. "
-            f"**Everywhere from r = 2 up it switches.** One assumption, made by me and not "
+            f"Everywhere from r = 2 up it switches. One assumption, made by me and not "
             f"by the data, decides which model ships."
         )
         best = sweep.loc[sweep['difference'].idxmin()]
@@ -963,14 +975,14 @@ def main() -> None:
             f"**And the advantage has a shape.** It peaks at r = {best['cost_ratio']:g} "
             f"({best['difference']:+,.0f}) and falls away on both sides: at r = 1 you flag "
             f"almost nobody and at r = 50 almost everybody, and a rule that intervenes "
-            f"everywhere or nowhere cannot express a better model. **Which model you use "
-            f"matters most exactly where the decision is hardest**, and not at all where it "
+            f"everywhere or nowhere cannot express a better model. Which model you use "
+            f"matters most exactly where the decision is hardest, and not at all where it "
             f"is already made."
         )
         st.markdown(
             "This is the thing I would put first if I had to keep one sentence from the "
-            "project: **the number I could not measure did not just set the operating "
-            "point, it selected the model.** Everything downstream of it (the threshold, "
+            "project: the number I could not measure did not just set the operating "
+            "point, it selected the model. Everything downstream of it (the threshold, "
             "the confusion matrix, who absorbs the errors in section 2) inherits an "
             "assumption that never appears in the data, and a reader who believes "
             "`r = 1` is entitled to a different model, not just a different cut."
@@ -980,10 +992,10 @@ def main() -> None:
         a, b = sw["arms"]["superseded"], sw["arms"]["current"]
         st.markdown("##### What the decision was worth when it met the held-out data")
         st.markdown(
-            f"That is the rationale, and it is only half the story. The rule changed, the "
-            f"model changed with it, the test split was opened a second time — and the swap "
-            f"was worth **{abs(sw['difference_at_frozen_cuts']):,.0f} units out of "
-            f"{a['cost_at_frozen_cut']:,.0f}**, against the roughly 180 the nested comparison "
+            f"That is the rationale. The rule changed, the model changed with it, the test "
+            f"split was opened a second time, and the swap "
+            f"was worth {abs(sw['difference_at_frozen_cuts']):,.0f} units out of "
+            f"{a['cost_at_frozen_cut']:,.0f}, against the roughly 180 the nested comparison "
             f"implied for 6,000 rows."
         )
         st.table(pd.DataFrame([
@@ -1009,7 +1021,7 @@ def main() -> None:
         )
         c2.markdown(
             f"**The rest is noise.** Expected cost on these 6,000 clients has a bootstrap "
-            f"standard deviation of **{sw['bootstrap_sd_of_expected_cost']:,.0f} units**, so "
+            f"standard deviation of {sw['bootstrap_sd_of_expected_cost']:,.0f} units, so "
             f"{sw['difference_at_own_best_cuts']:+,.0f} and −180 are not distinguishable from "
             f"each other, and neither is distinguishable from zero."
         )
@@ -1019,8 +1031,8 @@ def main() -> None:
             "cannot confirm; both of those are true and the second governs what I am allowed "
             "to claim. What it cost is concrete: \"held out, opened once\" became \"opened "
             "twice under a rule that changed in between\". The unambiguous gain was somewhere "
-            "I was not looking: re-running the calibration rule for the new model **rejected "
-            "isotonic** and adopted sigmoid, more than halving expected calibration error on "
+            "I was not looking: re-running the calibration rule for the new model rejected "
+            "isotonic and adopted sigmoid, more than halving expected calibration error on "
             "test, 0.0150 → 0.0062.",
             icon=":material/flag:",
         )
@@ -1031,46 +1043,46 @@ def main() -> None:
         diff = ms["lgbm_minus_logistic_ap"]
         st.markdown(
             f"""
-**The rule on screen.** LightGBM on 19 predictors, sigmoid-calibrated, selected on **expected
-cost at r = {ref['frozen']['cost_ratio_ASSUMED']:g} under nested cross-validation**. Accuracy
+The rule on screen. LightGBM on 19 predictors, sigmoid-calibrated, selected on expected
+cost at r = {ref['frozen']['cost_ratio_ASSUMED']:g} under nested cross-validation. Accuracy
 was ruled out before anything was fitted, because flagging nobody is right 77.9% of the time,
 and average precision was ruled out later, for the reason in section 4. On average precision
 the two families are a tie: LightGBM wins the cross-validation
 ({ms['lgbm_cv']:.4f} against {ms['logistic_cv']:.4f}) and then produces a paired difference on
-validation of **{diff['point']:+.5f}, 95% interval [{diff['ci_lo']:+.4f}, {diff['ci_hi']:+.4f}]**.
+validation of {diff['point']:+.5f}, 95% interval [{diff['ci_lo']:+.4f}, {diff['ci_hi']:+.4f}].
 
-On the test split it scores average precision **{published['average_precision']['point']:.4f}**
+On the test split it scores average precision {published['average_precision']['point']:.4f}
 [{published['average_precision']['ci_lo']:.4f}, {published['average_precision']['ci_hi']:.4f}]
 against a floor of {ref['dataset']['prevalence']:.4f}, ROC-AUC
-**{published['roc_auc']['point']:.4f}**, and expected calibration error
-**{published['ece']:.4f}**; calibration checked first, because a cost rule applied to an
+{published['roc_auc']['point']:.4f}, and expected calibration error
+{published['ece']:.4f}; calibration checked first, because a cost rule applied to an
 uncalibrated score is arithmetic on the wrong quantity. The calibration method was chosen by a
-rule written down before either model existed: adopt only if **both** Brier and ECE improve on
-validation. For this model that rule **rejected isotonic** and adopted sigmoid.
+rule written down before either model existed: adopt only if both Brier and ECE improve on
+validation. For this model that rule rejected isotonic and adopted sigmoid.
 
-**The test split has been opened twice**: once for a logistic regression selected on average
+The test split has been opened twice: once for a logistic regression selected on average
 precision, and again for this model after the selection rule changed. Nothing on the test split
 informed that change, but "opened once" is a stronger claim than this project can now make.
 
-**This is behavioural scoring, not underwriting.** Every client already holds a card and six
+This is behavioural scoring, not underwriting. Every client already holds a card and six
 months of history, so it says nothing about who should have been given one. Everyone here was
 approved: declined applicants are absent and their counterfactual outcomes are
 unobservable, so any bias in the original granting decision is invisible. Every group result
 is scoped to *among clients who held a card*.
 
-**One month, one country, twenty years ago**: October 2005, Taiwan, in the aftermath of a
+One month, one country, twenty years ago: October 2005, Taiwan, in the aftermath of a
 domestic card-debt crisis. The base rate is not a general fact about consumer credit.
 
-**`sex` is a binary 2005 administrative code**, not gender identity, with no non-binary
+`sex` is a binary 2005 administrative code, not gender identity, with no non-binary
 category. `education` and `marriage` contain undocumented codes pooled into an
 `other_unknown` bucket too small to report. Nothing here is causal and nothing here is a
 legal finding. The three non-`sex` attributes are exploratory: four attributes times three
 statistics is twelve chances for something to look large, so a p = 0.035 found among twelve
 is not a discovery.
 
-**r = 10 was mine, not the data's.** That is why it is a slider.
+r = 10 was mine, not the data's. That is why it is a slider.
 
-**Data.** {ref['attribution']} Only derived outputs travel with this page: one calibrated
+Data. {ref['attribution']} Only derived outputs travel with this page: one calibrated
 score per test client, the outcome, the four audited attributes, and the permutation draws.
 """
         )
