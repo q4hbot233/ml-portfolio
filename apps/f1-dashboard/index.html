@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Race Control — 2023 Spanish Grand Prix</title>
+<title>Race Control · 2023 Spanish Grand Prix</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap">
@@ -259,12 +259,37 @@ footer a{color:var(--dim)}
   /* The model tab is already a scrolling document; give it phone padding. */
   main.mx{padding:14px 14px 48px}
 }
+/* ---------- first-visit summary ----------
+   The timing screen explains itself to someone who follows F1 and to nobody else. This card
+   says what the page is and what it found, once; the choice is remembered where the browser
+   allows it and the card simply reappears where it does not. */
+#intro{position:fixed;inset:0;z-index:50;display:flex;padding:20px;overflow-y:auto;
+  background:rgba(4,5,7,.78);backdrop-filter:blur(3px)}
+#intro[hidden]{display:none}
+#intro .card{margin:auto;max-width:560px;width:100%;background:var(--panel);
+  border:1px solid var(--edge-2);border-radius:10px;padding:22px 24px 20px}
+#intro .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--dim);margin:0 0 8px}
+#intro h2{font-family:var(--cond);font-size:28px;letter-spacing:.01em;margin:0 0 10px;color:var(--text)}
+#intro p{font-family:var(--ui);font-size:14.5px;line-height:1.6;color:#C9CED6;margin:0 0 16px}
+#intro button{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  background:var(--cyan);color:#05181B;border:0;border-radius:3px;padding:9px 14px;
+  font-weight:700;cursor:pointer}
+#intro button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
 </style>
 </head>
 <body>
 
 <div id="boot"><div class="b">LOADING SESSION DATA<div class="bar"><i></i></div></div></div>
 
+<div id="intro" role="dialog" aria-modal="true" aria-labelledby="introTitle" hidden>
+  <div class="card">
+    <p class="k">In short</p>
+    <h2 id="introTitle">Race Control</h2>
+    <p id="introText"></p>
+    <button id="introGo" type="button">Open the replay</button>
+  </div>
+</div>
 <div id="app" hidden>
   <header>
     <div class="brand">
@@ -298,7 +323,7 @@ footer a{color:var(--dim)}
 
   <main id="mainRace">
     <section class="tower">
-      <div class="towerhead">Timing — classified order at the current lap</div>
+      <div class="towerhead">Timing · classified order at the current lap</div>
       <div class="rows" id="rows"></div>
     </section>
 
@@ -306,7 +331,7 @@ footer a{color:var(--dim)}
       <div class="toprow">
         <div class="mapwrap">
           <svg id="map" role="img" aria-label="Circuit map with car positions"></svg>
-          <div class="mapnote" id="mapnote">CIRCUIT TRACE — LOADING</div>
+          <div class="mapnote" id="mapnote">CIRCUIT TRACE · LOADING</div>
           <div class="focuscard" id="focus" hidden></div>
         </div>
         <div class="lapchart">
@@ -320,7 +345,7 @@ footer a{color:var(--dim)}
       </div>
 
       <div class="models">
-        <div class="panelhead">Models — fitted only on laps earlier than the laps they score</div>
+        <div class="panelhead">Models · fitted only on laps earlier than the laps they score</div>
         <div class="mgrid">
           <div class="mcard">
             <h3>Lap-time prediction</h3>
@@ -364,23 +389,23 @@ footer a{color:var(--dim)}
   <main class="mx" id="mainModel" hidden>
     <h2>The two models that need more than one race</h2>
     <p class="lede">
-      Lap-time prediction and the anomaly flag are questions inside a session, and one race is the
-      right substrate for them. These two are not. <b>When does a team pit</b> and <b>how fast does a
-      compound fall away</b> are questions about circuits, conditions and rules. Fit either on a
-      single race and you have measured that race. Both are fitted on <span id="mxCorpus">—</span>,
+      Lap-time prediction and the anomaly flag are questions inside a session, and one race is
+      enough data for them. These two are different: when a team pits, and how fast a compound
+      wears, depend on circuits, conditions and rules. Fit either on a single race and you have
+      measured that race. Both are fitted on <span id="mxCorpus">—</span>,
       split by season rather than at random: a random split puts the 2023 and 2024 running of the
       same circuit on opposite sides, and scores the model on a track it has already learned.
     </p>
     <div class="cards">
       <div class="card">
-        <h3>Pit probability — held-out season</h3>
+        <h3>Pit probability · held-out season</h3>
         <table id="mxPit"></table>
         <div class="note" id="mxPitNote">—</div>
       </div>
       <div class="card">
         <h3>What the pit model leans on</h3>
         <table id="mxImp"></table>
-        <div class="note">Permutation importance, measured on the <b>held-out season</b>: drop in
+        <div class="note">Permutation importance, measured on the held-out season: drop in
           average precision when one feature is shuffled. Measuring it on training rows would say
           which features the model memorised with.</div>
       </div>
@@ -460,6 +485,7 @@ async function boot(){
   $("tabRace").addEventListener("click", ()=>setTab("race"));
   $("tabModel").addEventListener("click", ()=>setTab("model"));
   if (corpus) renderModelTab(corpus);
+  showIntro(races, corpus);
   await loadRace(races.default);
   $("boot").remove(); $("app").hidden = false;
 }
@@ -473,11 +499,49 @@ function setTab(which){
   if (which === "race" && S.track) drawTrack();
 }
 
+function showIntro(races, corpus){
+  const KEY = "raceControlIntroSeen";
+  try { if (localStorage.getItem(KEY)) return; } catch (e) { /* storage blocked: show it */ }
+  const pr = corpus ? corpus.pitstop.per_race.filter(r => r.ap != null && r.floor != null) : [];
+  const med = a => { const s = [...a].sort((x, y) => x - y), h = s.length >> 1;
+                     return s.length % 2 ? s[h] : (s[h - 1] + s[h]) / 2; };
+  const word = n => (["zero","one","two","three","four","five","six","seven","eight","nine","ten"][n] || String(n));
+  const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+  let text = cap(word(races.races.length)) + " races from " +
+    [...new Set(races.races.map(r => r.year))].join(" and ") +
+    ", replayed lap by lap from public F1 timing data. Six models run alongside the replay: " +
+    "lap time, tyre wear, anomaly flags, pit probability, the pit window and stint length.";
+  if (pr.length){
+    const above = pr.filter(r => r.ap > r.floor).length;
+    text += " The pit-stop model was trained on the " + corpus.corpus.train_season +
+      " season and tested on " + corpus.corpus.test_season + ". " +
+      (above === pr.length ? "In all " + pr.length : "In " + above + " of the " + pr.length) +
+      " test races it ranks laps better than chance, with a median average " +
+      "precision of " + med(pr.map(r => r.ap)).toFixed(2) + " against a base rate of " +
+      med(pr.map(r => r.floor)).toFixed(2) + ".";
+  }
+  text += " When a race has too few stints to measure a compound's wear reliably, that panel " +
+    "shows no number and says why.";
+  $("introText").textContent = text;
+  const box = $("intro"), go = $("introGo");
+  const close = () => {
+    box.hidden = true;
+    try { localStorage.setItem(KEY, "1"); } catch (e) { /* not remembered; harmless */ }
+    document.removeEventListener("keydown", onKey);
+  };
+  const onKey = e => { if (e.key === "Escape") close(); };
+  go.addEventListener("click", close);
+  box.addEventListener("click", e => { if (e.target === box) close(); });
+  document.addEventListener("keydown", onKey);
+  box.hidden = false;
+  go.focus();
+}
+
 async function loadRace(slug){
   setPlaying(false);
   S.slug = slug; S.track = null; S.sel = null; S.lapDrv = null;
   $("map").innerHTML = "";
-  $("mapnote").textContent = "CIRCUIT TRACE — LOADING";
+  $("mapnote").textContent = "CIRCUIT TRACE · LOADING";
   const base = DATA + slug + "/";
   const j = async f => (await fetch(base+f)).json();
   const [meta, replay, models] = await Promise.all([j("meta.json"), j("replay.json"), j("models.json")]);
@@ -669,7 +733,7 @@ function drawTrack(){
   const circ = S.meta.circuit || {};
   const where = (circ.location || circ.country || S.meta.session?.event || "CIRCUIT");
   $("mapnote").textContent = String(where).toUpperCase() +
-    " — CENTRELINE FROM THE FASTEST LAP'S POSITION TRACE";
+    " · CENTRELINE FROM THE FASTEST LAP'S POSITION TRACE";
 }
 function drawCars(cur){
   if (!S.track) return;
@@ -738,7 +802,7 @@ function spark(svgEl, vals, colour, baseline){
 function renderModels(){
   const M = S.models;
 
-  // lap-time: report the state that matters, and be honest about the baseline
+  // lap-time: report the state that matters, against the baseline that matters
   const st = (M.laptime?.states)||[];
   if (st.length){
     // Show every information state. Reporting only the last one would flatter the model:
@@ -783,7 +847,7 @@ function renderModels(){
     $("degVal").innerHTML = uc.deg_s_per_lap.toFixed(4)+'<span class="munit">s / lap</span>';
   } else if (got.length > 1){
     // No pooled rate survived, so there is no single number to show. The span of
-    // the compounds that did hold up is the honest headline; an average of them
+    // the compounds that did hold up is the headline; an average of them
     // would be a quantity nothing in the analysis estimated.
     const lo = Math.min(...got.map(c=>c.deg_ms_per_lap)) / 1000;
     const hi = Math.max(...got.map(c=>c.deg_ms_per_lap)) / 1000;
@@ -1090,8 +1154,8 @@ function renderModelTab(c){
       r.difference.toFixed(4)+" ["+r.ci_lo.toFixed(4)+", "+r.ci_hi.toFixed(4)+"] &mdash; <b>"+
       (r.separated?"separated":"NOT separated")+"</b></span>").join("<br>") +
     "<br><br>The interval on each compound on its own cannot answer which is more durable. " +
-    "Bootstrapping the <b>difference</b> can, and it says the soft separates from both while " +
-    "<b>medium and hard do not separate from each other</b>. An earlier run on 12 fewer races " +
+    "Bootstrapping the difference can, and it says the soft separates from both while " +
+    "medium and hard do not separate from each other. An earlier run on 12 fewer races " +
     "had them the other way round, inside the same interval.";
 
   const cl = {};
@@ -1112,7 +1176,7 @@ function renderModelTab(c){
   $("mxTradeNote").innerHTML =
     "Pace is compared at tyre age " + deg.reference_tyre_age + " after removing the lap-number " +
     "effect, within a race and then pooled. Comparing raw stint medians instead reported the " +
-    "<b>hard compound as the fastest</b>, which is an artefact: hards run long stints late on a " +
+    "hard compound as the fastest, which is an artefact: hards run long stints late on a " +
     "light car and softs run short ones on heavy fuel.";
 
   $("mxCaveats").innerHTML =
