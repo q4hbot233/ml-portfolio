@@ -1,8 +1,8 @@
 """A shuttle passenger assistant that refuses - the interactive version.
 
 Runs in the browser under stlite (Streamlit on Pyodide). Unlike most of the pages in
-this showcase, this one does not only re-plot exported tables: it **fits the classifier
-in your browser** at page load, on the training split shipped in ``data/``, and every
+this showcase, this one does not only re-plot exported tables: it fits the classifier
+in your browser at page load, on the training split shipped in ``data/``, and every
 routing decision you see is that model running on your words. No pickle is shipped -
 sklearn pickles break across versions - and no network call is made after the page
 loads.
@@ -16,8 +16,8 @@ What is shipped, and what each thing is allowed to prove:
 
 * ``clinc_track_b_train.csv`` / ``clinc_track_b_test.csv`` - the full CLINC150 train and
   test splits, re-labelled onto the shuttle handler taxonomy (Track B). The utterances
-  are other people's; the mapping is mine. **Every accuracy number on this page is
-  measured on these.**
+  are other people's; the mapping is mine. Every accuracy number on this page is
+  measured on these.
 * ``domain_utterances.csv`` - 290 shuttle-specific phrasings I wrote myself (Track C).
   They are used as *training* data only, never as an evaluation set, because scoring a
   model on utterances written by the person who defined the intents measures that
@@ -120,7 +120,7 @@ CATEGORY_WORDS: dict[str, str] = {
 #: trip to walmart", a false alarm on one of the most ordinary things a passenger says.
 #:
 #: The first group names the event. The second names what a passenger having one
-#: actually types, which is a symptom: the original list held "heart attack" but not
+#: types, which is a symptom: the original list held "heart attack" but not
 #: "chest", so "my chest hurts" reached neither the word list nor the classifier's
 #: safety class and was answered as an out-of-scope question. Symptom words are the
 #: ones a person reaches for before they know what is happening to them, and they
@@ -1037,7 +1037,7 @@ def h_accessibility(text: str, feed: Feed, ctx: Context) -> str:
 
 
 def h_service_disruption(text: str, feed: Feed, ctx: Context) -> str:
-    """Honest about what it cannot see: this is the static timetable, not a live feed."""
+    """Says what it cannot see: this is the static timetable, not a live feed."""
     stop, how = _resolve_origin(text, feed, ctx)
     running = feed.active_routes(ctx.day)
     scheduled = ""
@@ -1357,7 +1357,7 @@ def fig_rejection(repo_curve: dict, operating_point: dict, live: dict[str, np.nd
 
     They are not the same problem and the axes say so. The left is the 150-intent
     problem the repository selected its operating point on. The right is the
-    deployment-shaped taxonomy this page actually runs, where the explicit reject class
+    deployment-shaped taxonomy this page runs, where the explicit reject class
     has already done nearly all the work before the threshold gets a turn.
     """
     with plt.rc_context(PLOT_STYLE):
@@ -1516,6 +1516,17 @@ def main() -> None:  # pragma: no cover - exercised by the browser, not by the t
     corpora = _corpora()
 
     st.title("A shuttle assistant that refuses")
+    ks = repo["track_c"]["keyword_safety"]
+    caught = round(ks["recall_on_author_written_emergencies"] * ks["n_emergencies"])
+    with st.container(border=True):
+        st.caption("In short")
+        st.markdown(
+            "A public-data rebuild of the rider assistant from a Northwestern capstone I led "
+            "for an autonomous shuttle operator. A TF-IDF classifier sends passenger "
+            f"questions to {len(repo['handlers'])} handlers that answer from a real transit "
+            "timetable, and refuses anything no handler owns. The emergency word list "
+            f"catches {caught} of the {ks['n_emergencies']} emergency phrasings in the test "
+            "set, so every refusal also tells the passenger to call 911.")
     st.markdown(
         "A passenger types a question. A classifier decides which handler owns it, and "
         "if nothing does, the assistant says so instead of guessing. The routing half is "
@@ -1541,7 +1552,7 @@ def main() -> None:  # pragma: no cover - exercised by the browser, not by the t
         include_domain = build_choice.startswith("CLINC150 +")
 
         tau = st.slider("Confidence threshold τ", 0.0, 0.99, float(REPO_TAU), 0.01,
-                        help="Below this, the assistant refuses rather than answering. "
+                        help="Below this, the assistant refuses. "
                              "The default is the operating point the repository selected "
                              "on the 150-intent problem.")
         use_keywords = st.checkbox(
@@ -1631,8 +1642,8 @@ def main() -> None:  # pragma: no cover - exercised by the browser, not by the t
         "the ones it cannot answer is also an utterance it *could* have answered. Both "
         "numbers below are recomputed live, at your τ, on 5,500 held-out CLINC150 "
         "utterances - "
-        f"**{now['n_in_scope']}** that a shuttle handler genuinely owns and "
-        f"**{now['n_out_of_scope']:,}** that none of them does.")
+        f"{now['n_in_scope']} that a shuttle handler genuinely owns and "
+        f"{now['n_out_of_scope']:,} that none of them does.")
     c1, c2, c3 = st.columns(3)
     c1.metric("In-scope accuracy", f"{now['in_scope_accuracy']:.3f}",
               help=f"Of the {now['n_in_scope']} held-out utterances a handler owns, the "
@@ -1679,7 +1690,7 @@ def main() -> None:  # pragma: no cover - exercised by the browser, not by the t
         f"at a high τ that is the threshold refusing passengers, not the model getting "
         f"worse.")
 
-    st.markdown("**The mistakes the model actually makes, at your τ:**")
+    st.markdown("**The mistakes the model makes at your τ:**")
     confusions = live_confusions(arrays, tau, corpora["test"][0])
     if confusions:
         st.dataframe(
@@ -1734,15 +1745,15 @@ def main() -> None:  # pragma: no cover - exercised by the browser, not by the t
         "generalises to a passenger. `results.json` carries `circular: true` on that "
         "track as a field rather than a footnote, so the number cannot be pasted "
         "somewhere and lose the warning on the way. Its 5-fold macro-F1 of "
-        f"{repo['track_c']['cv_macro_f1']['tfidf_char']:.4f} is **not** on this page as "
+        f"{repo['track_c']['cv_macro_f1']['tfidf_char']:.4f} is not on this page as "
         "a result, and every accuracy above is measured on held-out CLINC150 utterances "
         "that I did not write.\n\n"
         "**Switch the training set to *CLINC150 only* in the sidebar** and you get the "
         "non-circular assistant in full: five handlers, and *\"when is the next "
         "shuttle\"*, *\"is the shuttle delayed\"* and *\"I left my bag on the shuttle\"* "
         "all refused, because no data anyone else collected has ever seen those "
-        "questions. That is the honest state of a shuttle intent classifier built "
-        "entirely from public data, and it is why the repository's conclusion is that "
+        "questions. That is where a shuttle intent classifier built entirely from "
+        "public data stands, and it is why the repository's conclusion is that "
         "the next step is a few hundred real passenger utterances, not a bigger model.\n\n"
         "**CLINC150 is not transit either.** It is crowdsourced English in which workers "
         "imagined a scenario and typed a sentence. Real passengers are terser, angrier, "
@@ -1764,7 +1775,7 @@ def main() -> None:  # pragma: no cover - exercised by the browser, not by the t
         "*\"there's a fight happening\"* - generic calls for help and security incidents, "
         "not medical phrasings. They could be written into the list in an afternoon, and "
         "they have not been, because a list tuned until it matches its own thirty test "
-        "sentences measures nothing. **What changed instead is the refusal**: it now names "
+        "sentences measures nothing. What changed instead is the refusal: it now names "
         "911 before it lists what the assistant can do, so the phrasing nobody anticipated "
         "still reaches a passenger with the one instruction that matters. A word list "
         "assembled by one person will always be missing a phrasing; the fallback is what "
