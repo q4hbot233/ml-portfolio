@@ -125,6 +125,30 @@ def stale_hashes(app: Path, html: str) -> list[str]:
     return out
 
 
+#: Keys that record when an artefact was written. They say nothing about the analysis, and on
+#: a public payload they date the work to the hour. The exports still write them into the
+#: private results; they must not reach a page.
+GENERATION_STAMPS = {"_written_utc", "generated_at_utc"}
+
+
+def generation_stamps(app: Path) -> list[str]:
+    out = []
+
+    def walk(node, where):
+        if isinstance(node, dict):
+            for k, v in node.items():
+                if k in GENERATION_STAMPS:
+                    out.append(f"{where}: carries `{k}`, which dates the export")
+                walk(v, where)
+        elif isinstance(node, list):
+            for v in node:
+                walk(v, where)
+
+    for js in sorted((app / "data").rglob("*.json")) if (app / "data").is_dir() else []:
+        walk(json.loads(js.read_text()), str(js.relative_to(app)))
+    return out
+
+
 def check(app: Path) -> list[str]:
     html = (app / "index.html").read_text()
     problems = []
@@ -140,6 +164,7 @@ def check(app: Path) -> list[str]:
                 problems.append(f"page reads D.{r}, not in {path.name}")
 
     problems += stale_hashes(app, html)
+    problems += generation_stamps(app)
 
     for kind, txt in static_prose(html):
         for m in CLAIM.finditer(txt):
