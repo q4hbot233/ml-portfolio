@@ -169,6 +169,13 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
   body{padding-bottom:env(safe-area-inset-bottom)}
 }
 @media print{#zback{display:none}}
+/* Two or three sentences a reader can stop after. Filled from the payload in boot(), so the
+   numbers in it cannot drift from the ones further down the page. */
+.tldr{font-size:16px;line-height:1.62;color:#C9CED6;max-width:62ch;margin:22px 0 0;
+  padding:14px 16px;border-left:2px solid var(--accent);background:var(--panel);
+  border-radius:0 8px 8px 0;min-height:4.8em}
+.tldr .k{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--faint);margin-bottom:6px}
 </style>
 </head>
 <body>
@@ -176,6 +183,7 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
   <header class="hero">
     <p class="eyebrow"><span class="dot"></span> Team radio · 2024 season</p>
     <h1>Did the drivers have the race you did?</h1>
+    <div class="tldr" id="tldr"></div>
     <p class="deck">Readers rate every grand prix out of ten. Team radio is the only channel
       where you hear what it was like from inside the car. Every clip F1 broadcast in 2024 is
       transcribed and scored by a transformer, with a rule-based lexicon kept beside it as the
@@ -222,7 +230,7 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
   </section>
 
   <section>
-    <div class="shead"><span class="n">01</span><h2>What you are actually listening to</h2>
+    <div class="shead"><span class="n">01</span><h2>What you are listening to</h2>
       <span class="sub">a broadcast selection</span></div>
     <div class="card">
       <h4>Clips aired per grand prix</h4>
@@ -231,13 +239,13 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
     </div>
     <p class="note">A grand prix produces continuous two-way traffic on twenty channels for
       ninety minutes. What reaches the public feed is the handful of clips F1 chose to
-      broadcast. So <b>this is what was aired of what drivers said</b>, selected in real time by people whose job is to make a race watchable.
+      broadcast. So this is what was aired of what drivers said, selected in real time by people whose job is to make a race watchable.
       For this particular question that is less damaging than it looks: the readers doing
       the rating heard this selection and not the unaired remainder.</p>
   </section>
 
   <section>
-    <div class="shead"><span class="n">02</span><h2>What the scorer actually sees</h2>
+    <div class="shead"><span class="n">02</span><h2>What the scorer sees</h2>
       <span class="sub" id="exsub"></span></div>
     <div class="clip">
       <div class="ctop">
@@ -277,7 +285,7 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
       compressed race audio, has no right to be believed just because it returns a number.
       These checks come before any hypothesis: a score that fails them is not allowed to test
       one. Each compares the score against something recorded independently
-      of what anybody said: <b>the lap chart</b>. Intervals resample whole races.</p>
+      of what anybody said: the lap chart. Intervals resample whole races.</p>
   </section>
 
   <section>
@@ -345,10 +353,10 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
     </div>
     <p class="note">This was going to be the part of the project with real power behind it: a
       team's row is hundreds of messages, not 24 races. Then the scorer was swapped and the
-      ordering moved. <b>Ferrari goes from eighth to first, RB from first to fourth</b>, and the
+      ordering moved. Ferrari goes from eighth to first, RB from first to fourth, and the
       two rankings agree at Spearman <b id="scorerrho"></b>. The correlations in section 04 do
-      not move at all; this does. So the honest reading is that the per-team differences are
-      real in size but <b>not identified</b>: they depend on which instrument you measure them
+      not move at all; this does. So the per-team differences are
+      real in size but not identified: they depend on which instrument you measure them
       with, and section 02 shows the lexicon losing on cases like <em>"yeah, tough luck"</em>.</p>
     <p class="note">The obvious alternative explanation is also still live: a team that had a
       good season sounds happier for reasons that have nothing to do with how it communicates.
@@ -417,6 +425,20 @@ function short(ev){ return ev.replace(/ Grand Prix$/, "").replace("United States
 
 function boot(){
   const c = D.corpus;
+  {
+    const none = D.correlations.every(x => x.crosses_zero);
+    const word = n => (["zero","one","two","three","four","five","six","seven","eight","nine","ten"][n] || String(n));
+    document.getElementById("tldr").innerHTML =
+      `<span class="k">In short</span>All ${c.clips.toLocaleString()} team-radio clips F1 ` +
+      `broadcast in ${c.season}, transcribed with Whisper and scored for sentiment two ways ` +
+      `(a RoBERTa model and a word lexicon), then compared with fans' ratings of each race. ` +
+      (none ? `Across ${c.races} races there is no measurable link: every correlation's interval ` +
+              `includes zero. `
+            : `Across ${c.races} races, some correlations clear zero; section 04 has them. `) +
+      `The two scorers also rank the ${word(c.teams)} teams differently (Spearman ` +
+      `${D.head_to_head.team_order_spearman.toFixed(2)}), so a team's sentiment depends on ` +
+      `which instrument measures it.`;
+  }
   document.getElementById("facts").innerHTML =
     `<span><b>${c.clips.toLocaleString()}</b> aired clips</span>` +
     `<span><b>${c.races}</b> grands prix</span><span><b>${c.drivers}</b> drivers</span>` +
@@ -426,7 +448,7 @@ function boot(){
     `<b>The sample is ${D.per_race.length} races.</b> Every correlation below is computed from ` +
     `that many points and reported with the interval that follows from it. The team ` +
     `comparisons in section 05 have thousands of messages behind them and are the part of ` +
-    `this that is actually powered.`;
+    `this with enough data behind it.`;
   document.getElementById("nsub").textContent = `n = ${D.per_race.length} races`;
   drawVolume(); setupExamples(); drawValidity(); drawValidityComparison(); buildPicker(); drawScatter();
   drawCurves(); drawWorkedExample(); drawGaps(); drawTeams(); drawScorerTeams();
@@ -665,10 +687,10 @@ function drawScatter(){
       ρ ${c.rho >= 0 ? "+" : ""}${c.rho.toFixed(2)}</div>
     <div class="ci">95% interval [${c.lo.toFixed(2)}, ${c.hi.toFixed(2)}]</div>
     <div class="d">${c.crosses_zero
-      ? `The interval <b>contains zero</b>, and is ${wide.toFixed(2)} wide; it also contains
+      ? `The interval contains zero, and is ${wide.toFixed(2)} wide; it also contains
          most of the answers you might have guessed before looking. With ${c.n_races} races
          that is what this design can say.`
-      : `The interval <b>excludes zero</b>. It is still ${wide.toFixed(2)} wide on
+      : `The interval excludes zero. It is still ${wide.toFixed(2)} wide on
          ${c.n_races} races, so read the sign, not the size.`}</div>`;
 }
 

@@ -148,6 +148,13 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
   body{padding-bottom:env(safe-area-inset-bottom)}
 }
 @media print{#zback{display:none}}
+/* Two or three sentences a reader can stop after. Filled from the payload in boot(), so the
+   numbers in it cannot drift from the ones further down the page. */
+.tldr{font-size:16px;line-height:1.62;color:#C9CED6;max-width:62ch;margin:22px 0 0;
+  padding:14px 16px;border-left:2px solid var(--accent);background:var(--panel);
+  border-radius:0 8px 8px 0;min-height:4.8em}
+.tldr .k{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--faint);margin-bottom:6px}
 </style>
 </head>
 <body>
@@ -156,6 +163,7 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
   <header class="hero">
     <p class="eyebrow"><span class="dot"></span> Driver fingerprinting · 2023 qualifying</p>
     <h1>Can telemetry tell you who is driving?</h1>
+    <div class="tldr" id="tldr"></div>
     <p class="deck">Give a model where a car brakes, how it picks up the throttle and what gear it
       takes a corner in, and ask it for the driver's name. It will beat chance, and it will mostly
       be <em>recognising the car</em>. Everything here is built to take the car away.</p>
@@ -196,7 +204,7 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
     <div class="deltas" id="deltas"></div>
     <p class="note">Paired by corner: teammates share a car but not a set of laps (one of them
       reaches Q3 more often), so an unpaired average would partly be comparing their session lists.
-      These raw differences are descriptive. They are <b>not</b> what the classifier scores on, and
+      These raw differences are descriptive. They are not what the classifier scores on, and
       a difference of a metre or two is well inside the spread of individual laps.</p>
   </section>
 
@@ -214,13 +222,13 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
         </div>
         <svg id="mapsvg" viewBox="0 0 640 430" role="img"></svg>
         <p class="cap" id="mapcap">Every driver is the average of how they take a corner,
-          standardised <b>within</b> each corner first. Thin lines join teammates.</p>
+          standardised within each corner first. Thin lines join teammates.</p>
       </div>
       <div class="diag" id="diag"></div>
     </div>
     <p class="note">If the clusters were a car signature wearing a style label, teammates would land
       together far more often than chance puts them there. They do not. This is a check that
-      section 02 could have failed and did not. It is <b>not</b> proof that the car is absent: with ten
+      section 02 could have failed and did not. It is not proof that the car is absent: with ten
       pairs the test only has the power to catch a fairly strong team signature, and failing to
       reject is weaker evidence than rejecting would have been.</p>
   </section>
@@ -232,7 +240,7 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
     <ul>
       <li><b>Separability is not skill.</b> The pair that separates best is the pair whose two drivers
         do different things, which says nothing about which of them is quicker.</li>
-      <li>Qualifying only, one season, and <b>one corner at a time</b>, the hardest version of the
+      <li>Qualifying only, one season, and one corner at a time, the hardest version of the
         question. Pooling a whole lap would score higher and answer an easier one.</li>
       <li>Engine speed on entry leads for most pairs. Within a team the gear ratios are identical, so
         RPM at a point is a function of gear choice and shift timing (a real input), but it could
@@ -276,6 +284,23 @@ fetch("data/showcase.json", {cache: "no-cache"}).then(r => {
 
 function boot(){
   const ds = D.dataset;
+  {
+    const drv = D.identify.driver, pairs = D.teams;
+    const lo = pairs.reduce((a, b) => (a.balanced < b.balanced ? a : b));
+    const hi = pairs.reduce((a, b) => (a.balanced > b.balanced ? a : b));
+    const nSep = pairs.filter(t => t.separable).length;
+    const pct = x => (x * 100).toFixed(x < 0.1 ? 1 : 0) + "%";
+    const word = n => (["zero","one","two","three","four","five","six","seven","eight","nine","ten"][n] || String(n));
+    const which = nSep === pairs.length ? `each of the ${word(pairs.length)} pairs is`
+                                        : `${nSep} of the ${pairs.length} pairs are`;
+    document.getElementById("tldr").innerHTML =
+      `<span class="k">In short</span>A classifier trained on ${ds.traversals.toLocaleString()} ` +
+      `corner traversals from ${ds.season} qualifying names the right driver ${pct(drv.accuracy)} ` +
+      `of the time, against ${pct(drv.chance)} by chance, and most of that comes from recognising ` +
+      `the car. Teammates drive the same car, so they are the fair test: ${which} told apart ` +
+      `better than chance after correcting for multiple comparisons, from ${pct(lo.balanced)} ` +
+      `balanced accuracy (${lo.team}) to ${pct(hi.balanced)} (${hi.team}).`;
+  }
   document.getElementById("facts").innerHTML =
     `<span><b>${ds.traversals.toLocaleString()}</b> corner traversals</span>` +
     `<span><b>${ds.drivers}</b> drivers</span><span><b>${ds.teams}</b> teams</span>` +
@@ -329,10 +354,10 @@ function drawRollup(){
     <div class="rk">The driver model, scored at the garage</div>
     <div class="rgrid">
       <div class="rc"><div class="v">${f3(r.rollup_accuracy)}</div>
-        <div class="d">of traversals, the driver model names the right <b>team</b> —
+        <div class="d">of traversals, the driver model names the right team —
           against ${f3(r.rollup_chance)} chance.</div></div>
       <div class="rc"><div class="v">${f3(r.accuracy)}</div>
-        <div class="d">of traversals, it names the right <b>driver</b>.</div></div>
+        <div class="d">of traversals, it names the right driver.</div></div>
       <div class="rc hi"><div class="v">${f3(r.within_rollup_share)}</div>
         <div class="d">of the cars it gets right, it gets the driver right too, against
           <b>${f3(r.within_rollup_chance)}</b> with no signal inside the garage at all.
@@ -539,7 +564,7 @@ function drawMap(){
     s.lastChild.appendChild(title);
   });
   document.getElementById("mapcap").innerHTML =
-    `Every driver is the average of how they take a corner, standardised <b>within</b> each
+    `Every driver is the average of how they take a corner, standardised within each
      corner first. Thin lines join teammates. <b>${ds.length} of ${D.dataset.drivers}</b> drivers
      are here: a profile needs ${D.cluster_diagnostic.min_traversals} corner traversals to be an
      average of anything, which leaves out the ${D.dataset.drivers - ds.length} AlphaTauri
