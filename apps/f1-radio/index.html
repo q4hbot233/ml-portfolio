@@ -160,6 +160,14 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
   letter-spacing:.09em;text-transform:uppercase;text-decoration:none;background:#1B1B18;
   color:#EDEDE6;padding:9px 13px;border:1px solid #1B1B18;box-shadow:0 2px 10px rgba(0,0,0,.28);opacity:.93}
 #zback:hover{background:var(--accent);border-color:var(--accent);opacity:1}
+/* The back link is fixed bottom-left, which on a phone parks it on top of the
+   paragraph the reader is in. Smaller there, and the page keeps a gutter under
+   its last line so nothing important ends up beneath it. */
+@media (max-width:640px){
+  #zback{left:10px;bottom:10px;padding:7px 10px;font-size:10px;letter-spacing:.06em}
+  .stAppViewContainer .block-container,.main .block-container{padding-bottom:76px!important}
+  body{padding-bottom:env(safe-area-inset-bottom)}
+}
 @media print{#zback{display:none}}
 </style>
 </head>
@@ -170,9 +178,9 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
     <h1>Did the drivers have the race you did?</h1>
     <p class="deck">Readers rate every grand prix out of ten. Team radio is the only channel
       where you hear what it was like from inside the car. Every clip F1 broadcast in 2024 is
-      transcribed and scored by a transformer — <em>after</em> that score has to prove it
-      measures anything at all, and with a rule-based lexicon kept beside it as the audit
-      trail.</p>
+      transcribed and scored by a transformer, with a rule-based lexicon kept beside it as the
+      audit trail. Before either score is correlated with anything, it has to show that it
+      measures something at all.</p>
     <p class="facts" id="facts"></p>
     <p class="warn" id="warn"></p>
   </header>
@@ -197,13 +205,13 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
           <br>Downloaded into a git-ignored cache and transcribed locally with
           <a href="https://github.com/SYSTRAN/faster-whisper">faster-whisper</a>
           <code>base.en</code>. <b>The audio is never redistributed and neither is the full
-          transcript set</b> — the 64 clips in section 02 are quoted, capped at 180 characters.</dd>
+          transcript set</b>; the 64 clips in section 02 are quoted, capped at 180 characters.</dd>
 
         <dt>Ratings</dt>
         <dd>Keith Collantine, <a href="https://www.racefans.net/2025/01/02/ranked-all-30-formula-1-races-of-last-season-rated-by-our-readers/">"Ranked:
           All 30 Formula 1 races of last season rated by our readers"</a>, RaceFans,
           2 January 2025. Transcribed by hand from the published article into one CSV with a
-          provenance header — the site is not scraped. The six sprint races it also rates are
+          provenance header; the site is not scraped. The six sprint races it also rates are
           dropped: a 100 km sprint is a different event.</dd>
 
         <dt>Not used</dt>
@@ -223,8 +231,7 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
     </div>
     <p class="note">A grand prix produces continuous two-way traffic on twenty channels for
       ninety minutes. What reaches the public feed is the handful of clips F1 chose to
-      broadcast. So <b>this is not what drivers said — it is what was aired of what they
-      said</b>, selected in real time by people whose job is to make a race watchable.
+      broadcast. So <b>this is what was aired of what drivers said</b>, selected in real time by people whose job is to make a race watchable.
       For this particular question that is less damaging than it looks: the readers doing
       the rating heard this selection and not the unaired remainder.</p>
   </section>
@@ -246,13 +253,13 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
       <div class="bars" id="exbars"></div>
       <p class="disagree" id="exgloss"></p>
     </div>
-    <p class="note">Two scorers, on the same words. <b>The transformer</b> — a 125M-parameter
-      RoBERTa fine-tuned on ~124M tweets, read as P(positive) − P(negative) — carries every
+    <p class="note">Two scorers, on the same words. <b>The transformer</b>, a 125M-parameter
+      RoBERTa fine-tuned on ~124M tweets and read as P(positive) − P(negative), carries every
       number on this page. <b>The lexicon</b> is VADER with 47 F1 terms added, 15 of them there
       to stop it reading <em>box</em>, <em>push</em>, <em>hammer</em> and <em>attack</em> as
       emotion when they are instructions. It is auditable to the word, which is why it is still
       here, and it is the weaker of the two.</p>
-    <p class="note">That is not a preference, it is what section 03 measured: <b>the transformer
+    <p class="note">Section 03 is where that comes from: <b>the transformer
       passes the construct checks more strongly</b>, and it does not read <em>"yeah, tough
       luck"</em> as cheerful. The two agree less than you might expect —
       <b id="exagree"></b></p>
@@ -268,8 +275,8 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
     </div>
     <p class="note">A score from a model that never saw a race, run over speech-to-text of
       compressed race audio, has no right to be believed just because it returns a number.
-      These are not the project's hypotheses — they are the conditions it has to pass to be
-      allowed to test one. Each compares the score against something recorded independently
+      These checks come before any hypothesis: a score that fails them is not allowed to test
+      one. Each compares the score against something recorded independently
       of what anybody said: <b>the lap chart</b>. Intervals resample whole races.</p>
   </section>
 
@@ -310,7 +317,7 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
     </div>
     <p class="note">Read left to right, this is what a reader of this project would have
       believed if the season had stopped at each point. A statistic that moves across most of
-      its range as the sample grows is not a finding that needs careful interpretation — and
+      its range as the sample grows is not a finding that needs careful interpretation. And
       the first version of section 04 was written around the early number.</p>
   </section>
 
@@ -336,24 +343,24 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
       <svg id="scorersvg" viewBox="0 0 860 380" role="img"></svg>
       <p class="cap" id="scorercap"></p>
     </div>
-    <p class="note">This was going to be the part of the project with real power behind it — a
+    <p class="note">This was going to be the part of the project with real power behind it: a
       team's row is hundreds of messages, not 24 races. Then the scorer was swapped and the
       ordering moved. <b>Ferrari goes from eighth to first, RB from first to fourth</b>, and the
       two rankings agree at Spearman <b id="scorerrho"></b>. The correlations in section 04 do
       not move at all; this does. So the honest reading is that the per-team differences are
-      real in size but <b>not identified</b> — they depend on which instrument you measure them
+      real in size but <b>not identified</b>: they depend on which instrument you measure them
       with, and section 02 shows the lexicon losing on cases like <em>"yeah, tough luck"</em>.</p>
     <p class="note">The obvious alternative explanation is also still live: a team that had a
       good season sounds happier for reasons that have nothing to do with how it communicates.
       The adjusted column regresses each message on where that driver was running, whether they
       were up or down on their grid slot, whether the car was about to stop, and how far into
-      the race it was — then takes what is left.</p>
+      the race it was, then takes what is left.</p>
   </section>
 
   <div id="err"></div>
 
   <footer>
-    <h3>What this does not show</h3>
+    <h3>Caveats</h3>
     <ul>
       <li><b>A clip is a channel, not a speaker.</b> Most contain the race engineer as well as
         the driver. Diarising five seconds of clipped radio is not reliable and a wrong split
@@ -362,7 +369,7 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
         most of the answers you might have guessed. Nothing in section 03 settles anything.</li>
       <li><b>The transcripts contain real errors.</b> This is in-helmet audio over engine noise
         through a compressed broadcast feed.</li>
-      <li>Ratings are RaceFans readers — an engaged, self-selected audience, not the viewing
+      <li>Ratings are RaceFans readers: an engaged, self-selected audience, not the viewing
         public.</li>
     </ul>
     <p class="lk">Radio via the F1 live-timing feed · transcription with
@@ -425,7 +432,7 @@ function boot(){
   drawCurves(); drawWorkedExample(); drawGaps(); drawTeams(); drawScorerTeams();
   document.getElementById("residnote").innerHTML =
     `<b>Adjusted sentiment</b> regresses every message on five things about the speaker's own ` +
-    `afternoon — ${D.residual.variables.map(v => SITUATION_LABEL[v] || v).join("; ")} — and ` +
+    `afternoon: ${D.residual.variables.map(v => SITUATION_LABEL[v] || v).join("; ")}, and ` +
     `keeps the residual. Those five ` +
     `explain R² = <b>${D.residual.r2.toFixed(3)}</b> of message sentiment across ` +
     `${D.residual.n.toLocaleString()} messages. What is left is not "the race talking": it is ` +
@@ -456,7 +463,7 @@ function drawVolume(){
   });
   const rho = D.correlations.find(c => c.feature === "n_clips");
   document.getElementById("volcap").innerHTML =
-    `Bars are shaded by the fan rating — darker is a better-rated race. Spearman between clips
+    `Bars are shaded by the fan rating; darker is a better-rated race. Spearman between clips
      aired and rating is <b>${rho.rho.toFixed(2)}</b> [${rho.lo.toFixed(2)}, ${rho.hi.toFixed(2)}].
      Read that as the broadcast and the audience agreeing about which races were eventful,
      not as a finding about drivers.`;
@@ -534,12 +541,12 @@ function drawExample(){
   const flip = Math.sign(e.sentiment) !== Math.sign(e.sentiment_nn)
                && Math.abs(e.sentiment) > 0.05 && Math.abs(e.sentiment_nn) > 0.05;
   document.getElementById("exgloss").innerHTML = flip
-    ? `<b>They disagree about the sign.</b> ${gap.toFixed(2)} apart — one reads this as
+    ? `<b>They disagree about the sign.</b> ${gap.toFixed(2)} apart: one reads this as
        positive and the other as negative, which is the clearest case of the scorer choice
        mattering.`
     : gap > 0.4
       ? `<b>${gap.toFixed(2)} apart.</b> Same side of zero, very different strength.`
-      : `${gap.toFixed(2)} apart — the two broadly agree here.`;
+      : `${gap.toFixed(2)} apart: the two broadly agree here.`;
 }
 
 function drawValidity(){
@@ -599,7 +606,7 @@ function drawValidityComparison(){
        color:var(--faint);padding-bottom:6px">
        <span></span><span style="text-align:right;color:#5B8FA6">transformer</span>
        <span style="text-align:right">lexicon</span></div>${rows}
-     <p style="margin:11px 0 0">Both come back <b>${D.validity.verdict}</b> — the retirement
+     <p style="margin:11px 0 0">Both come back <b>${D.validity.verdict}</b>: the retirement
        check fails on either, on ${mine[0].n_true} clips in
        ${D.corpus.clips.toLocaleString()}. The transformer's effects are the larger on both
        checks that have data behind them, which is the whole reason it carries the numbers
@@ -658,7 +665,7 @@ function drawScatter(){
       ρ ${c.rho >= 0 ? "+" : ""}${c.rho.toFixed(2)}</div>
     <div class="ci">95% interval [${c.lo.toFixed(2)}, ${c.hi.toFixed(2)}]</div>
     <div class="d">${c.crosses_zero
-      ? `The interval <b>contains zero</b>, and is ${wide.toFixed(2)} wide — it also contains
+      ? `The interval <b>contains zero</b>, and is ${wide.toFixed(2)} wide; it also contains
          most of the answers you might have guessed before looking. With ${c.n_races} races
          that is what this design can say.`
       : `The interval <b>excludes zero</b>. It is still ${wide.toFixed(2)} wide on
@@ -748,7 +755,7 @@ function drawGaps(){
   document.getElementById("gapcap").innerHTML =
     `A rating out of ten and a score between &minus;1 and 1 cannot be subtracted as they
      stand, so both are standardised across the ${D.per_race.length} races first. The
-     sentiment column is <b>${model}</b> — the scorer this page uses throughout. Positive
+     sentiment column is <b>${model}</b>, the scorer this page uses throughout. Positive
      means the fans enjoyed it more than the radio sounded.`;
   const show = g.slice(0, 4).concat(g.slice(-4));
   document.getElementById("gaps").innerHTML =
@@ -797,8 +804,8 @@ function drawScorerTeams(){
                                        - nn.findIndex(x=>x.team===t.team)) >= 3).length;
   document.getElementById("scorercap").innerHTML =
     `Each line is one team, ranked by the scorer this page uses on the left and by the lexicon
-     on the right. <b style="color:#D9534F">Red</b> marks a team that moves three or more places
-     — <b>${moved3} of ${nn.length}</b> do.`;
+     on the right. <b style="color:#D9534F">Red</b> marks a team that moves three or more places;
+     <b>${moved3} of ${nn.length}</b> do.`;
 }
 
 function drawTeams(){
@@ -806,7 +813,7 @@ function drawTeams(){
   let t = [...D.teams].sort((a,b) => b.mean - a.mean);
   // The residuals come out of an OLS fit with an intercept, so they are centred on zero while
   // the raw means are centred on about +0.10. On one axis as they stand, every adjusted marker
-  // sits left of its raw one by that offset — an artefact that reads as "the adjustment made
+  // sits left of its raw one by that offset, an artefact that reads as "the adjustment made
   // everyone gloomier". Shifted onto the raw centre, the only thing left to read is how far a
   // team MOVES, which is the quantity that means something.
   const rawMean = t.reduce((a, r) => a + r.mean, 0) / t.length;
@@ -836,7 +843,7 @@ function drawTeams(){
   s.appendChild(el("circle", {cx:L+58, cy:T-30, r:4, fill:"var(--panel)", stroke:"#5B8FA6",
     "stroke-width":2}));
   s.appendChild(el("text", {x:L+67, y:T-26, fill:"#99A0AC", "font-family":"var(--mono)",
-    "font-size":"9.5"}, "adjusted — the speaker's own race taken out"));
+    "font-size":"9.5"}, "adjusted: the speaker's own race taken out"));
 
   /* ---- x axis ---- */
   const yAx = T + t.length * rowH + 8;

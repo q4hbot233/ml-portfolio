@@ -139,6 +139,14 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
   color:#EDEDE6;padding:9px 13px;border:1px solid #1B1B18;box-shadow:0 2px 10px rgba(0,0,0,.28);
   opacity:.93}
 #zback:hover{background:var(--accent);border-color:var(--accent);opacity:1}
+/* The back link is fixed bottom-left, which on a phone parks it on top of the
+   paragraph the reader is in. Smaller there, and the page keeps a gutter under
+   its last line so nothing important ends up beneath it. */
+@media (max-width:640px){
+  #zback{left:10px;bottom:10px;padding:7px 10px;font-size:10px;letter-spacing:.06em}
+  .stAppViewContainer .block-container,.main .block-container{padding-bottom:76px!important}
+  body{padding-bottom:env(safe-area-inset-bottom)}
+}
 @media print{#zback{display:none}}
 </style>
 </head>
@@ -149,7 +157,7 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
     <p class="eyebrow"><span class="dot"></span> Driver fingerprinting · 2023 qualifying</p>
     <h1>Can telemetry tell you who is driving?</h1>
     <p class="deck">Give a model where a car brakes, how it picks up the throttle and what gear it
-      takes a corner in, and ask it for the driver's name. It will beat chance — and it will mostly
+      takes a corner in, and ask it for the driver's name. It will beat chance, and it will mostly
       be <em>recognising the car</em>. Everything here is built to take the car away.</p>
     <p class="facts" id="facts"></p>
   </header>
@@ -186,8 +194,8 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
       <p class="cap" id="appcap"></p>
     </div>
     <div class="deltas" id="deltas"></div>
-    <p class="note">Paired by corner: teammates share a car but not a set of laps — one of them
-      reaches Q3 more often — so an unpaired average would partly be comparing their session lists.
+    <p class="note">Paired by corner: teammates share a car but not a set of laps (one of them
+      reaches Q3 more often), so an unpaired average would partly be comparing their session lists.
       These raw differences are descriptive. They are <b>not</b> what the classifier scores on, and
       a difference of a metre or two is well inside the spread of individual laps.</p>
   </section>
@@ -212,7 +220,7 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
     </div>
     <p class="note">If the clusters were a car signature wearing a style label, teammates would land
       together far more often than chance puts them there. They do not. This is a check that
-      section 02 could have failed and did not — <b>not</b> proof that the car is absent: with ten
+      section 02 could have failed and did not. It is <b>not</b> proof that the car is absent: with ten
       pairs the test only has the power to catch a fairly strong team signature, and failing to
       reject is weaker evidence than rejecting would have been.</p>
   </section>
@@ -222,12 +230,12 @@ footer .lk{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em}
   <footer>
     <h3>What this does not show</h3>
     <ul>
-      <li><b>Separability is not skill.</b> The pair that separates best is not the best pair, it is
-        the pair whose two drivers do different things.</li>
-      <li>Qualifying only, one season, and <b>one corner at a time</b> — the hardest version of the
+      <li><b>Separability is not skill.</b> The pair that separates best is the pair whose two drivers
+        do different things, which says nothing about which of them is quicker.</li>
+      <li>Qualifying only, one season, and <b>one corner at a time</b>, the hardest version of the
         question. Pooling a whole lap would score higher and answer an easier one.</li>
       <li>Engine speed on entry leads for most pairs. Within a team the gear ratios are identical, so
-        RPM at a point is a function of gear choice and shift timing — a real input — but it could
+        RPM at a point is a function of gear choice and shift timing (a real input), but it could
         also pick up an engine mode that differs between Q1 and Q3, and this data cannot separate those.</li>
       <li>AlphaTauri ran four drivers in 2023 and is excluded: a mid-season change is not a
         controlled comparison, because the car was developed in between.</li>
@@ -307,14 +315,14 @@ function drawRollup(){
   // and a sentence quoting them from memory is a sentence that goes stale on the next run
   document.getElementById("rollupnote").innerHTML =
     `The tempting next line is "so the car is easier, ${f3(t.accuracy)} against
-     ${f3(r.accuracy)}" — and it is wrong. Those are a ${t.n_classes}-class score and a
+     ${f3(r.accuracy)}", and it is wrong. Those are a ${t.n_classes}-class score and a
      ${r.n_classes}-class score with different chance levels, so neither they nor their lifts
      are on one scale; by lift the <em>driver</em> model looks better
      (${(r.accuracy / r.chance).toFixed(1)}× against ${(t.accuracy / t.chance).toFixed(1)}×),
      which is just as meaningless. And team is a function of driver, so the two questions are
      not independent. What works instead is to score <b>one model's own predictions at two
      resolutions</b>: map each predicted driver to their garage, and ask how often the driver
-     model got the garage right — then, of those, how often it got the driver too. Its
+     model got the garage right, then, of those, how often it got the driver too. Its
      no-signal baseline is measured rather than assumed to be 0.5, because a coin flip is only
      the right baseline where every garage holds two drivers, and AlphaTauri ran four.`;
   document.getElementById("rollup").innerHTML = `
@@ -326,7 +334,7 @@ function drawRollup(){
       <div class="rc"><div class="v">${f3(r.accuracy)}</div>
         <div class="d">of traversals, it names the right <b>driver</b>.</div></div>
       <div class="rc hi"><div class="v">${f3(r.within_rollup_share)}</div>
-        <div class="d">of the cars it gets right, it gets the driver right too — against
+        <div class="d">of the cars it gets right, it gets the driver right too, against
           <b>${f3(r.within_rollup_chance)}</b> with no signal inside the garage at all.
           Fold by fold the margin is <b>+${f3(r.within_rollup_margin)}</b> ± ${f3(r.within_rollup_margin_sd)},
           above the null in ${r.within_rollup_folds_above_null} of ${r.within_rollup_by_fold.length}
@@ -403,7 +411,7 @@ function drawNull(){
 
   document.getElementById("nullcap").innerHTML =
     `The null shuffles the driver label across <b>${t.team}</b>'s ${t.n.toLocaleString()} traversals
-     and refits — the hypothesis that ${t.a} and ${t.b} are interchangeable given the corner.
+     and refits: the hypothesis that ${t.a} and ${t.b} are interchangeable given the corner.
      It is not centred on 0.5, because correlated laps and a finite sample can put a chance-level
      model above half on their own.`;
   // t.separable is p_holm < 0.05, not p < 0.05. Nine pairs are tested at once, so nine
@@ -482,7 +490,7 @@ function drawApproach(){
      <b>${a.n_corners}</b> corners both drivers ran. Largest separation at
      <b>${xs[big]} m</b>: ${gap[big] > 0 ? t.a : t.b} is
      <b>${Math.abs(gap[big]).toFixed(1)} km/h</b> quicker there on average.
-     Both lines are averages over a whole season — the spread of individual laps is far wider
+     Both lines are averages over a whole season; the spread of individual laps is far wider
      than the gap between them.`;
 }
 
