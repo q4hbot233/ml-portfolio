@@ -8,14 +8,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="../../assets/demo.css?v=ab6fba2c">
+<link rel="stylesheet" href="../../assets/demo.css?v=52474071">
 </head>
 <body>
 <div id="veil" role="status" aria-live="polite">
   <div class="box">
-    <p class="kicker">Mortgage lending · bounds · omitted variables</p>
+    <p class="kicker">Mortgage lending · partial identification</p>
     <h1>The variable that was left out</h1>
-    <p>297,104 mortgage applications, and two things the file cannot show you.</p>
+    <!-- Numbers copied from the analysis; the app prints the same summary from its data. -->
+    <p class="tldr"><span class="k">In short</span>297,104 Georgia mortgage applications from 2023 that reached an approve-or-deny decision. A LightGBM model predicts denial with an average precision of 0.84, so what it has learned is the lenders' policy. Two gaps limit what the data can say about race. Lenders name credit history in 30.5% of denials, and the file has no credit score. And 91,321 applications were withdrawn or left incomplete: if those are allowed to differ from the decided ones by about 34%, the data can no longer say whether Black or white applicants were denied more often.</p>
     <p class="status">Starting Python in your browser. Up to a minute the first time; cached after that. Nothing is sent to a server.</p>
     <div class="bar"><i></i></div>
     <a href="../../">&larr; All projects</a>
@@ -28,7 +29,7 @@ mountDemo({
   hue: "#C9822F",
   requirements: ["matplotlib"],
   files: {
-      "app.py": { url: "app.py?v=e9acc880" },
+      "app.py": { url: "app.py?v=dc089a98" },
       "data/reference.json": { url: "data/reference.json?v=82849a80" },
       "data/scored.csv": { url: "data/scored.csv?v=90c0e371" },
   },

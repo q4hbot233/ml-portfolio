@@ -223,13 +223,33 @@ def main() -> None:
 
     slice_ = ref["slice"]
     st.title("The label is a decision, and the variable that explains it was left out")
+    lgbm_ap = next(m for m in ref["models"] if m["model"] == "lgbm")["average_precision"]
+    dropped = ref["dropped_by_the_convention"]
+    sign_lost_at = next((d / 200 for d in range(201)
+                         if gap_bounds(never_decided_bounds(ref["manski"], d / 200),
+                                       "black", "white")[1] <= 0), None)
+    with st.container(border=True):
+        st.caption("In short")
+        st.markdown(
+            f"{ref['n_modelled']:,} {({'GA': 'Georgia'}).get(slice_['state'], slice_['state'])} mortgage applications from "
+            f"{slice_['year']} that reached an approve-or-deny decision. A LightGBM model "
+            f"predicts denial with an average precision of {lgbm_ap:.2f}, so what it has "
+            f"learned is the lenders' policy. Two gaps limit what the data can say about "
+            f"race. Lenders name credit history in "
+            f"{ref['stated_reasons']['credit_history_share_of_all_denials']:.1%} of denials, "
+            f"and the file has no credit score. And "
+            f"{dropped['withdrawn'] + dropped['incomplete']:,} applications were withdrawn or "
+            f"left incomplete"
+            + (f": if those are allowed to differ from the decided ones by about "
+               f"{sign_lost_at:.0%}, the data can no longer say whether Black or white "
+               f"applicants were denied more often." if sign_lost_at is not None else "."))
     st.markdown(
         f"**{ref['n_modelled']:,} mortgage applications in {slice_['state']} in "
         f"{slice_['year']}**, 29.4% of them denied. Every ingredient for a standard fairness "
         f"project is here, and the standard project gets written thousands of times: fit a "
         f"model, find that Black applicants are denied more often, publish the gap.\n\n"
         f"This page is about why that number is harder to interpret than it looks. HMDA is a "
-        f"**disclosure** file, so each label records a decision a human "
+        f"disclosure file, so each label records a decision a human "
         f"made. A model that predicts denial well has learned the lender's policy, "
         f"including whatever is wrong with it.\n\n"
         f"Then the hole that no better model closes: the single variable the lenders cite "
@@ -245,11 +265,11 @@ def main() -> None:
     eda = ref["eda"]
     oc, sl = eda["outcome"], eda["slice"]
     st.markdown(
-        f"Every mortgage application a covered lender reported in **{sl['state']}, "
-        f"{sl['year']}** under Regulation C, {ref['n_published']:,} published rows, of which "
-        f"**{ref['n_modelled']:,} reached an approve-or-deny decision** and are modelled. "
-        f"Of the {oc['n']:,} in the training split, **{oc['n_denied']:,} were denied, "
-        f"{oc['denial_rate']:.2%}**.\n\n"
+        f"Every mortgage application a covered lender reported in {sl['state']}, "
+        f"{sl['year']} under Regulation C, {ref['n_published']:,} published rows, of which "
+        f"{ref['n_modelled']:,} reached an approve-or-deny decision and are modelled. "
+        f"Of the {oc['n']:,} in the training split, {oc['n_denied']:,} were denied, "
+        f"{oc['denial_rate']:.2%}.\n\n"
         f"Everything in this section is computed on the training split alone. Describing a "
         f"dataset with its held-out rows folded in is a leak that never shows up as a score; "
         f"it shows up as a modelling choice made knowing the answer."
@@ -258,11 +278,11 @@ def main() -> None:
     dti = {r["label"]: r for r in eda["breakdowns"]["dti_band"]}
     st.markdown(
         f"**Debt-to-income does most of the work.** Above 60% the denial rate is "
-        f"**{dti['>60%']['denial_rate']:.1%}** on {dti['>60%']['n']:,} applications; in the "
-        f"36–49 band it is {dti['36-49 (exact)']['denial_rate']:.1%}. Two details worth "
-        f"noticing rather than smoothing over: applications with DTI **not reported** are "
+        f"{dti['>60%']['denial_rate']:.1%} on {dti['>60%']['n']:,} applications; in the "
+        f"36–49 band it is {dti['36-49 (exact)']['denial_rate']:.1%}. Two details stand out: "
+        f"applications with DTI not reported are "
         f"denied at {dti['not reported']['denial_rate']:.1%}, so the missingness is "
-        f"informative and gets its own level; and the **<20%** band is denied at "
+        f"informative and gets its own level; and the <20% band is denied at "
         f"{dti['<20%']['denial_rate']:.1%}, higher than the bands above it, which is not "
         f"what a story about affordability alone would predict."
     )
@@ -274,19 +294,19 @@ def main() -> None:
         f"**{ft['total']} features**: {len(ft['numeric'])} numeric, "
         f"{len(ft['categorical'])} categorical. Two of them needed work before they were "
         f"usable, and both decisions change the result:\n\n"
-        f"- **`dti_band`.** Regulation C requires an *exact integer* only between 36 and 49; "
+        f"- `dti_band`. Regulation C requires an *exact integer* only between 36 and 49; "
         f"outside that window lenders report a band. The column is therefore a mixture of "
         f"point values and intervals. Treating it all as numeric invents precision that does "
         f"not exist outside 36–49; treating it all as categorical throws away the precision "
         f"inside it. It is split into a band with `36-49 (exact)` as its own level.\n"
-        f"- **`loan_to_value_ratio`.** The raw column contains values up to 33,480,000. "
-        f"Those are **set to missing, not clipped**. Clipping a typo to 200 turns it into a "
+        f"- `loan_to_value_ratio`. The raw column contains values up to 33,480,000. "
+        f"Those are set to missing, not clipped. Clipping a typo to 200 turns it into a "
         f"confident data point sitting at the edge of the distribution, where it reads as a "
         f"high-risk applicant rather than as a mistake."
     )
     st.pyplot(figure_missing(eda), use_container_width=True)
     st.markdown(
-        f"Missingness is left visible rather than imputed away: `loan_to_value_ratio` is "
+        f"Missing values are left visible: `loan_to_value_ratio` is "
         f"absent on {eda['missingness'][0]['share']:.1%} of training rows, partly because of "
         f"the cleaning above."
     )
@@ -298,8 +318,8 @@ def main() -> None:
     st.dataframe(exc, use_container_width=True, hide_index=True)
     st.markdown(
         "Three different reasons are mixed in that table and they are worth separating. "
-        "`denial_reason-1` is **leakage**: it is recorded after the decision it would be "
-        "predicting. `interest_rate` and its siblings are **structurally missing**: they are "
+        "`denial_reason-1` is leakage: it is recorded after the decision it would be "
+        "predicting. `interest_rate` and its siblings are structurally missing: they are "
         "priced after approval, so they are blank on every denied row, and a model given "
         "them would learn that blank means denied. `tract_minority_population_percent` is "
         "neither: it is available and predictive, and it is excluded because using "
@@ -311,9 +331,9 @@ def main() -> None:
     if req is not None and req["n_denied"] == 0:
         st.warning(
             f"**An eleventh column probably belongs in that table.** `preapproval` = *requested* has a denial rate of "
-            f"**{req['denial_rate']:.1%} across {req['n']:,} training applications, zero "
-            f"denials**. Not because asking for a preapproval gets you a mortgage, but "
-            f"because a denied preapproval is recorded under a *different* action code "
+            f"{req['denial_rate']:.1%} across {req['n']:,} training applications, zero "
+            f"denials. The cause is how the outcome is coded: a denied preapproval is recorded "
+            f"under a *different* action code "
             f"(`preapproval_denied`, {ref['outcome_counts']['preapproval_denied']} rows in "
             f"the file) which the modelling convention drops. Inside the modelled population "
             f"the feature is an artefact of how the outcome is coded.\n\n"
@@ -331,15 +351,14 @@ def main() -> None:
     st.markdown(
         f"Three fits on the {ft['total']} features above. The floor is not zero: average "
         f"precision for a model that ranks at random is the base rate, "
-        f"**{oc['denial_rate']:.3f}**, and predicting \"approved\" for everyone is right "
+        f"{oc['denial_rate']:.3f}, and predicting \"approved\" for everyone is right "
         f"{oc['majority_accuracy']:.1%} of the time while being useless.\n\n"
-        f"Logistic regression reaches **{byname['logistic']['average_precision']:.3f}**, "
-        f"LightGBM **{byname['lgbm']['average_precision']:.3f}**. The tree wins, and the "
-        f"margin is not the interesting part: **a model that predicts this label well is a "
-        f"model that has learned a lending policy.** Accuracy here is not evidence that the "
+        f"Logistic regression reaches {byname['logistic']['average_precision']:.3f}, "
+        f"LightGBM {byname['lgbm']['average_precision']:.3f}. The tree wins, and the "
+        f"margin is not the interesting part: a model that predicts this label well is a "
+        f"model that has learned a lending policy. Accuracy here is not evidence that the "
         f"decisions were right, only that they were consistent, which is why the "
-        f"rest of this page is about what the file cannot tell you rather than about the "
-        f"score."
+        f"rest of this page is about what the file cannot tell you."
     )
 
     st.divider()
@@ -361,8 +380,8 @@ def main() -> None:
     keep = [c for c in reasons.columns if reasons[c].max() >= 0.04]
     st.dataframe(reasons[keep].style.format("{:.1%}"), use_container_width=True)
     st.markdown(
-        "Credit history is cited for **35.9% of denials of Black applicants against 30.3% of "
-        "white ones**.\n\n"
+        "Credit history is cited for 35.9% of denials of Black applicants against 30.3% of "
+        "white ones.\n\n"
         "**Regulation C does not collect credit score.** So the lenders are telling us, in "
         "the file itself, that the decisions turned substantially on a variable the file "
         "withholds, and that they turned on it differentially. So a residual gap has more "
@@ -371,15 +390,15 @@ def main() -> None:
     ev = ref["e_values"]
     st.markdown(
         f"**How strong would that variable have to be?** Strong enough to move a risk ratio "
-        f"of **{ev['residual_risk_ratio']:.2f}** (the gap that survives the underwriting "
+        f"of {ev['residual_risk_ratio']:.2f} (the gap that survives the underwriting "
         f"controls) down to 1. An omitted variable has to be associated with *both* race "
-        f"and denial by a risk ratio of at least **{ev['residual']:.2f}** to do that, and "
-        f"with at least **{ev['raw']:.2f}** to explain away the raw gap of "
+        f"and denial by a risk ratio of at least {ev['residual']:.2f} to do that, and "
+        f"with at least {ev['raw']:.2f} to explain away the raw gap of "
         f"{ev['raw_risk_ratio']:.2f}.\n\n"
         f"That is the number to argue about, and {ev['residual']:.2f} is not a large one. "
         f"Credit score is associated with denial by far more than that, and the table above "
-        f"is the lenders' own statement that it is associated with race here too. **This does "
-        f"not show the gap is explained.** It shows the file cannot rule out that it is, and "
+        f"is the lenders' own statement that it is associated with race here too. This does "
+        f"not show the gap is explained. It shows the file cannot rule out that it is, and "
         f"anyone claiming either direction is supplying the missing variable from somewhere "
         f"other than the data."
     )
@@ -389,9 +408,9 @@ def main() -> None:
     man, dropped = ref["manski"], ref["dropped_by_the_convention"]
     st.markdown(
         f"Everything above is computed on the {ref['n_modelled']:,} applications that reached "
-        f"approve-or-deny. The file also holds **{dropped['withdrawn']:,} withdrawn** and "
-        f"**{dropped['incomplete']:,} incomplete** ("
-        f"**{dropped['share_of_decided_applications']:.1%}** as many again as the modelled "
+        f"approve-or-deny. The file also holds {dropped['withdrawn']:,} withdrawn and "
+        f"{dropped['incomplete']:,} incomplete ("
+        f"{dropped['share_of_decided_applications']:.1%} as many again as the modelled "
         f"population), and the modelling convention drops all of them.\n\n"
         f"They are not missing at random. An applicant who has been told informally that this "
         f"will not work has a reason to withdraw, and a lender who intends to decline has a "
@@ -422,22 +441,22 @@ def main() -> None:
         st.markdown(
             f"Still signed. Allowing the never-decided files to sit up to "
             f"{delta:.0%} away from their group's observed rate, the gap is somewhere in "
-            f"**[{lo:+.1%}, {hi:+.1%}]**, narrower than the whole range, and still clearly "
+            f"[{lo:+.1%}, {hi:+.1%}], narrower than the whole range, and still clearly "
             f"positive."
         )
     else:
         st.warning(
             f"**The sign is gone.** At {delta:.0%} the interval is "
-            f"**[{lo:+.1%}, {hi:+.1%}]** and it contains zero: the data no longer determines "
-            f"which group was denied more often. That happens at about **34%**, well short of "
+            f"[{lo:+.1%}, {hi:+.1%}] and it contains zero: the data no longer determines "
+            f"which group was denied more often. That happens at about {sign_lost_at:.0%}, well short of "
             f"assuming nothing.",
             icon=":material/help:")
     st.caption(
         f"With no assumption at all (the Manski bound) the gap is "
         f"[{man['black_minus_white']['gap_lower']:+.1%}, "
         f"{man['black_minus_white']['gap_upper']:+.1%}]. Worst-case bounds are meant to be "
-        f"wide; the useful reading is not the width but how small an assumption the published "
-        f"number needs in order to be a finding. Groups are shown where the cell clears "
+        f"wide. The useful reading is how small an assumption the published number needs "
+        f"in order to be a finding. Groups are shown where the cell clears "
         f"{ref['min_audit_cell']} applications."
     )
 
@@ -446,7 +465,7 @@ def main() -> None:
     st.markdown(
         "Everything above is about the lenders' decisions. This is about a rule built from "
         "them: set a cut on the model's score and watch which groups it selects. Computed "
-        f"live from all {len(scored):,} applications, **training rows included**, which is "
+        f"live from all {len(scored):,} applications, training rows included, which is "
         f"why the numbers below are a description of this rule's behaviour and not an "
         f"estimate of how it would behave on new applicants. The model has seen 60% of these "
         f"rows, so the error rates are optimistic; the group *differences* are what the "
@@ -478,23 +497,23 @@ def main() -> None:
     st.divider()
     with st.expander("Notes on the data"):
         st.markdown(f"""
-**The features.** The underwriting information HMDA records: loan amount, income, property
+The features. The underwriting information HMDA records: loan amount, income, property
 value, loan-to-value, debt-to-income band, loan type and purpose, occupancy, lien status and
-a few more. It excludes race, sex, ethnicity and age, and it also excludes **census-tract
-racial composition**, which is available in the file and is the variable that would make a
+a few more. It excludes race, sex, ethnicity and age, and it also excludes census-tract
+racial composition, which is available in the file and is the variable that would make a
 model redline by construction. A guard runs before every fit.
 
-**Also excluded:** interest rate and loan costs, which are set after approval and are blank
+Also excluded: interest rate and loan costs, which are set after approval and are blank
 on every denied row, and the stated denial reason, which is recorded after the decision it
 would be predicting.
 
-**A detail that turned out to matter.** Regulation C requires an exact debt-to-income integer
+A detail that turned out to matter. Regulation C requires an exact debt-to-income integer
 only between 36 and 49; outside that window lenders report a band. The column's *resolution
 depends on its value*: precise exactly where the underwriting cutoffs are. It is modelled as
 a band with `36-49 (exact)` as its own level, because converting bands to midpoints would
 assert precision the regulation forbade.
 
-**Georgia 2023 only.** Denial rates, group composition and lender mix all differ by state and
+Georgia 2023 only. Denial rates, group composition and lender mix all differ by state and
 year, and every number here would move. `race` is a derived HMDA field built from
 self-reported categories with a large *not provided* group, and *not provided* is itself an
 outcome of the application process rather than missing data.
