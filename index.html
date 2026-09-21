@@ -63,7 +63,17 @@ h1{
   transition:border-color .18s ease, transform .18s ease, background .18s ease;
 }
 .card:hover{border-color:var(--edge-2); background:var(--panel-2); transform:translateY(-2px)}
-.thumb{display:block; width:100%; aspect-ratio:16/10; object-fit:cover; border-bottom:1px solid var(--edge)}
+/* `height:auto` is load-bearing. The markup carries width="640" height="400" so the
+   box is reserved before the file arrives, but a height attribute is a presentational
+   hint that outranks `aspect-ratio`, so without this the cover stayed 400px tall at
+   every width: 325x400 on a phone, a landscape drawing cropped to a portrait slot.
+   The background is what the reader sees while the file is in flight; without it an
+   unloaded cover is a hole the colour of nothing. */
+.thumb{
+  display:block; width:100%; height:auto; aspect-ratio:16/10; object-fit:cover;
+  border-bottom:1px solid var(--edge);
+  background:var(--panel-2) linear-gradient(135deg,#171A21,#101318);
+}
 .card .body{padding:20px 21px 21px; display:flex; flex-direction:column; flex:1}
 .kicker{
   font-family:var(--mono); font-size:10px; letter-spacing:.15em; text-transform:uppercase;
@@ -103,6 +113,20 @@ h1{
   .grid{grid-template-columns:1fr}
   .foot{grid-template-columns:1fr; gap:24px}
   .hero{padding-block:56px 40px}
+  /* One column makes every cover full-bleed, and at 16:10 that is 400px of drawing
+     before the first word of each card. Seven of those is most of the page. The
+     covers are atmosphere, not information, so they get a letterbox here and the
+     reader gets about a thousand pixels of scrolling back. */
+  .thumb{aspect-ratio:2.4/1}
+  .card .body{padding:17px 17px 18px}
+  .card h3{font-size:18px}
+  .card p{font-size:13.5px}
+}
+@media (max-width:520px){
+  body{padding-inline:16px}
+  .thumb{aspect-ratio:2.8/1}
+  .finding{font-size:11.5px; padding:8px 10px}
+  .meta{gap:14px 18px}
 }
 </style>
 </head>
@@ -113,9 +137,10 @@ h1{
     <p class="eyebrow"><span class="dot"></span>Qixi (Jason) Huang<span>Machine learning &amp; data science</span></p>
     <h1>Things I made and then argued with</h1>
     <p class="deck">
-      Seven projects. In most of them the interesting part is not the model — it is the moment it
-      turned out to be wrong, or right for a reason I hadn't noticed, or beaten by something
-      embarrassingly simple. <em>Each one opens on the argument, not the accuracy.</em>
+      Seven projects. In most of them the part I found interesting came after the model was fitted:
+      the moment it turned out to be wrong, or right for a reason I hadn't noticed, or beaten by
+      something embarrassingly simple. <em>Each page starts with that and gets to the accuracy
+      later.</em>
     </p>
     <p class="meta">
       <span><b>7</b> projects</span>
@@ -127,13 +152,13 @@ h1{
   <section>
     <div class="gridhead">
       <h2>Projects</h2>
-      <span>Pick one — each opens a working demo</span>
+      <span>Pick one: each opens a working demo</span>
     </div>
 
     <div class="grid">
 
       <a class="card" href="apps/f1-dashboard/" style="--hue:#D8382F">
-        <img class="thumb" src="assets/patterns/f1-dashboard.svg" alt="" width="640" height="400" loading="lazy">
+        <img class="thumb" src="assets/patterns/f1-dashboard.svg" alt="" width="640" height="400" loading="eager" fetchpriority="high" decoding="async">
         <div class="body">
           <p class="kicker">Telemetry · 5 races · 6 models</p>
           <h3>Race Control</h3>
@@ -147,20 +172,20 @@ h1{
       </a>
 
       <a class="card" href="apps/shuttle-assistant/" style="--hue:#C0503C">
-        <img class="thumb" src="assets/patterns/shuttle-assistant.svg" alt="" width="640" height="400" loading="lazy">
+        <img class="thumb" src="assets/patterns/shuttle-assistant.svg" alt="" width="640" height="400" loading="eager" fetchpriority="high" decoding="async">
         <div class="body">
           <p class="kicker">NLP · intent · refusal</p>
           <h3>A shuttle assistant that refuses</h3>
           <p>Anyone can build the half that routes a question to an answer. The half that decides
              <em>this one isn't mine</em> is the half that determines whether the thing can go on a
              vehicle carrying people.</p>
-          <span class="finding">Ask it "my chest hurts" → refused at 0.988 confidence. The safety handler scored 0.008.</span>
+          <span class="finding">The word list held "heart attack" but not "chest", so "my chest hurts" reached no handler at all. It catches 20 of 30 emergencies; the refusal has to carry the rest.</span>
           <span class="go">Ask it something <span class="arr">→</span></span>
         </div>
       </a>
 
       <a class="card" href="apps/credit-default/" style="--hue:#5B7FA6">
-        <img class="thumb" src="assets/patterns/credit-default.svg" alt="" width="640" height="400" loading="lazy">
+        <img class="thumb" src="assets/patterns/credit-default.svg" alt="" width="640" height="400" loading="lazy" decoding="async">
         <div class="body">
           <p class="kicker">Credit risk · interpretability · fairness</p>
           <h3>Who pays for the mistakes</h3>
@@ -175,26 +200,26 @@ h1{
 
 
       <a class="card" href="apps/f1-telemetry/" style="--hue:#C0533A">
-        <img class="thumb" src="assets/patterns/f1-telemetry.svg" alt="" width="640" height="400" loading="lazy">
+        <img class="thumb" src="assets/patterns/f1-telemetry.svg" alt="" width="640" height="400" loading="lazy" decoding="async">
         <div class="body">
           <p class="kicker">Fingerprinting · permutation tests</p>
           <h3>Is that the driver, or the car</h3>
-          <p>Ask a model who is driving from corner telemetry and it will beat chance — largely by
+          <p>Ask a model who is driving from corner telemetry and it will beat chance, largely by
              recognising the chassis. The one place the car is genuinely held constant is the other
              side of the same garage, so that is where the question gets asked.</p>
-          <span class="finding">Of the cars it identifies correctly, it names the driver 0.611 of the time — against 0.490 for no signal at all.</span>
+          <span class="finding">Of the cars it identifies correctly, it names the driver 0.611 of the time, against 0.490 for no signal at all.</span>
           <span class="go">Pick a teammate pair <span class="arr">→</span></span>
         </div>
       </a>
 
       <a class="card" href="apps/f1-radio/" style="--hue:#C9822F">
-        <img class="thumb" src="assets/patterns/f1-radio.svg" alt="" width="640" height="400" loading="lazy">
+        <img class="thumb" src="assets/patterns/f1-radio.svg" alt="" width="640" height="400" loading="lazy" decoding="async">
         <div class="body">
           <p class="kicker">Transformer NLP · construct validity</p>
           <h3>Did the drivers have the race you did</h3>
           <p>Readers rate every grand prix out of ten. Team radio is the one channel where you
              hear a race from inside the car. Every clip F1 broadcast in 2024, transcribed and
-             scored by a RoBERTa — page through them and watch it disagree with a rule-based
+             scored by a RoBERTa. Page through them and watch it disagree with a rule-based
              lexicon about what a driver just said.</p>
           <span class="finding">"Yeah, tough luck" reads −0.81 to the transformer and +0.57 to the lexicon. Swap them and four of ten teams move three places.</span>
           <span class="go">Read the radio <span class="arr">→</span></span>
@@ -203,7 +228,7 @@ h1{
 
 
       <a class="card" href="apps/card-fraud/" style="--hue:#D9534F">
-        <img class="thumb" src="assets/patterns/card-fraud.svg" alt="" width="640" height="400" loading="lazy">
+        <img class="thumb" src="assets/patterns/card-fraud.svg" alt="" width="640" height="400" loading="lazy" decoding="async">
         <div class="body">
           <p class="kicker">Imbalance · evaluation · the queue</p>
           <h3>What 492 frauds can tell you</h3>
@@ -216,14 +241,13 @@ h1{
       </a>
 
       <a class="card" href="apps/hmda-denial/" style="--hue:#C9822F">
-        <img class="thumb" src="assets/patterns/hmda-denial.svg" alt="" width="640" height="400" loading="lazy">
+        <img class="thumb" src="assets/patterns/hmda-denial.svg" alt="" width="640" height="400" loading="lazy" decoding="async">
         <div class="body">
           <p class="kicker">Mortgage lending · bounds · omitted variables</p>
           <h3>The variable that was left out</h3>
-          <p>297,104 mortgage applications. The label is not an event — it is a decision
-             somebody made, so a model that predicts it well has learned an institution's
-             policy. Two holes make the famous denial gap hard to read, and both can be bounded.</p>
-          <span class="finding">Lenders cite credit history for 30.5% of denials. Regulation C does not collect credit score.</span>
+          <p>297,104 mortgage applications. Each label is a decision somebody
+             made, so a model that predicts it well has learned an institution's policy. Two holes make the famous denial gap hard to read, and both can be bounded.</p>
+          <span class="finding">Let the 91,321 applications that never got an answer differ by a third from the ones that did, and the denial gap stops having a sign.</span>
           <span class="go">Move the assumption <span class="arr">→</span></span>
         </div>
       </a>
@@ -235,21 +259,27 @@ h1{
   <footer class="foot">
     <div>
       <h4>How these run</h4>
-      <p>Six of the seven boot a Python interpreter inside your browser, so the models are
-         genuinely fitting and scoring on your machine rather than replaying a recording. The first
-         visit spends a few seconds fetching that interpreter. Race Control skips it and draws
-         straight from an exported bundle.</p>
+      <p>Four of the seven boot a Python interpreter inside your browser: the shuttle assistant,
+         the two credit pages and the mortgage audit. Those models are fitted and scored on your
+         machine as you read. The first visit spends up to a minute fetching the interpreter and
+         its libraries, cached after that; the shuttle page also fits a classifier on 15,100
+         utterances before it draws, and takes a minute or two.</p>
+      <p>The other three (Race Control, the driver fingerprinting and the team radio page) draw
+         from a bundle exported ahead of time. Fitting them here would mean shipping raw telemetry
+         and broadcast audio that their licences do not let me redistribute, so what ships is the
+         result and the interaction is over that.</p>
       <p>Nothing is uploaded. There's no server behind any of this.</p>
     </div>
     <div>
       <h4>Colophon</h4>
-      <p>The full analyses — code, tests and executed notebooks — live in private repositories. What's
-         published here is derived: summary tables, scored predictions, return series. Where a licence
+      <p>The full analyses (code, tests and executed notebooks) live in private repositories. What's
+         published here is derived: summary tables and scored predictions. Where a licence
          forbids redistribution, the data stayed behind and the demo works from aggregates.</p>
-      <p>Each cover is distilled from one of my own photographs — a mosaic floor, a colonnade, a
-         banked corner, surf meeting sand — reduced to the structure it had in common with its
-         project. Built with <a href="https://github.com/whitphx/stlite">stlite</a>; sources and
-         licences are credited inside each demo.</p>
+      <p>Each cover is distilled from one of my own photographs (a mosaic floor, a colonnade, a
+         banked corner, surf meeting sand) reduced to the structure it had in common with its
+         project. The four Python demos are built with
+         <a href="https://github.com/whitphx/stlite">stlite</a>; the other three are plain
+         JavaScript over an exported bundle. Sources and licences are credited inside each demo.</p>
     </div>
   </footer>
 
