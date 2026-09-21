@@ -157,8 +157,83 @@
    "n_perm": 2000
   }
  },
+ "dropped_by_the_convention": {
+  "withdrawn": 66448,
+  "incomplete": 24873,
+  "share_of_decided_applications": 0.2351058762952951
+ },
+ "manski": {
+  "by_group": [
+   {
+    "index": 0,
+    "group": "asian",
+    "observed_among_decided": 0.2177620512,
+    "lower": 0.1658933227,
+    "upper": 0.404083256,
+    "n_decided": 17239,
+    "n_undecided": 5390,
+    "n_total": 22629,
+    "undecided_share": 0.2381899333
+   },
+   {
+    "index": 1,
+    "group": "black",
+    "observed_among_decided": 0.4011104274,
+    "lower": 0.2992935333,
+    "upper": 0.5531310981,
+    "n_decided": 71504,
+    "n_undecided": 24325,
+    "n_total": 95829,
+    "undecided_share": 0.2538375648
+   },
+   {
+    "index": 2,
+    "group": "joint",
+    "observed_among_decided": 0.2313660945,
+    "lower": 0.1790718835,
+    "upper": 0.4050955414,
+    "n_decided": 4253,
+    "n_undecided": 1242,
+    "n_total": 5495,
+    "undecided_share": 0.2260236579
+   },
+   {
+    "index": 3,
+    "group": "not_provided",
+    "observed_among_decided": 0.3102599653,
+    "lower": 0.225625126,
+    "upper": 0.4984119782,
+    "n_decided": 57700,
+    "n_undecided": 21644,
+    "n_total": 79344,
+    "undecided_share": 0.2727868522
+   },
+   {
+    "index": 4,
+    "group": "white",
+    "observed_among_decided": 0.2420142803,
+    "lower": 0.1917691888,
+    "upper": 0.399381283,
+    "n_decided": 143694,
+    "n_undecided": 37649,
+    "n_total": 181343,
+    "undecided_share": 0.2076120942
+   }
+  ],
+  "black_minus_white": {
+   "observed_gap_among_decided": 0.1590961470429429,
+   "gap_lower": -0.10008774971026746,
+   "gap_upper": 0.36136190932696416,
+   "sign_is_determined": false
+  }
+ },
+ "e_values": {
+  "raw_risk_ratio": 1.6670197217367029,
+  "raw": 2.7215030221840886,
+  "residual_risk_ratio": 1.256509811956101,
+  "residual": 1.8242307782642468
+ },
  "eda": {
-  "_written_utc": "2026-09-20T15:27:53+00:00",
   "_name": "eda",
   "_smoke_mode": false,
   "split_used": "train",
