@@ -1,7 +1,6 @@
 {
  "source": "reports/results.json from the shuttle-passenger-assistant repository",
  "schema_version": 2,
- "generated_at_utc": "2026-09-18T17:44:10+00:00",
  "seed": 20260918,
  "circularity_warning": "Track C utterances were written by the author. Any score computed on them measures phrasing consistency, not generalisation to real passengers.",
  "ladder": {
@@ -989,10 +988,11 @@
    "contract": 0.5394522660977866
   },
   "keyword_safety": {
-   "recall_on_author_written_emergencies": 0.6333333333333333,
+   "recall_on_author_written_emergencies": 0.6666666666666666,
    "n_emergencies": 30,
-   "false_alarm_rate_on_real_utterances": 0.0016363636363636363,
-   "n_real_negatives": 5500
+   "false_alarm_rate_on_real_utterances": 0.0018181818181818182,
+   "n_real_negatives": 5500,
+   "note": "Recomputed after the list gained symptom terms and three inflections. The symptom terms caught no additional utterance in this set and the inflections caught one ('the vehicle has crashed'); the ten still missed are generic calls for help and security incidents, not medical phrasings. They were left uncaught rather than written into the list, because adding terms to match these thirty would be fitting the list to its own test set."
   }
  },
  "transit": {

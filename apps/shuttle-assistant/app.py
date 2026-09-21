@@ -53,19 +53,24 @@ SAFETY_LABEL = "safety_emergency"
 REPO_TAU = 0.2833333333333333
 SAFETY_TAU = 0.15
 
-INK = "#12181f"
-MUTED = "#6b7683"
-ACCEPT = "#1f5f8b"
-REFUSE = "#B2182B"
-GREY = "#9aa4b0"
-WARM = "#E08214"
+INK = "#E9ECF1"
+MUTED = "#99A0AC"
+ACCEPT = "#6B9BD8"
+REFUSE = "#E5484D"
+GREY = "#7D8594"
+WARM = "#F0A04B"
+BG = "#08090B"
+GRID = "#232830"
 
 PLOT_STYLE = {
-    "figure.dpi": 100, "figure.facecolor": "white",
+    "figure.dpi": 100, "figure.facecolor": BG, "axes.facecolor": BG,
+    "savefig.facecolor": BG, "text.color": INK, "axes.titlecolor": INK,
+    "axes.labelcolor": MUTED, "axes.edgecolor": GRID, "xtick.color": MUTED,
+    "ytick.color": MUTED, "legend.labelcolor": MUTED,
     "font.size": 9.5, "axes.titlesize": 10.5, "axes.labelsize": 9.5,
     "axes.titleweight": "semibold", "axes.titlelocation": "left",
     "axes.spines.top": False, "axes.spines.right": False,
-    "axes.grid": True, "grid.color": "#E4E4E4", "grid.linewidth": 0.7,
+    "axes.grid": True, "grid.color": GRID, "grid.linewidth": 0.7,
     "axes.axisbelow": True, "legend.frameon": False,
     "xtick.labelsize": 8.8, "ytick.labelsize": 8.8, "figure.titlesize": 11.5,
 }
@@ -113,6 +118,13 @@ CATEGORY_WORDS: dict[str, str] = {
 #: not substrings: with substring matching "fire" hits "fireplace" and "gun" hits
 #: "begun". "help me" is deliberately absent - it escalated "can you help me plan a
 #: trip to walmart", a false alarm on one of the most ordinary things a passenger says.
+#:
+#: The first group names the event. The second names what a passenger having one
+#: actually types, which is a symptom: the original list held "heart attack" but not
+#: "chest", so "my chest hurts" reached neither the word list nor the classifier's
+#: safety class and was answered as an out-of-scope question. Symptom words are the
+#: ones a person reaches for before they know what is happening to them, and they
+#: are also the ones a transit vocabulary never uses, so they cost little here.
 EMERGENCY_TERMS: tuple[str, ...] = (
     "emergency", "ambulance", "police", "911", "999", "fire", "smoke", "crash",
     "collision", "accident", "heart attack", "stroke", "seizure", "unconscious",
@@ -120,6 +132,16 @@ EMERGENCY_TERMS: tuple[str, ...] = (
     "trouble breathing", "bleeding", "injured", "assault", "attacked", "weapon",
     "gun", "knife", "threatening", "harassing", "harassment", "unsafe", "overdose",
     "someone is hurt", "i'm hurt", "im hurt", "badly hurt",
+    # symptoms, not events
+    "chest pain", "chest hurts", "chest hurt", "chest tight", "chest tightness",
+    "choking", "allergic", "anaphylactic", "epipen",
+    "dizzy", "dizziness", "fainting", "feel faint", "passed out", "passing out",
+    "stabbed", "seizing", "convulsing", "severe pain", "in labour", "in labor",
+    # inflections the word-boundary match would otherwise miss: \bcrash\b does not
+    # match "the vehicle has crashed", which is not a phrasing anyone would expect
+    # this list to drop. Written out rather than stemmed, because a blanket suffix
+    # rule turns "smoke" into "smoking" and escalates a question about the rules.
+    "crashed", "crashing", "collided",
 )
 _EMERGENCY_PATTERN = re.compile(
     r"\b(?:" + "|".join(re.escape(t) for t in EMERGENCY_TERMS) + r")\b")
@@ -1058,10 +1080,19 @@ def h_safety_emergency(text: str, feed: Feed, ctx: Context) -> str:
 
 
 def h_reject(text: str, feed: Feed, ctx: Context) -> str:
-    """Rejection is a behaviour, not an error, so it is a handler like any other."""
-    return ("That is outside what I can help with. I can answer questions about shuttle "
-            "departures, planning a trip between stops, the nearest stop, what is near a "
-            "stop, service hours, fares, and accessibility.")
+    """Rejection is a behaviour, not an error, so it is a handler like any other.
+
+    The line about 911 is here rather than in the safety handler on purpose. The
+    safety handler only runs when something recognised the question as an
+    emergency; this one runs when nothing did, which is exactly the case that
+    needs the line. A word list assembled by one person will always be missing a
+    phrasing, and the cost of printing one extra sentence to a passenger asking
+    about fares is not comparable to the cost of not printing it to the other one.
+    """
+    return ("That is outside what I can help with. **If this is a medical emergency or "
+            "anyone is in danger, call 911 now.** Otherwise: I can answer questions about "
+            "shuttle departures, planning a trip between stops, the nearest stop, what is "
+            "near a stop, service hours, fares, and accessibility.")
 
 
 HANDLER_FUNCTIONS = {
@@ -1702,7 +1733,7 @@ def main() -> None:  # pragma: no cover - exercised by the browser, not by the t
         "would measure how consistently one person phrases things, not whether the model "
         "generalises to a passenger. `results.json` carries `circular: true` on that "
         "track as a field rather than a footnote, so the number cannot be pasted "
-        "somewhere and quietly lose the warning. Its 5-fold macro-F1 of "
+        "somewhere and lose the warning on the way. Its 5-fold macro-F1 of "
         f"{repo['track_c']['cv_macro_f1']['tfidf_char']:.4f} is **not** on this page as "
         "a result, and every accuracy above is measured on held-out CLINC150 utterances "
         "that I did not write.\n\n"
@@ -1719,14 +1750,25 @@ def main() -> None:  # pragma: no cover - exercised by the browser, not by the t
         "map onto a shuttle handler at all. So the repository's headline "
         f"{repo['track_a']['test']['accuracy']:.4f} on the 150-way problem is evidence "
         "that the approach works and an upper bound on field performance.\n\n"
-        "**And the emergency path is a word list, not a model.** Try *\"my chest "
-        "hurts\"*: no term in the list matches it, and the classifier does not reach the "
-        "safety class either. On the author-written emergencies the list gets "
+        "**And the emergency path is a word list, not a model.** It held *heart attack* "
+        "but not *chest*, so *\"my chest hurts\"* matched nothing, the classifier did not "
+        "reach the safety class either, and the assistant answered it as an out-of-scope "
+        "question. Symptom terms and a few inflections are in the list now, but the "
+        "measurement is the point: on the author-written emergencies it reaches "
         f"{repo['track_c']['keyword_safety']['recall_on_author_written_emergencies']:.0%} "
         "with a "
-        f"{repo['track_c']['keyword_safety']['false_alarm_rate_on_real_utterances']:.1%} "
+        f"{repo['track_c']['keyword_safety']['false_alarm_rate_on_real_utterances']:.2%} "
         "false-alarm rate on 5,500 real utterances - and that recall is on emergencies I "
-        "wrote, which is exactly the circularity this section is about.")
+        "wrote, which is exactly the circularity this section is about.\n\n"
+        "The ten it still misses are *\"i need medical help\"*, *\"i'm being followed\"*, "
+        "*\"there's a fight happening\"* - generic calls for help and security incidents, "
+        "not medical phrasings. They could be written into the list in an afternoon, and "
+        "they have not been, because a list tuned until it matches its own thirty test "
+        "sentences measures nothing. **What changed instead is the refusal**: it now names "
+        "911 before it lists what the assistant can do, so the phrasing nobody anticipated "
+        "still reaches a passenger with the one instruction that matters. A word list "
+        "assembled by one person will always be missing a phrasing; the fallback is what "
+        "makes that survivable.")
 
     st.divider()
     st.caption(
