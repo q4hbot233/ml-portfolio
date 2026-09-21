@@ -1,4 +1,4 @@
-# Seven projects, each one you can actually run
+# Seven projects, each with a demo you can run
 
 A small site hosting interactive demos for seven machine learning and data science
 projects. Everything runs client-side, with nothing uploaded and no
@@ -10,9 +10,9 @@ Python and the model are genuinely executing on the reader's machine:
 
 | Demo | What it asks |
 |---|---|
-| [A shuttle assistant that refuses](apps/shuttle-assistant/) | Intent routing for a passenger shuttle, judged on the half that declines rather than the half that answers |
+| [A shuttle assistant that refuses](apps/shuttle-assistant/) | Intent routing for a passenger shuttle, judged on how it refuses the questions it cannot answer |
 | [Who pays for the model's mistakes?](apps/credit-default/) | Credit default prediction taken past the ROC curve, to the decision and who absorbs its errors |
-| [What 492 frauds can and cannot tell you](apps/card-fraud/) | Extreme class imbalance, tested rather than assumed, and the queue metric a fraud team actually lives |
+| [What 492 frauds can and cannot tell you](apps/card-fraud/) | What rebalancing does across 456 configurations, and the alert queue a fraud team works from |
 | [The variable that was left out](apps/hmda-denial/) | Mortgage denial where the label is a human decision and the deciding variable is absent by regulation |
 
 **Three render from a pre-computed bundle.** Their inputs (raw telemetry, broadcast audio)

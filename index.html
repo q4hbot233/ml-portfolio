@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Things I Made and Then Argued With</title>
-<meta name="description" content="Seven machine learning and data science projects, each with a demo that runs in your browser.">
+<title>Qixi Huang · Things I made and then argued with</title>
+<meta name="description" content="Seven machine learning and data science projects by Qixi Huang, each with a demo that runs in the browser.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
@@ -42,11 +42,17 @@ h1{
 }
 .deck{font-size:19px; line-height:1.55; color:var(--dim); max-width:56ch; margin:26px 0 0}
 .deck em{font-style:normal; color:var(--text)}
-.meta{
-  margin-top:34px; display:flex; gap:26px; flex-wrap:wrap;
-  font-family:var(--mono); font-size:11.5px; letter-spacing:.06em; color:var(--faint);
+.about{font-size:15px; line-height:1.6; color:var(--dim); max-width:60ch; margin:22px 0 0}
+.contact{
+  margin-top:18px; display:flex; gap:10px; flex-wrap:wrap;
+  font-family:var(--mono); font-size:12px; letter-spacing:.04em;
 }
-.meta b{color:var(--text); font-weight:500}
+.contact a{
+  color:var(--text); text-decoration:none; padding:7px 12px;
+  border:1px solid var(--edge-2); border-radius:6px; background:var(--panel);
+  transition:border-color .15s ease, background .15s ease;
+}
+.contact a:hover{border-color:#6E8FA8; background:var(--panel-2)}
 
 /* ---------- grid ---------- */
 .gridhead{
@@ -126,7 +132,8 @@ h1{
   body{padding-inline:16px}
   .thumb{aspect-ratio:2.8/1}
   .finding{font-size:11.5px; padding:8px 10px}
-  .meta{gap:14px 18px}
+  .contact{gap:8px}
+  .contact a{padding:7px 10px}
 }
 </style>
 </head>
@@ -142,10 +149,14 @@ h1{
       something embarrassingly simple. <em>Each page starts with that and gets to the accuracy
       later.</em>
     </p>
-    <p class="meta">
-      <span><b>7</b> projects</span>
-      <span><b>7</b> demos you can drive</span>
-      <span>Everything runs in your browser</span>
+    <p class="about">
+      I'm a quantitative associate at Wells Fargo, working on financial-crime models. M.S. in
+      Machine Learning and Data Science from Northwestern, B.S. in Data Science from UC San Diego.
+    </p>
+    <p class="contact">
+      <a href="mailto:q4huang@icloud.com">q4huang@icloud.com</a>
+      <a href="https://www.linkedin.com/in/qixihuang" rel="noopener">LinkedIn</a>
+      <a href="assets/Resume_Qixi_Huang.pdf">Résumé (PDF)</a>
     </p>
   </header>
 
@@ -162,53 +173,64 @@ h1{
         <div class="body">
           <p class="kicker">Telemetry · 5 races · 6 models</p>
           <h3>Race Control</h3>
-          <p>Five Grands Prix rebuilt as something that unfolds. Press play and the order, gaps,
-             tyre ages and each car's chance of pitting advance the way they would on the pit wall.
-             Two of the six models are fitted across 41 races, because when a team pits is a
-             question about circuits rather than about one afternoon.</p>
+          <p>Five Grands Prix replayed lap by lap. Press play and the order, gaps, tyre ages
+             and each car's chance of pitting update the way they would on the pit wall. Two
+             of the six models are fitted across 41 races, because when a team pits depends
+             on the circuit more than on any one afternoon.</p>
           <span class="finding">Medium and hard tyres never separated. An earlier run on 12 fewer races had them the other way round, inside the same interval.</span>
           <span class="go">Open Race Control <span class="arr">→</span></span>
         </div>
       </a>
 
-      <a class="card" href="apps/shuttle-assistant/" style="--hue:#C0503C">
-        <img class="thumb" src="assets/patterns/shuttle-assistant.svg" alt="" width="640" height="400" loading="eager" fetchpriority="high" decoding="async">
+      <a class="card" href="apps/card-fraud/" style="--hue:#D9534F">
+        <img class="thumb" src="assets/patterns/card-fraud.svg" alt="" width="640" height="400" loading="eager" fetchpriority="high" decoding="async">
         <div class="body">
-          <p class="kicker">NLP · intent · refusal</p>
-          <h3>A shuttle assistant that refuses</h3>
-          <p>Anyone can build the half that routes a question to an answer. The half that decides
-             <em>this one isn't mine</em> is the half that determines whether the thing can go on a
-             vehicle carrying people.</p>
-          <span class="finding">The word list held "heart attack" but not "chest", so "my chest hurts" reached no handler at all. It catches 20 of 30 emergencies; the refusal has to carry the rest.</span>
-          <span class="go">Ask it something <span class="arr">→</span></span>
+          <p class="kicker">Class imbalance · alert queues</p>
+          <h3>What 492 frauds can tell you</h3>
+          <p>0.173% of transactions are fraud, and the standard advice is to rebalance. I
+             fitted 456 configurations to test it, and built the page around the number a
+             fraud team controls: how many alerts it can review.</p>
+          <span class="finding">Rebalancing adds 0.05 average precision to a tuned model and 0.53 to the same settings untuned. It guards against bad hyperparameters.</span>
+          <span class="go">Set the review budget <span class="arr">→</span></span>
         </div>
       </a>
-
-      <a class="card" href="apps/credit-default/" style="--hue:#5B7FA6">
-        <img class="thumb" src="assets/patterns/credit-default.svg" alt="" width="640" height="400" loading="lazy" decoding="async">
-        <div class="body">
-          <p class="kicker">Credit risk · interpretability · fairness</p>
-          <h3>Who pays for the mistakes</h3>
-          <p>Every credit-default project ends at an AUC. But a probability isn't a decision —
-             somebody has to draw a line, and the moment that line exists it hands a bill to
-             somebody. Set the cost ratio and watch who receives it.</p>
-          <span class="finding">Ten nested folds said the other model was 4% cheaper. On the held-out split the swap was worth 0.18%.</span>
-          <span class="go">Draw the line yourself <span class="arr">→</span></span>
-        </div>
-      </a>
-
-
 
       <a class="card" href="apps/f1-telemetry/" style="--hue:#C0533A">
         <img class="thumb" src="assets/patterns/f1-telemetry.svg" alt="" width="640" height="400" loading="lazy" decoding="async">
         <div class="body">
           <p class="kicker">Fingerprinting · permutation tests</p>
           <h3>Is that the driver, or the car</h3>
-          <p>Ask a model who is driving from corner telemetry and it will beat chance, largely by
-             recognising the chassis. The one place the car is genuinely held constant is the other
-             side of the same garage, so that is where the question gets asked.</p>
+          <p>Give a model corner telemetry and ask who is driving, and it beats chance
+             mostly by recognising the car. Teammates drive the same car, so the page
+             compares each driver with the one on the other side of the garage.</p>
           <span class="finding">Of the cars it identifies correctly, it names the driver 0.611 of the time, against 0.490 for no signal at all.</span>
           <span class="go">Pick a teammate pair <span class="arr">→</span></span>
+        </div>
+      </a>
+
+      <a class="card" href="apps/hmda-denial/" style="--hue:#C9822F">
+        <img class="thumb" src="assets/patterns/hmda-denial.svg" alt="" width="640" height="400" loading="lazy" decoding="async">
+        <div class="body">
+          <p class="kicker">Mortgage lending · partial identification</p>
+          <h3>The variable that was left out</h3>
+          <p>297,104 mortgage applications. Each label is a lender's decision, so a model
+             that predicts it well has learned the lenders' policy. Two gaps in the data
+             make the racial denial gap hard to read, and the page puts bounds on both.</p>
+          <span class="finding">Let the 91,321 applications that never got an answer differ by a third from the ones that did, and the denial gap stops having a sign.</span>
+          <span class="go">Move the assumption <span class="arr">→</span></span>
+        </div>
+      </a>
+
+      <a class="card" href="apps/credit-default/" style="--hue:#5B7FA6">
+        <img class="thumb" src="assets/patterns/credit-default.svg" alt="" width="640" height="400" loading="lazy" decoding="async">
+        <div class="body">
+          <p class="kicker">Credit risk · fairness</p>
+          <h3>Who pays for the mistakes</h3>
+          <p>Most projects on this dataset stop at the AUC. A lending decision also needs a
+             cutoff, and wherever it goes, some clients pay for the model's errors. Set what
+             a missed default costs and see who they are.</p>
+          <span class="finding">Ten nested folds said the other model was 4% cheaper. On the held-out split the swap was worth 0.18%.</span>
+          <span class="go">Draw the line yourself <span class="arr">→</span></span>
         </div>
       </a>
 
@@ -217,38 +239,25 @@ h1{
         <div class="body">
           <p class="kicker">Transformer NLP · construct validity</p>
           <h3>Did the drivers have the race you did</h3>
-          <p>Readers rate every grand prix out of ten. Team radio is the one channel where you
-             hear a race from inside the car. Every clip F1 broadcast in 2024, transcribed and
-             scored by a RoBERTa. Page through them and watch it disagree with a rule-based
-             lexicon about what a driver just said.</p>
+          <p>Readers rate every Grand Prix out of ten, and team radio is the one channel
+             where you hear a race from inside the car. I transcribed every clip F1
+             broadcast in 2024 and scored it with a RoBERTa model and a word lexicon. Page
+             through the clips and see where the two disagree.</p>
           <span class="finding">"Yeah, tough luck" reads −0.81 to the transformer and +0.57 to the lexicon. Swap them and four of ten teams move three places.</span>
           <span class="go">Read the radio <span class="arr">→</span></span>
         </div>
       </a>
 
-
-      <a class="card" href="apps/card-fraud/" style="--hue:#D9534F">
-        <img class="thumb" src="assets/patterns/card-fraud.svg" alt="" width="640" height="400" loading="lazy" decoding="async">
+      <a class="card" href="apps/shuttle-assistant/" style="--hue:#C0503C">
+        <img class="thumb" src="assets/patterns/shuttle-assistant.svg" alt="" width="640" height="400" loading="lazy" decoding="async">
         <div class="body">
-          <p class="kicker">Imbalance · evaluation · the queue</p>
-          <h3>What 492 frauds can tell you</h3>
-          <p>0.173% of transactions are fraud, and the advice everyone repeats is to rebalance.
-             I fitted 456 configurations to test the advice instead — and found a threshold was
-             the wrong object all along, because a team fixes how many alerts it can work.</p>
-          <span class="finding">Rebalancing is worth +0.053 once the model is tuned. The untreated configurations alone span 0.00 to 0.81.</span>
-          <span class="go">Set the review budget <span class="arr">→</span></span>
-        </div>
-      </a>
-
-      <a class="card" href="apps/hmda-denial/" style="--hue:#C9822F">
-        <img class="thumb" src="assets/patterns/hmda-denial.svg" alt="" width="640" height="400" loading="lazy" decoding="async">
-        <div class="body">
-          <p class="kicker">Mortgage lending · bounds · omitted variables</p>
-          <h3>The variable that was left out</h3>
-          <p>297,104 mortgage applications. Each label is a decision somebody
-             made, so a model that predicts it well has learned an institution's policy. Two holes make the famous denial gap hard to read, and both can be bounded.</p>
-          <span class="finding">Let the 91,321 applications that never got an answer differ by a third from the ones that did, and the denial gap stops having a sign.</span>
-          <span class="go">Move the assumption <span class="arr">→</span></span>
+          <p class="kicker">Intent classification · refusal</p>
+          <h3>A shuttle assistant that refuses</h3>
+          <p>Routing a passenger's question to the right answer is the easy part. This page
+             is about refusing the questions no handler owns, emergencies included. It is a
+             public-data rebuild of a capstone project I led.</p>
+          <span class="finding">The emergency word list catches 20 of 30 test emergencies, so every refusal also tells the passenger to call 911.</span>
+          <span class="go">Ask it something <span class="arr">→</span></span>
         </div>
       </a>
 
