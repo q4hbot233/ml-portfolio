@@ -16,11 +16,18 @@ html,body{margin:0;background:var(--void);color:var(--text);font-family:var(--sa
    happening in one sentence rather than in eight progress toasts. */
 #veil{
   position:fixed; inset:0; z-index:1000; background:var(--void);
-  display:flex; align-items:center; justify-content:center; padding:24px;
+  display:flex; padding:24px; overflow-y:auto;
   transition:opacity .4s ease;
 }
 #veil.gone{opacity:0; pointer-events:none}
-#veil .box{width:100%; max-width:600px}
+/* margin:auto centres the box when it fits and lets the veil scroll when it does not;
+   align-items:center would clip the top of a summary taller than a phone screen. */
+#veil .box{width:100%; max-width:640px; margin:auto}
+@media (max-width:520px){
+  #veil{padding:20px 16px}
+  #veil h1{font-size:26px}
+  #veil .tldr{font-size:14.5px; padding:12px 13px}
+}
 #veil .kicker{
   font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase;
   color:var(--hue); margin:0 0 16px;
@@ -57,3 +64,15 @@ html,body{margin:0;background:var(--void);color:var(--text);font-family:var(--sa
 /* The loading screen carries its own way back; the page's fixed link would be a second
    copy of it in the corner until the app has drawn. */
 #veil:not(.gone) ~ #zback{visibility:hidden}
+
+/* The summary a reader gets while Python starts. It is the same text the app shows under
+   its title once it has drawn, so the page does not change its story when the veil lifts. */
+#veil .tldr{
+  font-size:16px; line-height:1.62; color:#C9CED6; max-width:58ch; margin:0 0 6px;
+  padding:14px 16px; border-left:2px solid var(--hue); background:var(--panel);
+  border-radius:0 8px 8px 0;
+}
+#veil .tldr .k{
+  display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--faint); margin-bottom:6px;
+}
