@@ -219,7 +219,8 @@
    "prevalence": 0.5,
    "rows_added": 198600,
    "rows_removed": 0,
-   "note": "synthetic positives interpolated between real ones"
+   "tomek_rows_before_oversampling": 44,
+   "note": "SMOTE added 198,600 synthetic positives; the Tomek step then removed 0 rows. The raw rows held 44 rows in Tomek links; after oversampling to parity none remain, so this is SMOTE's training set"
   }
  ],
  "split_comparison": {
@@ -5779,7 +5780,6 @@
   }
  ],
  "eda": {
-  "_written_utc": "2026-09-20T15:02:43+00:00",
   "_name": "eda",
   "_smoke_mode": false,
   "split_used": "train",

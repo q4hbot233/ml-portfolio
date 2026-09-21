@@ -19,8 +19,9 @@ import streamlit as st
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
 
-INK = "#1b1b1f"; MUTED = "#6b6b76"; GRID = "#dcdce2"
-BLUE = "#2f5d9e"; RED = "#b3402f"; GREY = "#9aa0aa"; GREEN = "#2f7d5d"
+INK = "#E9ECF1"; MUTED = "#99A0AC"; GRID = "#232830"
+BLUE = "#6B9BD8"; RED = "#E2644E"; GREY = "#7D8594"; GREEN = "#4DB38A"
+BG = "#08090B"
 
 
 def use_style() -> None:
@@ -31,6 +32,8 @@ def use_style() -> None:
         "ytick.color": MUTED, "axes.grid": True, "grid.color": GRID,
         "grid.linewidth": 0.6, "grid.alpha": 0.7, "axes.spines.top": False,
         "axes.spines.right": False, "legend.frameon": False,
+        "figure.facecolor": BG, "axes.facecolor": BG, "savefig.facecolor": BG,
+        "axes.titlecolor": INK, "legend.labelcolor": MUTED,
     })
 
 
@@ -40,6 +43,45 @@ def load_reference() -> dict:
 
 def load_scores() -> pd.DataFrame:
     return pd.read_csv(DATA_DIR / "test_scores.csv")
+
+
+# =====================================================================================
+# WHAT REBALANCING IS WORTH, PAIRED
+# =====================================================================================
+
+def paired_deltas(search_rows: list) -> pd.DataFrame:
+    """Each treatment against the same hyperparameters left untreated.
+
+    Best treated minus best untreated compares a maximum over 380 configurations with a
+    maximum over 76, and the bigger pool tends to win even when the treatment does nothing.
+    The grid runs inside every treatment, so each treated configuration has an untreated
+    twin with identical settings, and the difference between the two is what the treatment
+    did at those settings.
+    """
+    idx = {(r["family"], json.dumps(r["params"], sort_keys=True), r["treatment"]):
+           r["average_precision"] for r in search_rows}
+    cells = {(f, p) for (f, p, _) in idx}
+    rows = []
+    for family, params in cells:
+        base = idx.get((family, params, "none"))
+        if base is None:
+            continue
+        for (f, p, treatment), value in idx.items():
+            if treatment != "none" and f == family and p == params:
+                rows.append({"treatment": treatment, "family": family,
+                             "untreated": base, "treated": value,
+                             "delta": value - base})
+    return pd.DataFrame(rows)
+
+
+def paired_summary(deltas: pd.DataFrame) -> pd.DataFrame:
+    return (deltas.groupby("treatment")
+            .agg(n=("delta", "size"), median=("delta", "median"),
+                 p10=("delta", lambda s: s.quantile(0.10)),
+                 p90=("delta", lambda s: s.quantile(0.90)),
+                 wins=("delta", lambda s: (s > 0).sum()))
+            .sort_values("median", ascending=False)
+            .reset_index())
 
 
 # =====================================================================================
@@ -105,9 +147,9 @@ def figure_queue(curve: pd.DataFrame, k: int, prevalence: float):
     ax1.axhline(prevalence, color=RED, ls=(0, (4, 3)), lw=1.1)
     ax1.annotate(f"reviewing at random: {prevalence:.4f}", xy=(curve['k'].iloc[2], prevalence),
                  xytext=(0, 7), textcoords="offset points", fontsize=8, color=RED)
-    ax1.set(xlabel="review budget k", ylabel="precision@k — of what we look at, how much is fraud")
+    ax1.set(xlabel="review budget k", ylabel="precision@k: of what we look at, how much is fraud")
     ax2.plot(curve["k"], curve["recall"], lw=2.0, color=GREEN)
-    ax2.set(xlabel="review budget k", ylabel="recall@k — of the fraud, how much we reach")
+    ax2.set(xlabel="review budget k", ylabel="recall@k: of the fraud, how much we reach")
     for ax in (ax1, ax2):
         ax.set_xscale("log")
         ax.axvline(k, color=INK, lw=1.3)
@@ -177,13 +219,11 @@ def figure_separability(eda: dict, top: int = 14):
 
 
 def figure_split(split_comparison: list):
-    """The grey bars are taller and that is the problem, not the point.
+    """The same model scored under a shuffled split and a chronological one.
 
-    The first version of this put "-34%" over the chronological bar, which reads as "the
-    chronological split performs worse" — the opposite of what it means. The model is the
-    same in both; only the evaluation changed. So the label now sits on the shuffled bar and
-    names it as inflation, the axis says which number is the honest one, and the legend says
-    what each bar is rather than only how it was split.
+    The percentage goes on the shuffled bar and reads as inflation. On the chronological bar
+    as a negative number it would say the chronological split "performs worse", which gets
+    it backwards: the model is identical in both and only the evaluation differs.
     """
     rows = {r["index"]: r for r in split_comparison}
     fig, ax = plt.subplots(figsize=(7.4, 3.3))
@@ -192,9 +232,9 @@ def figure_split(split_comparison: list):
     x = np.arange(len(metrics))
     a = [rows["shuffled"][m] for m in metrics]
     b = [rows["chronological"][m] for m in metrics]
-    ax.bar(x - 0.19, a, 0.36, color=GREY, hatch="///", edgecolor="white", linewidth=0,
-           label="shuffled — inflated by leakage")
-    ax.bar(x + 0.19, b, 0.36, color=BLUE, label="chronological — what deployment would give")
+    ax.bar(x - 0.19, a, 0.36, color=GREY, hatch="///", edgecolor=BG, linewidth=0,
+           label="shuffled, inflated by leakage")
+    ax.bar(x + 0.19, b, 0.36, color=BLUE, label="chronological, what deployment would give")
     for i, (u, v) in enumerate(zip(a, b)):
         ax.text(i - 0.19, u + 0.04, f"+{(u - v) / v:.0%}", ha="center", fontsize=10,
                 color=RED, fontweight="semibold")
@@ -204,7 +244,35 @@ def figure_split(split_comparison: list):
     ax.set_ylabel("higher is not better here", fontsize=9, color=MUTED)
     ax.set_title("the red figure is how much shuffling overstates the blue one",
                  fontsize=9.5, color=MUTED, loc="left", pad=8)
-    ax.legend(fontsize=8.5, labelcolor=MUTED, loc="upper right")
+    # Below the axes: at upper right it sat on top of the ROC-AUC bars, which reach 0.98.
+    ax.legend(fontsize=8.5, labelcolor=MUTED, loc="upper center",
+              bbox_to_anchor=(0.5, -0.12), ncol=2)
+    fig.tight_layout()
+    return fig
+
+
+def figure_paired(deltas: pd.DataFrame):
+    """One dot per (hyperparameters, treatment) pair: what the treatment did there.
+
+    Drawn against zero rather than against an average, because the claim being
+    made is "this helped at these settings", and the reader should be able to see
+    how many of the dots are on the wrong side of the line. Few of them are.
+    """
+    order = (deltas.groupby("treatment")["delta"].median()
+             .sort_values(ascending=False).index.tolist())
+    fig, ax = plt.subplots(figsize=(8.4, 3.2))
+    rng = np.random.default_rng(5150)
+    for i, treatment in enumerate(order):
+        v = deltas.loc[deltas["treatment"] == treatment, "delta"].to_numpy()
+        ax.scatter(v, np.full(v.size, i) + rng.uniform(-0.17, 0.17, v.size),
+                   s=13, alpha=0.45, color=BLUE, linewidths=0)
+        ax.plot([np.median(v)], [i], marker="|", ms=22, mew=2.2, color=RED)
+    ax.axvline(0, color=INK, lw=1.2)
+    ax.set_yticks(range(len(order)), order, fontsize=9)
+    ax.set_xlabel("change in average precision against the same model left untreated",
+                  fontsize=9, color=MUTED)
+    ax.set_title("Each treatment against its own twin, not against the best of the others",
+                 loc="left", color=INK, fontsize=10)
     fig.tight_layout()
     return fig
 
@@ -233,7 +301,7 @@ def figure_search(rows: list, by_treatment: list, budget: int):
         ax.text(r["average_precision"] + 0.012, pos[r["treatment"]] + 0.30,
                 f"best {r['average_precision']:.3f}", fontsize=8, color=INK)
     ax.set_yticks(range(len(order)), order, fontsize=9)
-    ax.set_xlabel("average precision on validation — one dot per configuration", fontsize=9,
+    ax.set_xlabel("average precision on validation, one dot per configuration", fontsize=9,
                   color=MUTED)
     ax.set_xlim(0, 1)
     # upper left: the top row is the best-scoring treatment, so its dots are all far right
@@ -260,20 +328,34 @@ def main() -> None:
     w = sel["selected"]
     untreated, by_t = ref["untreated_best"], ref["by_treatment"]
     best_t = by_t[0]
+    deltas = cache(paired_deltas)(ref["search_rows"])
+    pair_tbl = paired_summary(deltas)
+    pair_head = pair_tbl["median"].max()
+    untreated_aps = [r["average_precision"] for r in ref["search_rows"]
+                     if r["treatment"] == "none"]
+    treated_aps = [r["average_precision"] for r in ref["search_rows"]
+                   if r["treatment"] != "none"]
+    collapsed_un = sum(1 for v in untreated_aps if v < 0.10)
+    collapsed_tr = sum(1 for v in treated_aps if v < 0.10)
 
     st.title("What 492 frauds can and cannot tell you")
     st.markdown(
-        f"**{ds['rows']:,} card transactions over 48 hours, {ds['frauds']} of them fraud — "
+        f"**{ds['rows']:,} card transactions over 48 hours, {ds['frauds']} of them fraud, "
         f"{ds['prevalence']:.3%}.** The advice everyone repeats at this prevalence is to "
         f"rebalance: weight the classes, drop negatives, or synthesise positives with "
         f"SMOTE.\n\n"
-        f"So this fits **{ref['search']['n_configurations']} configurations** — two model "
-        f"families across a hyperparameter grid, each crossed with six treatments — scores "
-        f"every one of them on a validation split, picks one by a rule written down first, "
-        f"and opens the test split once. What comes out is that rebalancing is worth "
+        f"So this fits **{ref['search']['n_configurations']} configurations**: two model "
+        f"families across a hyperparameter grid, each crossed with six treatments. Every one "
+        f"is scored on a validation split, one is picked by a rule written down first, and "
+        f"the test split is opened once.\n\n"
+        f"What comes out is that **the advice is right and the usual way of checking it is "
+        f"not**. Against a tuned untreated model, rebalancing buys "
         f"**{best_t['average_precision'] - untreated['average_precision']:+.3f}** average "
-        f"precision over a tuned model that had none of it, and that **how the data was "
-        f"split matters more than anything done to the class balance.**"
+        f"precision, almost nothing. Against the *same* hyperparameters left untreated it "
+        f"buys **{pair_head:+.2f}**, and it never loses. Those are the same 456 fits read "
+        f"two ways, and the gap between them is the finding: rebalancing does not raise the "
+        f"ceiling, it stops the floor falling out. Section 3 is about which of those two "
+        f"numbers a write-up should quote."
     )
     st.caption(f"Live from the selected model's {len(scores):,} held-out scores, shipped "
                f"with the page. The full analysis is in a private repository.")
@@ -298,7 +380,7 @@ def main() -> None:
     st.markdown(
         f"Accuracy is unusable before anything is fitted: predicting \"not fraud\" every "
         f"time is right **{1 - sp['train']['prevalence']:.2%}** of the time. Everything "
-        f"below is **average precision** — the area under the precision–recall curve, whose "
+        f"below is **average precision**, the area under the precision–recall curve, whose "
         f"floor for random ranking is the base rate, {sp['valid']['prevalence']:.4f}, not "
         f"0.5. Amount is not the giveaway people expect: the fraud rate is highest in the "
         f"smallest band, which is card testing."
@@ -312,7 +394,7 @@ def main() -> None:
         "the raw fields because the raw fields are a European issuer's records. You cannot "
         "engineer on top of a component you cannot interpret, so the work was two derived "
         "columns and one deliberate exclusion: `hour_of_cycle` (hours since the file "
-        "starts, mod 24 — the file has no wall clock), `log_amount`, and **`Time` left "
+        "starts, mod 24; the file has no wall clock), `log_amount`, and **`Time` left "
         "out**, because a model given it fits where the fraud bursts happen to sit in these "
         "particular 48 hours."
     )
@@ -332,7 +414,7 @@ def main() -> None:
     g = ref["search"]
     st.markdown(
         f"Each of **{g['n_configurations']}** configurations is fitted on the training "
-        f"split and scored on validation — {len(g['lgbm_grid']['num_leaves']) * len(g['lgbm_grid']['learning_rate']) * len(g['lgbm_grid']['n_estimators']) * len(g['lgbm_grid']['min_child_samples'])} "
+        f"split and scored on validation: {len(g['lgbm_grid']['num_leaves']) * len(g['lgbm_grid']['learning_rate']) * len(g['lgbm_grid']['n_estimators']) * len(g['lgbm_grid']['min_child_samples'])} "
         f"LightGBM settings and {len(g['logistic_grid']['C'])} logistic ones, each crossed "
         f"with all {len(g['treatments'])} treatments. Hyperparameters are searched **inside "
         f"every treatment**, because the best shape of a tree depends on what was done to "
@@ -347,11 +429,54 @@ def main() -> None:
         f"resampler and weighting scheme in the list, applied to a model that was already "
         f"tuned. Meanwhile the untreated dots alone run from "
         f"{min(r['average_precision'] for r in ref['search_rows'] if r['treatment'] == 'none'):.2f} "
-        f"to {untreated['average_precision']:.2f} — **the choice of hyperparameters moves "
+        f"to {untreated['average_precision']:.2f}. **The choice of hyperparameters moves "
         f"this model further than the choice of treatment does.** A write-up that fits one "
         f"untreated configuration, rebalances it, and reports the difference is mostly "
         f"reporting where its baseline happened to land."
     )
+    st.markdown(
+        f"**So pair them.** The grid is run inside every treatment, so every treated "
+        f"configuration has an untreated twin with identical settings, and the difference "
+        f"between the two is what the treatment did *there*: no maximum, no comparison "
+        f"across arms of different sizes."
+    )
+    st.pyplot(figure_paired(deltas), use_container_width=True)
+    ptbl = pair_tbl.copy()
+    ptbl["wins"] = ptbl["wins"].astype(str) + " of " + ptbl["n"].astype(str)
+    st.dataframe(
+        ptbl[["treatment", "median", "p10", "p90", "wins"]].rename(columns={
+            "median": "median change in AP", "p10": "10th pct", "p90": "90th pct",
+            "wins": "configurations improved"}),
+        use_container_width=True, hide_index=True,
+        column_config={c: st.column_config.NumberColumn(format="%+.3f")
+                       for c in ("median change in AP", "10th pct", "90th pct")})
+    tomek = next(s for s in ref["treatment_shapes"] if s["treatment"] == "smote_tomek")
+    st.caption(
+        f"`smote` and `smote_tomek` have identical rows in the table above. That is correct: "
+        f"on these training rows they produce the same training set. Tomek links are pairs "
+        f"of opposite-class points that are each other's nearest neighbour, and the raw "
+        f"training data has {tomek['tomek_rows_before_oversampling']} rows in them. Once SMOTE "
+        f"has added {tomek['rows_added']:,} synthetic frauds, every point near the boundary "
+        f"has a synthetic fraud as its nearest neighbour, the pairs are gone, and the "
+        f"cleaning step removes {tomek['rows_removed']} rows. It is one of the six treatments "
+        f"in name only on a problem this imbalanced.")
+    st.warning(
+        f"**The two readings disagree by an order of magnitude, and both are correct.** "
+        f"Best-against-best says "
+        f"{best_t['average_precision'] - untreated['average_precision']:+.3f}. Paired says "
+        f"{pair_head:+.3f}. The reason is in the left tail of the scatter above: "
+        f"**{collapsed_un} of {len(untreated_aps)} untreated configurations land below 0.10 "
+        f"average precision** (at this prevalence an unweighted tree with a large "
+        f"`min_child_samples` has no reason to split on 384 positives and returns something "
+        f"close to a constant), while **{collapsed_tr} of {len(treated_aps)} treated ones "
+        f"do**.\n\n"
+        f"So what rebalancing is worth depends on how much tuning surrounds it: "
+        f"{best_t['average_precision'] - untreated['average_precision']:+.3f} average "
+        f"precision if you also search the grid exhaustively, roughly {pair_head:.1f} if "
+        f"you do not. It protects against a hyperparameter choice that would collapse the "
+        f"model and does little for one that was already tuned. A write-up that reports "
+        f"only one of the two numbers is mostly telling you how hard its author searched.",
+        icon=":material/compare_arrows:")
     tbl = pd.DataFrame([{"treatment": r["treatment"], "best family": r["family"],
                          "average precision": r["average_precision"],
                          f"precision@{k0}": r[f"precision_at_{k0}"]} for r in by_t])
@@ -363,7 +488,18 @@ def main() -> None:
         f"**{sel['n_tied_at_top']}** configurations tie at the top on validation "
         f"precision@{k0} = **{sel['best_validation_precision_at_budget']:.3f}**, so it goes "
         f"to the tie-break. The selected model is **{w['family']} + {w['treatment']}**, "
-        f"`{', '.join(f'{k}={v}' for k, v in w['params'].items())}`.",
+        f"`{', '.join(f'{k}={v}' for k, v in w['params'].items())}`. The two tied "
+        f"configurations are {' and '.join(sel['tied_treatments'])} at the same settings, "
+        f"which is one model trained twice on the same rows, so the tie-break had nothing "
+        f"to decide.\n\n"
+        f"**And the rule is deciding on very little.** Validation holds "
+        f"{sp['valid']['frauds']} frauds, so precision@{k0} moves in steps of "
+        f"{1/k0:.2f}, one transaction. "
+        f"**{sum(1 for r in ref['search_rows'] if abs(r[f'precision_at_{k0}'] - sel['best_validation_precision_at_budget']) < 0.011) - sel['n_tied_at_top']}** "
+        f"more configurations sit exactly one transaction behind the winner. Section 5 "
+        f"measures what shuffling the split is worth to three decimal places; this is the "
+        f"same kind of optimism in the other direction, and the honest version is that the "
+        f"selected model was picked out of a crowd it did not clearly beat.",
         icon=":material/rule:")
 
     # ------------------------------------------------------------------ 4
@@ -404,8 +540,8 @@ def main() -> None:
         f"queue is **{res['one_transaction_is_pct']:.0f} percentage point**, and no model "
         f"can exceed precision **{res['max_possible_precision']:.2f}** there because there "
         f"are not {res['k']} frauds to find. At k=20 this model's precision is "
-        f"**{queue_metrics(y, score, 20)['precision']:.2f}** — the top twenty are all fraud "
-        f"— and that is the number worth quoting to a team, not the average precision.",
+        f"**{queue_metrics(y, score, 20)['precision']:.2f}**: the top twenty are all "
+        f"fraud. For a fraud team that is a more useful number than the average precision.",
         icon=":material/straighten:")
 
     # ------------------------------------------------------------------ 5
@@ -417,7 +553,7 @@ def main() -> None:
     st.markdown(
         f"Same configuration, same rows, one difference: how the held-out set was chosen. "
         f"Shuffling puts several frauds from one compromised card on both sides of the "
-        f"line, so the model is scored partly on cards it has already seen — a situation no "
+        f"line, so the model is scored partly on cards it has already seen, a situation no "
         f"deployed detector is ever in. It reports average precision "
         f"**{sc['shuffled']['average_precision']:.3f}** against the honest "
         f"**{sc['chronological']['average_precision']:.3f}**, an overstatement of "
@@ -426,14 +562,17 @@ def main() -> None:
     st.info(
         f"**So what would I tell a fraud team?** Use the tuned model, expect about "
         f"**{pk['point']:.0%} of a {k0}-alert queue to be fraud** and the top twenty to be "
-        f"nearly all of it, and do not believe any evaluation that shuffled. Rebalancing is "
-        f"worth having — {best_t['average_precision'] - untreated['average_precision']:+.3f} "
-        f"average precision — but it is the smallest of the three decisions on this page, "
-        f"behind tuning the model and far behind splitting the data honestly.",
+        f"nearly all of it, and do not believe any evaluation that shuffled. Rebalance: "
+        f"it costs nothing and it is the difference between a model and a constant at "
+        f"{sp['train']['prevalence']:.3%}, but do not expect it to be worth much once the "
+        f"model is tuned, and do not let anyone quote you a number for it that was not "
+        f"paired. Of the three decisions on this page, splitting the data honestly is worth "
+        f"the most, tuning is next, and the treatment is the one that matters least at the "
+        f"top and most at the bottom.",
         icon=":material/flag:")
 
     st.divider()
-    with st.expander("What this is, and what it is not"):
+    with st.expander("Scope and data limits"):
         st.markdown(
             f"- **A prototype**, not a deployed system. One dataset, one machine, no "
             f"monitoring, no drift handling.\n"

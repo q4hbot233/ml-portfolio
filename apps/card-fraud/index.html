@@ -5,41 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>What 492 frauds can and cannot tell you</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/browser@1.9.1/build/stlite.css">
-<style>
-  :root { color-scheme: light dark; }
-  body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
-  #boot { padding:48px 24px; max-width:640px; margin:0 auto; color:#4a5560; }
-  #boot h1 { font-size:20px; margin:0 0 10px; color:#12181f; }
-  #boot p { margin:0 0 8px; font-size:14.5px; line-height:1.6; }
-  #boot .bar { height:3px; background:#e3e8ee; border-radius:2px; overflow:hidden; margin-top:18px; }
-  #boot .bar i { display:block; height:100%; width:38%; background:#1f5f8b; animation:sl 1.25s ease-in-out infinite; }
-  @keyframes sl { 0%{margin-left:-38%} 100%{margin-left:100%} }
-  #boot a { color:#1f5f8b; }
-  @media (prefers-color-scheme: dark){ #boot{color:#98a2b0} #boot h1{color:#e7ebf1} #boot .bar{background:#272d36} }
-</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../../assets/demo.css?v=ab6fba2c">
 </head>
 <body>
-<div id="root">
-  <div id="boot">
+<div id="veil" role="status" aria-live="polite">
+  <div class="box">
+    <p class="kicker">Imbalance · evaluation · the queue</p>
     <h1>What 492 frauds can and cannot tell you</h1>
     <p>284,807 transactions, 492 of them fraud. Testing the advice everyone repeats about imbalance.</p>
-    <p>Starting a Python runtime in your browser — this takes about 10–20 seconds on a first visit,
-       then it is cached. Nothing is sent to a server; the whole app runs locally on this page.</p>
+    <p class="status">Starting Python in your browser. Up to a minute the first time; cached after that. Nothing is sent to a server.</p>
     <div class="bar"><i></i></div>
-    <p style="margin-top:18px"><a href="../../">&larr; back to all projects</a></p>
+    <a href="../../">&larr; All projects</a>
   </div>
 </div>
+<div id="root"></div>
 <script type="module">
-import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser@1.9.1/build/stlite.js";
-mount({
+import { mountDemo } from "../../assets/demo.js?v=a72cc5ad";
+mountDemo({
+  hue: "#D9534F",
   requirements: ["matplotlib"],
-  entrypoint: "app.py",
   files: {
-      "app.py": { url: "app.py?v=b323cf1b" },
-      "data/reference.json": { url: "data/reference.json?v=c9154d31" },
+      "app.py": { url: "app.py?v=cc58ba4a" },
+      "data/reference.json": { url: "data/reference.json?v=5a228e62" },
       "data/test_scores.csv": { url: "data/test_scores.csv?v=57612885" },
   },
-}, document.getElementById("root"));
+});
 </script>
 <style>
 #zback{
@@ -49,8 +42,16 @@ mount({
   background:#1B1B18; color:#EDEDE6; padding:9px 13px; border:1px solid #1B1B18;
   box-shadow:0 2px 10px rgba(0,0,0,.28); opacity:.93;
 }
-#zback:hover{background:#E0417F; border-color:#E0417F; opacity:1}
-#zback:focus-visible{outline:2px solid #E0417F; outline-offset:2px}
+#zback:hover{background:var(--hue); border-color:var(--hue); opacity:1}
+#zback:focus-visible{outline:2px solid var(--hue); outline-offset:2px}
+/* The back link is fixed bottom-left, which on a phone parks it on top of the
+   paragraph the reader is in. Smaller there, and the page keeps a gutter under
+   its last line so nothing important ends up beneath it. */
+@media (max-width:640px){
+  #zback{left:10px;bottom:10px;padding:7px 10px;font-size:10px;letter-spacing:.06em}
+  .stAppViewContainer .block-container,.main .block-container{padding-bottom:76px!important}
+  body{padding-bottom:env(safe-area-inset-bottom)}
+}
 @media print{#zback{display:none}}
 </style>
 <a id="zback" href="../../">← Contents</a>
