@@ -1,0 +1,59 @@
+/* Shared look for the four in-browser Python demos. The palette is the landing
+   page's, so following a card into its demo does not change websites; --hue is the
+   card's own accent, set by demo.js. */
+:root{
+  color-scheme: dark;
+  --void:#08090B; --panel:#12151A; --edge:#1F232B; --edge-2:#2B313B;
+  --text:#E9ECF1; --dim:#99A0AC; --faint:#626A78;
+  --sans:"Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Roboto Mono",ui-monospace,Menlo,monospace;
+  --hue:#6E8FA8;
+}
+html,body{margin:0;background:var(--void);color:var(--text);font-family:var(--sans)}
+
+/* ---------- loading screen ----------
+   Fixed over the page until Streamlit draws its first element. It says what is
+   happening in one sentence rather than in eight progress toasts. */
+#veil{
+  position:fixed; inset:0; z-index:1000; background:var(--void);
+  display:flex; align-items:center; justify-content:center; padding:24px;
+  transition:opacity .4s ease;
+}
+#veil.gone{opacity:0; pointer-events:none}
+#veil .box{width:100%; max-width:600px}
+#veil .kicker{
+  font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--hue); margin:0 0 16px;
+}
+#veil h1{
+  font-size:clamp(28px,4.4vw,40px); line-height:1.08; letter-spacing:-.028em;
+  font-weight:700; margin:0 0 16px; text-wrap:balance;
+}
+#veil p{font-size:15.5px; line-height:1.6; color:var(--dim); margin:0 0 10px; max-width:52ch}
+#veil .status{
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.04em; color:var(--faint);
+  margin-top:28px;
+}
+#veil .bar{height:2px; background:var(--edge); border-radius:2px; overflow:hidden; margin-top:10px}
+#veil .bar i{
+  display:block; height:100%; width:34%; background:var(--hue);
+  animation:veil-slide 1.3s ease-in-out infinite;
+}
+@keyframes veil-slide{0%{margin-left:-34%} 100%{margin-left:100%}}
+#veil a{color:var(--dim); font-family:var(--mono); font-size:11px; letter-spacing:.1em;
+  text-transform:uppercase; text-decoration:none; display:inline-block; margin-top:26px}
+#veil a:hover{color:var(--text)}
+@media (prefers-reduced-motion:reduce){#veil .bar i{animation:none; width:100%; opacity:.4}}
+
+/* ---------- Streamlit, brought into line ---------- */
+[data-testid="stDecoration"]{display:none}
+[data-testid="stHeader"]{background:transparent}
+.stApp h1{letter-spacing:-.028em; font-weight:700}
+.stApp h2,.stApp h3{letter-spacing:-.018em}
+.stApp [data-testid="stMetricValue"]{font-variant-numeric:tabular-nums; letter-spacing:-.01em}
+.stApp [data-testid="stCaptionContainer"]{color:var(--dim)}
+.stApp hr{border-color:var(--edge)}
+
+/* The loading screen carries its own way back; the page's fixed link would be a second
+   copy of it in the corner until the app has drawn. */
+#veil:not(.gone) ~ #zback{visibility:hidden}
