@@ -1,4 +1,0 @@
-﻿route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_color,route_sort_order
-rt_red,1554,Red,Avon East,The Red Line operates between 6:30 am to 10:00 pm operating primary in the eastern portion of Avon.,3,FF6666,1
-rt_blue,1554,Blue,Avon West,The Blue Line operates between 6:28 am to 10:00 pm operating primary in the western portion of Avon.,3,0000FF,2
-rt_beaver,1554,BC Express, Beaver Creek Express, The Beaver Creek Express operates between 6:30 am to 10:00 pm,3,E69800,3

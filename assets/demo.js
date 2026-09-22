@@ -1,8 +1,8 @@
-// Shared mount for the four demos that run Python in the page.
+// Shared mount for the demos that run Python in the page.
 //
 // Streamlit's defaults are a white page in a light-mode browser, its own typeface, a
 // Deploy button and a stack of start-up toasts, which reads as a different website from
-// the dark landing page. The theme lives here so the four demos cannot drift apart, and
+// the dark landing page. The theme lives here so the demos cannot drift apart, and
 // each page passes only the accent colour of the card that links to it.
 
 import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser@1.9.1/build/stlite.js";
@@ -15,9 +15,8 @@ const SITE = {
 };
 
 // How long the loading screen may stay up before it gets out of the way regardless.
-// The shuttle page fits a classifier before it draws anything and needs close to two
-// minutes on a slow machine; past three, something has gone wrong and the reader is
-// better served by Streamlit's own state than by a screen that never changes.
+// Past three minutes something has gone wrong, and the reader is better served by
+// Streamlit's own state than by a screen that never changes.
 const VEIL_TIMEOUT_MS = 180_000;
 
 // Anything Streamlit draws once the script is running. An exception counts: a page that

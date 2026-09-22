@@ -1,2 +1,0 @@
-﻿fare_media_id,fare_media_name,fare_media_type
-Avon_Fare,Avon Bus Fare,0

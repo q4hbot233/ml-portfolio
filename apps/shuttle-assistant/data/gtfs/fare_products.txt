@@ -1,2 +1,0 @@
-﻿fare_product_id,amount,currency,fare_product_name,fare_media_id
-3733,0.00,USD,Avon_Bus_Fare_RedBlue,Avon_Fare

@@ -1,2 +1,0 @@
-﻿agency_id,agency_name,agency_url,agency_timezone,agency_phone,agency_email
-1554,Avon Transit,https://www.avon.org/2038/Mobility,America/Denver,(970) 748-4120,mobility@avon.org

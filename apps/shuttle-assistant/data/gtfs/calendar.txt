@@ -1,4 +1,0 @@
-﻿service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date
-mon-tues-wed-thurs-fri-sat-sun,1,1,1,1,1,1,1,20260331,20261125
-beaver-express-summer,1,1,1,1,1,1,1,20260523,20260913
-

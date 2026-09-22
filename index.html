@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Qixi Huang · Things I made and then argued with</title>
-<meta name="description" content="Seven machine learning and data science projects by Qixi Huang, each with a demo that runs in the browser.">
+<meta name="description" content="Six machine learning and data science projects by Qixi Huang, each with a demo that runs in the browser.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
@@ -120,7 +120,7 @@ h1{
   .foot{grid-template-columns:1fr; gap:24px}
   .hero{padding-block:56px 40px}
   /* One column makes every cover full-bleed, and at 16:10 that is 400px of drawing
-     before the first word of each card. Seven of those is most of the page. The
+     before the first word of each card. Six of those is most of the page. The
      covers are atmosphere, not information, so they get a letterbox here and the
      reader gets about a thousand pixels of scrolling back. */
   .thumb{aspect-ratio:2.4/1}
@@ -144,7 +144,7 @@ h1{
     <p class="eyebrow"><span class="dot"></span>Qixi (Jason) Huang<span>Machine learning &amp; data science</span></p>
     <h1>Things I made and then argued with</h1>
     <p class="deck">
-      Seven projects. In most of them the part I found interesting came after the model was fitted:
+      Six projects. In most of them the part I found interesting came after the model was fitted:
       the moment it turned out to be wrong, or right for a reason I hadn't noticed, or beaten by
       something embarrassingly simple. <em>Each page starts with that and gets to the accuracy
       later.</em>
@@ -248,31 +248,16 @@ h1{
         </div>
       </a>
 
-      <a class="card" href="apps/shuttle-assistant/" style="--hue:#C0503C">
-        <img class="thumb" src="assets/patterns/shuttle-assistant.svg" alt="" width="640" height="400" loading="lazy" decoding="async">
-        <div class="body">
-          <p class="kicker">Intent classification · refusal</p>
-          <h3>A shuttle assistant that refuses</h3>
-          <p>Routing a passenger's question to the right answer is the easy part. This page
-             is about refusing the questions no handler owns, emergencies included. It is a
-             public-data rebuild of a capstone project I led.</p>
-          <span class="finding">The emergency word list catches 20 of 30 test emergencies, so every refusal also tells the passenger to call 911.</span>
-          <span class="go">Ask it something <span class="arr">→</span></span>
-        </div>
-      </a>
-
-
     </div>
   </section>
 
   <footer class="foot">
     <div>
       <h4>How these run</h4>
-      <p>Four of the seven boot a Python interpreter inside your browser: the shuttle assistant,
-         the two credit pages and the mortgage audit. Those models are fitted and scored on your
-         machine as you read. The first visit spends a minute or so fetching the interpreter and
-         its libraries, cached after that; the shuttle page also fits a classifier on 15,100
-         utterances before it draws, and takes a minute or two.</p>
+      <p>Three of the six boot a Python interpreter inside your browser: the two credit pages
+         and the mortgage audit. Those models are fitted and scored on your machine as you read.
+         The first visit spends a minute or so fetching the interpreter and its libraries, cached
+         after that.</p>
       <p>The other three (Race Control, the driver fingerprinting and the team radio page) draw
          from a bundle exported ahead of time. Fitting them here would mean shipping raw telemetry
          and broadcast audio that their licences do not let me redistribute, so what ships is the
@@ -286,7 +271,7 @@ h1{
          forbids redistribution, the data stayed behind and the demo works from aggregates.</p>
       <p>Each cover is distilled from one of my own photographs (a mosaic floor, a colonnade, a
          banked corner, surf meeting sand) reduced to the structure it had in common with its
-         project. The four Python demos are built with
+         project. The three Python demos are built with
          <a href="https://github.com/whitphx/stlite">stlite</a>; the other three are plain
          JavaScript over an exported bundle. Sources and licences are credited inside each demo.</p>
     </div>
